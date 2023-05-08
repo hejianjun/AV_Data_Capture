@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import re
 from lxml import etree
 from .parser import Parser
 
@@ -18,6 +18,7 @@ class Javday(Parser):
     def extraInit(self):
         self.imagecut = 4
         self.uncensored = True
+        self.allow_number_change = True
 
     def search(self, number):
         self.number = number.strip().upper()
@@ -37,8 +38,14 @@ class Javday(Parser):
     def getTitle(self, htmltree):
         title = super().getTitle(htmltree)
         # 删除番号和网站名
-        result = title.replace(self.number,"").replace("- JAVDAY.TV","").strip()
-        return result
+        try:
+            title = str(re.sub("^[\w\-]+",'',title,1))
+            title = str(re.sub("[\w\.\-]+$",'',title,1))
+        except:
+            print("非标准标题" + title)
+            title = title.replace(self.number,"")
+            title = title.replace("JAVDAY.TV","")
+        return title.strip("- ")
     
     def getTags(self, htmltree) -> list:
         tags = super().getTags(htmltree)

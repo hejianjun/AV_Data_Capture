@@ -23,9 +23,10 @@ class Fc2(Parser):
     def extraInit(self):
         self.imagecut = 0
         self.allow_number_change = True
+        self.uncensored = True
 
     def search(self, number):
-        self.number = number.lower().replace('fc2-ppv-', '').replace('fc2-', '')
+        self.number = number.lower().replace('fc2ppv-', '').replace('fc2-ppv-', '').replace('fc2-', '')
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:

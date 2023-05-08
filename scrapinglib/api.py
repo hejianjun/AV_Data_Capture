@@ -5,6 +5,7 @@ import json
 from .parser import Parser
 import config
 import importlib
+import traceback
 
 def search(number, sources: str = None, **kwargs):
     """ 根据`番号/电影`名搜索信息
@@ -129,8 +130,8 @@ class Scraping:
                     json_data = json.loads(data)
                 except Exception as e:
                     print('[!] 出错啦')
-                    print(e)
-                    pass
+                    if self.debug:
+                        traceback.print_exc()
                     # json_data = self.func_mapping[source](number, self)
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):

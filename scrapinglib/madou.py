@@ -5,25 +5,35 @@ from lxml import etree
 from urllib.parse import urlparse, unquote
 from .parser import Parser
 
-
 NUM_RULES3=[
-    r'(mmz{2,4})-?(\d{2,})(-ep\d*|-\d*)?.*',
-    r'(msd)-?(\d{2,})(-ep\d*|-\d*)?.*',
-    r'(yk)-?(\d{2,})(-ep\d*|-\d*)?.*',
-    r'(pm)-?(\d{2,})(-ep\d*|-\d*)?.*',
-    r'(mky-[a-z]{2,2})-?(\d{2,})(-ep\d*|-\d*)?.*',
+    r'(mmz|msd|mdm|yk|pm|pme|pmd|qdog|qqog|fsog|rs|xkg|xsj)-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
+    r'(mky-[a-z]{2,2})-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
+]
+
+NUM_RULES2=[
+    r'(xsjtc)-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
+]
+
+NUM_RULES4=[
+    r'((?<!\w)md[a-ln-z]{0,2})-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
+    r'(mcy|ras|tmp)-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
 ]
 
 # modou提取number
 def change_number(number):
     number = number.lower().strip()
-    m = re.search(r'(md[a-z]{0,2})-?(\d{2,})(-ep\d*|-\d*)?.*', number, re.I)
-    if m:
-        return f'{m.group(1)}{m.group(2).zfill(4)}{m.group(3) or ""}'
+    for rules in NUM_RULES4:
+        m = re.search(rules, number, re.I)
+        if m:
+            return f'{m.group(1)}{m.group(2).zfill(4)}{m.group(3) or ""}'
     for rules in NUM_RULES3:
         m = re.search(rules, number, re.I)
         if m:
             return f'{m.group(1)}{m.group(2).zfill(3)}{m.group(3) or ""}'
+    for rules in NUM_RULES2:
+        m = re.search(rules, number, re.I)
+        if m:
+            return f'{m.group(1)}{m.group(2).zfill(2)}{m.group(3) or ""}'
     return number
 
 
@@ -45,10 +55,12 @@ class Madou(Parser):
 
     def search(self, number):
         self.number = change_number(number)
+        if self.number!=number:
+            print(self.number)
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = "https://madou.club/" + number + ".html"
+            self.detailurl = "https://madou.club/" + self.number + ".html"
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404:
             return 404
@@ -68,7 +80,7 @@ class Madou(Parser):
             if result.upper() != self.number.upper():
                 result = re.split(r'[^\x00-\x7F]+', result, 1)[0]
             # 移除多余的符号
-            return result.strip('-')
+            return result.strip('- ')
         except:
             return ''
 
@@ -78,7 +90,7 @@ class Madou(Parser):
         # <title>MD0094／贫嘴贱舌中出大嫂／坏嫂嫂和小叔偷腥内射受孕-麻豆社</title>
         # <title>TM0002-我的痴女女友-麻豆社</title>
         browser_title = str(super().getTitle(htmltree))
-        title = str(re.findall(r'^[A-Z0-9 /／\-]*(.*)-麻豆社$', browser_title)[0]).strip()
+        title = str(re.findall(r'^[A-Z0-9 ///\-]*(.*)-麻豆社$', browser_title)[0]).strip()
         return title
 
     def getCover(self, htmltree):

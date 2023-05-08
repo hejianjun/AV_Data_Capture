@@ -7,7 +7,7 @@ import typing
 G_spat = re.compile(
     "^\w+\.(cc|com|net|me|club|jp|tv|xyz|biz|wiki|info|tw|us|de)@|^22-sht\.me|"
     "^(fhd|hd|sd|1080p|720p|4K)(-|_)|"
-    "(-|_)(fhd|hd|sd|1080p|720p|4K|x264|x265|uncensored|leak)",
+    "(-|_)(fhd|hd|sd|1080p|720p|4K|x264|x265|uncensored|leak|hack)",
     re.IGNORECASE)
 
 
@@ -59,9 +59,9 @@ def get_number(debug: bool, file_path: str) -> str:
             if not re.search("-|_", filename): # 去掉-CD1之后再无-的情况，例如n1012-CD1.wmv
                 return str(re.search(r'\w+', filename[:filename.find('.')], re.A).group())
             file_number =  os.path.splitext(filename)
-            filename = re.search(r'[\w\-_]+', filename, re.A)
+            filename = re.search(r'[\w\-]{2,}', file_number[0], re.A)
             if filename:
-                file_number = str(filename.group())
+                file_number = str(filename.group()).strip('-_ ')
             else:
                 file_number = file_number[0]
             file_number = re.sub("(-|_)c$", "", file_number, flags=re.IGNORECASE)

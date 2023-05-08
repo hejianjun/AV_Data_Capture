@@ -98,6 +98,10 @@ class Javdb(Parser):
             correct_url = urls[0]
         else:
             ids = self.getTreeAll(self.querytree, '//*[contains(@class,"movie-list")]/div/a/div[contains(@class, "video-title")]/strong/text()')
+            if 'fc2-ppv' in number:
+                number= number.replace('fc2-ppv', 'fc2')
+                self.allow_number_change = True
+                self.uncensored = True
             try:
                 self.queryid = ids.index(number)
                 correct_url = urls[self.queryid]
