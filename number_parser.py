@@ -7,7 +7,7 @@ import typing
 G_spat = re.compile(
     "^\w+\.(cc|com|net|me|club|jp|tv|xyz|biz|wiki|info|tw|us|de)@|^22-sht\.me|"
     "^(fhd|hd|sd|1080p|720p|4K)(-|_)|"
-    "(-|_)(fhd|hd|sd|1080p|720p|4K|x264|x265|uncensored|leak|hack)",
+    "(-|_)(fhd|hd|sd|1080p|720p|4K|x264|x265|uncensored|hack|leak)",
     re.IGNORECASE)
 
 
@@ -61,7 +61,6 @@ def get_number(debug: bool, file_path: str) -> str:
             file_number =  os.path.splitext(filename)
             filename = re.search(r'[\w\-]{2,}', file_number[0], re.A)
             if filename:
-                file_number = str(filename.group()).strip('-_ ')
             else:
                 file_number = file_number[0]
             file_number = re.sub("(-|_)c$", "", file_number, flags=re.IGNORECASE)

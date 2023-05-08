@@ -7,6 +7,7 @@ import config
 import importlib
 import traceback
 
+
 def search(number, sources: str = None, **kwargs):
     """ 根据`番号/电影`名搜索信息
 
@@ -82,17 +83,16 @@ class Scraping:
                 if self.debug:
                     print('[+]select', source)
                 try:
-                    module = importlib.import_module('.'+source,'scrapinglib')
+                    module = importlib.import_module('.' + source, 'scrapinglib')
                     parser_type = getattr(module, source.capitalize())
-                    parser:Parser = parser_type()
-                    data = parser.scrape(name,self)
+                    parser: Parser = parser_type()
+                    data = parser.scrape(name, self)
                     if data == 404:
                         continue
                     json_data = json.loads(data)
                 except Exception as e:
-                    print('[!] 出错啦')
-                    print(e)
-                    pass
+                    if config.getInstance().debug():
+                        print(e)
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):
                     if self.debug:
@@ -102,9 +102,16 @@ class Scraping:
                 continue
 
         # Return if data not found in all sources
-        if not json_data:
-            print(f'[-]Movie Number [{name}] not found!')
+        if not json_data or json_data['title'] == "":
             return None
+
+        # If actor is anonymous, Fill in Anonymous
+        if len(json_data['actor']) == 0:
+            if config.getInstance().anonymous_fill() == True:
+                if "zh_" in config.getInstance().get_target_language():
+                    json_data['actor'] = "佚名"
+                else:
+                    json_data['actor'] = "Anonymous"
 
         return json_data
 
@@ -121,17 +128,16 @@ class Scraping:
                 if self.debug:
                     print('[+]select', source)
                 try:
-                    module = importlib.import_module('.'+source,'scrapinglib')
+                    module = importlib.import_module('.' + source, 'scrapinglib')
                     parser_type = getattr(module, source.capitalize())
-                    parser:Parser = parser_type()
-                    data = parser.scrape(number,self)
+                    parser: Parser = parser_type()
+                    data = parser.scrape(number, self)
                     if data == 404:
                         continue
                     json_data = json.loads(data)
                 except Exception as e:
-                    print('[!] 出错啦')
-                    if self.debug:
-                        traceback.print_exc()
+                    if config.getInstance().debug():
+                        print(e)
                     # json_data = self.func_mapping[source](number, self)
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):
@@ -140,13 +146,13 @@ class Scraping:
                     break
             except:
                 continue
-            
+
         # javdb的封面有水印，如果可以用其他源的封面来替换javdb的封面
         if 'source' in json_data and json_data['source'] == 'javdb':
             # search other sources
             other_sources = sources[sources.index('javdb') + 1:]
             while other_sources:
-            # If cover not found in other source, then skip using other sources using javdb cover instead
+                # If cover not found in other source, then skip using other sources using javdb cover instead
                 try:
                     other_json_data = self.searchAdult(number, other_sources)
                     if other_json_data is not None and 'cover' in other_json_data and other_json_data['cover'] != '':
@@ -161,11 +167,18 @@ class Scraping:
                     other_sources = sources[sources.index(other_json_data['source']) + 1:]
                 except:
                     pass
-            
+
         # Return if data not found in all sources
-        if not json_data:
-            print(f'[-]Movie Number [{number}] not found!')
+        if not json_data or json_data['title'] == "":
             return None
+
+        # If actor is anonymous, Fill in Anonymous
+        if len(json_data['actor']) == 0:
+            if config.getInstance().anonymous_fill() == True:
+                if "zh_" in config.getInstance().get_target_language():
+                    json_data['actor'] = "佚名"
+                else:
+                    json_data['actor'] = "Anonymous"
 
         return json_data
 
@@ -248,5 +261,9 @@ class Scraping:
         if data["title"] is None or data["title"] == "" or data["title"] == "null":
             return False
         if data["number"] is None or data["number"] == "" or data["number"] == "null":
+            return False
+        if (data["cover"] is None or data["cover"] == "" or data["cover"] == "null") \
+                and (data["cover_small"] is None or data["cover_small"] == "" or
+                     data["cover_small"] == "null"):
             return False
         return True

@@ -10,26 +10,21 @@ import typing
 import urllib3
 import signal
 import platform
-from datetime import datetime, timedelta
-from pathlib import Path
+import config
 
+from datetime import datetime, timedelta
+from lxml import etree
+from pathlib import Path
 from opencc import OpenCC
 
-import config
+from scraper import get_data_from_json
 from ADC_function import file_modification_days, get_html, parallel_download_files
 from number_parser import get_number
-from core import core_main, core_main_no_net_op, moveFailedFolder
+from core import core_main, core_main_no_net_op, moveFailedFolder, debug_print
 
 
 def check_update(local_version):
-    htmlcode = ""
-    try:
-        htmlcode = get_html("https://api.github.com/repos/yoshiko2/Movie_Data_Capture/releases/latest")
-    except:
-        print("===== Failed to connect to github =====")
-        print("========== AUTO EXIT IN 60s ===========")
-        time.sleep(60)
-        os._exit(-1)
+    htmlcode = get_html("https://api.github.com/repos/yoshiko2/Movie_Data_Capture/releases/latest")
     data = json.loads(htmlcode)
     remote = int(data["tag_name"].replace(".", ""))
     local_version = int(local_version.replace(".", ""))
@@ -40,7 +35,7 @@ def check_update(local_version):
         print("[*]======================================================")
 
 
-def argparse_function(ver: str) -> typing.Tuple[str, str, str, str, bool, bool]:
+def argparse_function(ver: str) -> typing.Tuple[str, str, str, str, bool, bool, str, str]:
     conf = config.getInstance()
     parser = argparse.ArgumentParser(epilog=f"Load Config file '{conf.ini_path}'.")
     parser.add_argument("file", default='', nargs='?', help="Single Movie file path.")
@@ -82,6 +77,7 @@ def argparse_function(ver: str) -> typing.Tuple[str, str, str, str, bool, bool]:
                         help="""Only show job list of files and numbers, and **NO** actual operation
 is performed. It may help you correct wrong numbers before real job.""")
     parser.add_argument("-v", "--version", action="version", version=ver)
+    parser.add_argument("-s", "--search", default='', nargs='?', help="Search number")
     parser.add_argument("-ss", "--specified-source", default='', nargs='?', help="specified Source.")
     parser.add_argument("-su", "--specified-url", default='', nargs='?', help="specified Url.")
 
@@ -121,7 +117,7 @@ is performed. It may help you correct wrong numbers before real job.""")
         if no_net_op:
             conf.set_override("advenced_sleep:stop_counter=0;advenced_sleep:rerun_delay=0s;face:aways_imagecut=1")
 
-    return args.file, args.number, args.logdir, args.regexstr, args.zero_op, no_net_op, args.specified_source, args.specified_url
+    return args.file, args.number, args.logdir, args.regexstr, args.zero_op, no_net_op, args.search, args.specified_source, args.specified_url
 
 
 class OutLogger(object):
@@ -514,7 +510,8 @@ def create_data_and_move_with_custom_number(file_path: str, custom_number, oCC, 
 
 
 def main(args: tuple) -> Path:
-    (single_file_path, custom_number, logdir, regexstr, zero_op, no_net_op, specified_source, specified_url) = args
+    (single_file_path, custom_number, logdir, regexstr, zero_op, no_net_op, search, specified_source,
+     specified_url) = args
     conf = config.getInstance()
     main_mode = conf.main_mode()
     folder_path = ""
@@ -561,41 +558,36 @@ def main(args: tuple) -> Path:
     if conf.update_check():
         try:
             check_update(version)
-        except Exception as e:
-            print('[-]Update check failed!',e)
+            # Download Mapping Table, parallel version
+            def fmd(f) -> typing.Tuple[str, Path]:
+                return ('https://raw.githubusercontent.com/yoshiko2/Movie_Data_Capture/master/MappingTable/' + f,
+                        Path.home() / '.local' / 'share' / 'mdc' / f)
+
+            map_tab = (fmd('mapping_actor.xml'), fmd('mapping_info.xml'), fmd('c_number.json'))
+            for k, v in map_tab:
+                if v.exists():
+                    if file_modification_days(str(v)) >= conf.mapping_table_validity():
+                        print("[+]Mapping Table Out of date! Remove", str(v))
+                        os.remove(str(v))
+            res = parallel_download_files(((k, v) for k, v in map_tab if not v.exists()))
+            for i, fp in enumerate(res, start=1):
+                if fp and len(fp):
+                    print(f"[+] [{i}/{len(res)}] Mapping Table Downloaded to {fp}")
+                else:
+                    print(f"[-] [{i}/{len(res)}] Mapping Table Download failed")
+        except:
+            print("[!]" + " WARNING ".center(54, "="))
+            print('[!]' + '-- GITHUB CONNECTION FAILED --'.center(54))
+            print('[!]' + 'Failed to check for updates'.center(54))
+            print('[!]' + '& update the mapping table'.center(54))
+            print("[!]" + "".center(54, "="))
+            try:
+                etree.parse(str(Path.home() / '.local' / 'share' / 'mdc' / 'mapping_actor.xml'))
+            except:
+                print('[!]' + "Failed to load mapping table".center(54))
+                print('[!]' + "".center(54, "="))
 
     create_failed_folder(conf.failed_folder())
-
-    # Download Mapping Table, parallel version
-    def fmd(f) -> typing.Tuple[str, Path]:
-        """
-
-        """
-        return ('https://raw.githubusercontent.com/yoshiko2/Movie_Data_Capture/master/MappingTable/' + f,
-                Path.home() / '.local' / 'share' / 'mdc' / f)
-
-    map_tab = (fmd('mapping_actor.xml'), fmd('mapping_info.xml'), fmd('c_number.json'))
-    for k, v in map_tab:
-        if v.exists():
-            if file_modification_days(str(v)) >= conf.mapping_table_validity():
-                print("[+]Mapping Table Out of date! Remove", str(v))
-                os.remove(str(v))
-    try:
-        res = parallel_download_files(((k, v) for k, v in map_tab if not v.exists()))
-        for i, fp in enumerate(res, start=1):
-            if fp and len(fp):
-                print(f"[+] [{i}/{len(res)}] Mapping Table Downloaded to {fp}")
-            else:
-                print(f"[-] [{i}/{len(res)}] Mapping Table Download failed")
-    except Exception as e:
-        print("[!] ==================== ERROR ====================")
-        print("[!] " + "Mapping Table Download FAILED".center(47))
-        print("[!] " + "无法连接github".center(47))
-        print("[!] " + "请过几小时再试试".center(47))
-        print("[!]", e)
-        print("[-] " + "------ AUTO EXIT AFTER 30s !!! ------ ".center(47))
-        time.sleep(30)
-        os._exit(-1)
 
     # create OpenCC converter
     ccm = conf.cc_convert_mode()
@@ -605,6 +597,14 @@ def main(args: tuple) -> Path:
         # some OS no OpenCC cpython, try opencc-python-reimplemented.
         # pip uninstall opencc && pip install opencc-python-reimplemented
         oCC = None if ccm == 0 else OpenCC('t2s' if ccm == 1 else 's2t')
+
+    if not search == '':
+        search_list = search.split(",")
+        for i in search_list:
+            json_data = get_data_from_json(i, oCC, None, None)
+            debug_print(json_data)
+            time.sleep(int(config.getInstance().sleep()))
+        os._exit(0)
 
     if not single_file_path == '':  # Single File
         print('[+]==================== Single File =====================')
@@ -681,12 +681,12 @@ def period(delta, pattern):
 
 
 if __name__ == '__main__':
-    version = '6.5.2'
+    version = '6.6.3'
     urllib3.disable_warnings()  # Ignore http proxy warning
     app_start = time.time()
 
     # Read config.ini first, in argparse_function() need conf.failed_folder()
-    conf = config.Config("config.ini")
+    conf = config.getInstance()
 
     # Parse command line args
     args = tuple(argparse_function(version))
@@ -720,5 +720,3 @@ if __name__ == '__main__':
     if not conf.auto_exit():
         if sys.platform == 'win32':
             input("Press enter key exit, you can check the error message before you exit...")
-
-    sys.exit(0)

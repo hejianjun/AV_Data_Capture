@@ -301,7 +301,7 @@ def get_html_by_scraper(url: str = None, cookies: dict = None, ua: str = None, r
 
 def translate(
         src: str,
-        target_language: str = "zh_cn",
+        target_language: str = config.getInstance().get_target_language(),
         engine: str = "google-free",
         app_id: str = "",
         key: str = "",
@@ -314,7 +314,7 @@ def translate(
     """
     trans_result = ""
     # 中文句子如果包含&等符号会被谷歌翻译截断损失内容，而且中文翻译到中文也没有意义，故而忽略，只翻译带有日语假名的
-    if not is_japanese(src):
+    if (is_japanese(src) == False) and ("zh_" in target_language):
         return src
     if engine == "google-free":
         gsite = config.getInstance().get_translate_service_site()

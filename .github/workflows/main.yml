@@ -19,6 +19,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install UPX
+        uses: crazy-max/ghaction-upx@v2
+        if: matrix.os == 'windows-latest' || matrix.os == 'ubuntu-latest'
+        with:
+          install-only: true
+
+      - name: UPX version
+        if: matrix.os == 'windows-latest' || matrix.os == 'ubuntu-latest'
+        run: upx --version
+
       - name: Setup Python 3.10
         uses: actions/setup-python@v2
         with:
@@ -28,6 +38,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install face_recognition --no-deps
           pip install pyinstaller
 
       - name: Test number_perser.get_number
@@ -45,6 +56,7 @@ jobs:
             --add-data "$(python -c 'import opencc as _; print(_.__path__[0])' | tail -n 1):opencc" \
             --add-data "$(python -c 'import face_recognition_models as _; print(_.__path__[0])' | tail -n 1):face_recognition_models" \
             --add-data "Img:Img" \
+            --add-data "scrapinglib:scrapinglib" \
             --add-data "config.ini:." \
 
       - name: Build with PyInstaller for windows
@@ -58,6 +70,7 @@ jobs:
             --add-data "$(python -c 'import opencc as _; print(_.__path__[0])' | tail -n 1);opencc" `
             --add-data "$(python -c 'import face_recognition_models as _; print(_.__path__[0])' | tail -n 1);face_recognition_models" `
             --add-data "Img;Img" `
+            --add-data "scrapinglib;scrapinglib" `
             --add-data "config.ini;." `
 
       - name: Copy config.ini
@@ -79,3 +92,12 @@ jobs:
         with:
           name: MDC-${{ env.VERSION }}-${{ runner.os }}-amd64
           path: dist
+
+      - name: Run test (Ubuntu & MacOS)
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        run: |
+          cd dist
+          touch IPX-292.mp4
+          touch STAR-437-C.mp4
+          touch 122922_001.mp4
+          ./Movie_Data_Capture
