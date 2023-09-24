@@ -1,5 +1,7 @@
 <h1 align="center">Movie Data Capture</h1>
 
+[English](https://github.com/yoshiko2/Movie_Data_Capture/blob/master/README_EN.md)
+
 ![](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat)
 ![](https://img.shields.io/github/license/yoshiko2/Movie_data_capture.svg?style=flat)
 ![](https://img.shields.io/github/release/yoshiko2/Movie_data_capture.svg?style=flat)
@@ -11,11 +13,10 @@
 ![](https://img.shields.io/badge/Python-3.9-yellow.svg?style=flat&logo=python)<br>
 
 **本地电影元数据 抓取工具 | 刮削器**，配合本地影片管理软件 Emby, Jellyfin, Kodi 等管理本地影片，该软件起到分类与元数据（metadata）抓取作用，利用元数据信息来分类，仅供本地影片分类整理使用。  
-### 严禁在墙内的社交平台上宣传此项目
 
-[English](https://github.com/yoshiko2/Movie_Data_Capture/blob/master/README_EN.md)
+**严禁在墙内的社交平台上宣传此项目**
 
-## 正在寻找实习与兼职机会（深圳或远程） yoshiko2.dev@gmail.com
+* [官方Twitter](https://twitter.com/mdac_official)
 
 # 文档
 * [官方教程WIKI](https://github.com/yoshiko2/Movie_Data_Capture/wiki)
@@ -40,6 +41,9 @@
 
 # 贡献者
 [![](https://opencollective.com/movie_data_capture/contributors.svg?width=890)](https://github.com/yoshiko2/movie_data_Capture/graphs/contributors)
+
+# 友情链接
+* [CloudDrive](https://www.clouddrive2.com/)
 
 # Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=yoshiko2/Movie_Data_Capture&type=Date)](https://star-history.com/#yoshiko2/Movie_Data_Capture&Date)

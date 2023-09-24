@@ -343,6 +343,18 @@ class Config:
         except:
             return False
 
+    def number_uppercase(self) -> bool:
+        try:
+            return self.conf.getboolean("Name_Rule", "number_uppercase")
+        except:
+            return False
+        
+    def number_regexs(self) -> str:
+        try:
+            return self.conf.get("Name_Rule", "number_regexs")
+        except:
+            return ""
+
     def update_check(self) -> bool:
         try:
             return self.conf.getboolean("update", "update_check")
@@ -361,6 +373,9 @@ class Config:
     def debug(self) -> bool:
         return self.conf.getboolean("debug_mode", "switch")
 
+    def get_direct(self) -> bool:
+        return self.conf.getboolean("direct", "switch")
+    
     def is_storyline(self) -> bool:
         try:
             return self.conf.getboolean("storyline", "switch")
@@ -473,6 +488,8 @@ class Config:
         conf.set(sec4, "naming_rule", "number + '-' + title")
         conf.set(sec4, "max_title_len", "50")
         conf.set(sec4, "image_naming_with_number", "0")
+        conf.set(sec4, "number_uppercase", "0")
+        conf.set(sec4, "number_regexs", "")
 
         sec5 = "update"
         conf.add_section(sec5)

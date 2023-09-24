@@ -40,6 +40,15 @@ def get_number(debug: bool, file_path: str) -> str:
     filepath = os.path.basename(file_path)
     # debug True 和 False 两块代码块合并，原因是此模块及函数只涉及字符串计算，没有IO操作，debug on时输出导致异常信息即可
     try:
+        # 先对自定义正则进行匹配
+        if config.getInstance().number_regexs().split().__len__() > 0:
+            for regex in config.getInstance().number_regexs().split():
+                try:
+                    if re.search(regex, filepath):
+                        return re.search(regex, filepath).group()
+                except Exception as e:
+                    print(f'[-]custom regex exception: {e} [{regex}]')
+
         file_number = get_number_by_dict(filepath)
         if file_number:
             return file_number
@@ -64,10 +73,18 @@ def get_number(debug: bool, file_path: str) -> str:
                 file_number = str(filename.group()).strip('-_ ')
             else:
                 file_number = file_number[0]
-            file_number = re.sub("(-|_)c$", "", file_number, flags=re.IGNORECASE)
-            if re.search("\d+ch$", file_number, flags=re.I):
-                file_number = file_number[:-2]
-            return file_number.upper()
+            
+            new_file_number = file_number
+            if re.search("-c", file_number, flags=re.IGNORECASE):
+                new_file_number = re.sub("(-|_)c$", "", file_number, flags=re.IGNORECASE)
+            elif re.search("-u$", file_number, flags=re.IGNORECASE):
+                new_file_number = re.sub("(-|_)u$", "", file_number, flags=re.IGNORECASE)
+            elif re.search("-uc$", file_number, flags=re.IGNORECASE):
+                new_file_number = re.sub("(-|_)uc$", "", file_number, flags=re.IGNORECASE)
+            elif re.search("\d+ch$", file_number, flags=re.I):
+                new_file_number = file_number[:-2]
+                
+            return new_file_number.upper()
         else:  # 提取不含减号-的番号，FANZA CID
             # 欧美番号匹配规则
             oumei = re.search(r'[a-zA-Z]+\.\d{2}\.\d{2}\.\d{2}', filepath)
@@ -99,6 +116,7 @@ G_TAKE_NUM_RULES = {
     'heyzo': lambda x: 'HEYZO-' + re.findall(r'heyzo[^\d]*(\d{4})', x, re.I)[0],
     'mdbk': lambda x: str(re.search(r'mdbk(-|_)(\d{4})', x, re.I).group()),
     'mdtm': lambda x: str(re.search(r'mdtm(-|_)(\d{4})', x, re.I).group()),
+    'caribpr': lambda x: str(re.search(r'\d{6}(-|_)\d{3}', x, re.I).group()).replace('_', '-'),
 }
 
 

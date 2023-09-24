@@ -34,8 +34,8 @@ class Scraping:
     """
     """
     adult_full_sources = ['javlibrary', 'javdb', 'javbus', 'airav', 'fanza', 'xcity', 'jav321',
-                          'mgstage', 'fc2', 'avsox', 'dlsite', 'carib', 'madou',
-                          'getchu', 'gcolle', 'javday', 'pissplay', 'javmenu','madouji'
+                          'mgstage', 'fc2', 'avsox', 'dlsite', 'carib', 'madou', 'msin',
+                          'getchu', 'gcolle', 'javday', 'pissplay', 'javmenu', 'pcolle', 'caribpr'
                           ]
 
     general_full_sources = ['tmdb', 'imdb']
@@ -108,7 +108,7 @@ class Scraping:
         # If actor is anonymous, Fill in Anonymous
         if len(json_data['actor']) == 0:
             if config.getInstance().anonymous_fill() == True:
-                if "zh_" in config.getInstance().get_target_language():
+                if "zh_" in config.getInstance().get_target_language() or "ZH" in config.getInstance().get_target_language():
                     json_data['actor'] = "佚名"
                 else:
                     json_data['actor'] = "Anonymous"
@@ -160,6 +160,17 @@ class Scraping:
                         print(f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
             except:
                 pass
+            # search other sources
+            # If cover not found in other source, then skip using other sources using javdb cover instead
+            try:
+                other_sources = sources[sources.index('javdb') + 1:]
+                other_json_data = self.searchAdult(number, other_sources)
+                if other_json_data is not None and 'cover' in other_json_data and other_json_data['cover'] != '':
+                    json_data['cover'] = other_json_data['cover']
+                    if self.debug:
+                        print(f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
+            except:
+                pass
 
         # Return if data not found in all sources
         if not json_data or json_data['title'] == "":
@@ -168,7 +179,7 @@ class Scraping:
         # If actor is anonymous, Fill in Anonymous
         if len(json_data['actor']) == 0:
             if config.getInstance().anonymous_fill() == True:
-                if "zh_" in config.getInstance().get_target_language():
+                if "zh_" in config.getInstance().get_target_language() or "ZH" in config.getInstance().get_target_language():
                     json_data['actor'] = "佚名"
                 else:
                     json_data['actor'] = "Anonymous"
@@ -207,29 +218,27 @@ class Scraping:
             # if the input file name matches certain rules,
             # move some web service to the beginning of the list
             lo_file_number = file_number.lower()
-            if "carib" in sources and (re.search(r"^\d{6}-\d{3}", file_number)
-            ):
+            if "carib" in sources:
+                sources = insert(sources, "caribpr")
                 sources = insert(sources, "carib")
             elif "item" in file_number or "GETCHU" in file_number.upper():
-                sources = insert(sources, "getchu")
-            elif "rj" in lo_file_number or "vj" in lo_file_number or re.search(r"[\u3040-\u309F\u30A0-\u30FF]+",
-                                                                               file_number):
-                sources = insert(sources, "getchu")
-                sources = insert(sources, "dlsite")
+                sources = ["getchu"]
+            elif "rj" in lo_file_number or "vj" in lo_file_number:
+                sources = ["dlsite"]
+            elif re.search(r"[\u3040-\u309F\u30A0-\u30FF]+", file_number):
+                sources = ["dlsite", "getchu"]
+            elif "pcolle" in sources and "pcolle" in lo_file_number:
+                sources = ["pcolle"]
             elif "fc2" in lo_file_number:
-                if "fc2" in sources:
-                    sources = insert(sources, "fc2")
-            elif "mgstage" in sources and \
-                    (re.search(r"\d+\D+", file_number) or "siro" in lo_file_number):
-                sources = insert(sources, "mgstage")
+                sources = ["fc2", "avsox", "msin"]
+            elif (re.search(r"\d+\D+-", file_number) or "siro" in lo_file_number):
+                if "mgstage" in sources:
+                    sources = insert(sources, "mgstage")
             elif "gcolle" in sources and (re.search("\d{6}", file_number)):
                 sources = insert(sources, "gcolle")
-            elif "madou" in sources and (re.search(r"^[a-z0-9]{3,}-[0-9]{1,}$", lo_file_number)):
-                sources = insert(sources, "madou")
-
-            elif re.search(r"^\d{5,}", file_number) or "heyzo" in lo_file_number:
-                if "avsox" in sources:
-                    sources = insert(sources, "avsox")
+            elif re.search(r"^\d{5,}", file_number) or \
+                    (re.search(r"^\d{6}-\d{3}", file_number)) or "heyzo" in lo_file_number:
+                sources = ["avsox", "carib", "caribpr", "javbus", "xcity", "javdb"]
             elif re.search(r"^[a-z0-9]{3,}$", lo_file_number):
                 if "xcity" in sources:
                     sources = insert(sources, "xcity")
@@ -244,7 +253,7 @@ class Scraping:
                 todel.append(s)
         for d in todel:
             if config.getInstance().debug():
-                print('[!] Remove Source : ' + s)
+                print('[!] Remove Source : ' + d)
             sources.remove(d)
         return sources
 
