@@ -5,18 +5,21 @@ $CLOUDSCRAPER_PATH = $( python -c 'import cloudscraper as _; print(_.__path__[0]
 $OPENCC_PATH = $( python -c 'import opencc as _; print(_.__path__[0])' | select -Last 1 )
 $FACE_RECOGNITION_MODELS = $( python -c 'import face_recognition_models as _; print(_.__path__[0])' | select -Last 1 )
 
+$Env:PYTHONPATH=$pwd.path
+$PYTHONPATH=$pwd.path
+
 mkdir build
 mkdir __pycache__
 
-pyinstaller --onefile Movie_Data_Capture.py `
-    --hidden-import "ImageProcessing.cnn" `
-    --python-option u `
-    --add-data "$FACE_RECOGNITION_MODELS;face_recognition_models" `
-    --add-data "$CLOUDSCRAPER_PATH;cloudscraper" `
-    --add-data "$OPENCC_PATH;opencc" `
+
+pyinstaller --collect-submodules "scrapinglib" `
+    --collect-submodules "ImageProcessing" `
+    --collect-data "face_recognition_models" `
+    --collect-data "cloudscraper" `
+    --collect-data "opencc" `
     --add-data "Img;Img" `
     --add-data "config.ini;." `
-    --add-data "scrapinglib;scrapinglib" `
+    --onefile Movie_Data_Capture.py
 
 rmdir -Recurse -Force build
 rmdir -Recurse -Force __pycache__

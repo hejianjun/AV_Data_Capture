@@ -6,17 +6,18 @@ from urllib.parse import urlparse, unquote
 from .parser import Parser
 
 NUM_RULES3=[
-    r'(mmz|msd|mdm|yk|pm|pme|pmd|qdog|qqog|fsog|rs|xkg|xsj)-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
-    r'(mky-[a-z]{2,2})-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
+    r'(?P<eng>(tz|mmz|msd|mdm|yk|pm|pme|pmd|pmc|qdog|qqog|fsog|rs|xkg|xsj|91cm|91kcm|91ycm|tmw|tmq|misav)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
+    r'(?P<eng>(mky-?[a-z]{2,2})-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
+    r'(?P<eng>xk|xkca|xktc|cz|ly)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
 ]
 
 NUM_RULES2=[
-    r'(xsjtc)-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
+    r'(?P<eng>xsjtc|xbfsg|xbjpg|xblw|xbtbg)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
 ]
 
 NUM_RULES4=[
-    r'((?<!\w)md[a-ln-z]{0,2})-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
-    r'(mcy|ras|tmp)-?(\d{2,})(-ep\d*|-\d*|[a-d]*)?.*',
+    r'(?P<eng>(?<!\w)md[a-ln-z]{0,2}-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
+    r'(?P<eng>(mcy|ras|tmp|fcd|id|tmy|xkk9|blx)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
 ]
 
 # modou提取number
@@ -25,16 +26,16 @@ def change_number(number):
     for rules in NUM_RULES4:
         m = re.search(rules, number, re.I)
         if m:
-            return f'{m.group(1)}{m.group(2).zfill(4)}{m.group(3) or ""}'
+            return (m.group('eng'),m.group('num').zfill(4),m.group('part'))
     for rules in NUM_RULES3:
         m = re.search(rules, number, re.I)
         if m:
-            return f'{m.group(1)}{m.group(2).zfill(3)}{m.group(3) or ""}'
+            return (m.group('eng'),m.group('num').zfill(3),m.group('part'))
     for rules in NUM_RULES2:
         m = re.search(rules, number, re.I)
         if m:
-            return f'{m.group(1)}{m.group(2).zfill(2)}{m.group(3) or ""}'
-    return number
+            return (m.group('eng'),m.group('num').zfill(2),m.group('part'))
+    return number.split('-')
 
 
 
@@ -54,7 +55,8 @@ class Madou(Parser):
         self.allow_number_change = True
 
     def search(self, number):
-        self.number = change_number(number)
+        n1, n2, n3 = change_number(number)
+        number = n1.replace('-','') + n2 + (n3 or '')
         if self.number!=number:
             print(self.number)
         if self.specifiedUrl:

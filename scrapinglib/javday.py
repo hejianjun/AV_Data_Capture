@@ -2,6 +2,7 @@
 import re
 from lxml import etree
 from .parser import Parser
+from .madou import change_number
 
 
 class Javday(Parser):
@@ -25,7 +26,10 @@ class Javday(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = "https://javday.tv/videos/" + self.number.replace("-","") + "/"
+            number = "".join(item for item in change_number(number) if item).replace('-','').upper()
+            if self.number!=number:
+                print(number)
+            self.detailurl = "https://javday.tv/videos/" + number + "/"
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404:
             return 404

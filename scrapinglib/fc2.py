@@ -26,11 +26,12 @@ class Fc2(Parser):
         self.uncensored = True
 
     def search(self, number):
-        self.number = number.lower().replace('fc2ppv-', '').replace('fc2-ppv-', '').replace('fc2-', '')
+        self.number = number.lower().replace('fc2ppv-', '').replace('fc2-ppv-', '').replace('fc2-', '').replace('fc-', '').replace('fc_', '')
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
             self.detailurl = 'https://adult.contents.fc2.com/article/' + self.number + '/'
+            #self.detailurl = 'https://adult.contents.fc2.com/article/' + self.number + '/review'
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404:
             return 404
