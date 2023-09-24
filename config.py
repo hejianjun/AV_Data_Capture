@@ -374,7 +374,7 @@ class Config:
         return self.conf.getboolean("debug_mode", "switch")
 
     def get_direct(self) -> bool:
-        return self.conf.getboolean("direct", "switch")
+        return self.conf.getboolean("direct", "switch",fallback=True)
     
     def is_storyline(self) -> bool:
         try:
