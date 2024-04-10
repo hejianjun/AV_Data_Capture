@@ -21,7 +21,7 @@ class Airav(Parser):
     def extraInit(self):
         # for javbus
         self.specifiedSource = None
-        self.addtion_Javbus = True
+        self.addtion_Javbus = False
 
     def search(self, number):
         self.number = number

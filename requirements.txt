@@ -12,3 +12,4 @@ urllib3==1.26.5
 certifi
 MechanicalSoup
 opencc-python-reimplemented
+chardet

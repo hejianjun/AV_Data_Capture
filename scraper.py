@@ -84,7 +84,7 @@ def get_data_from_json(
                         specifiedSource=specified_source, specifiedUrl=specified_url,
                         debug = conf.debug())
     # Return if data not found in all sources
-    if not json_data:
+    if not json_data or not json_data.get('number'):
         print('[-]Movie Number not found!')
         return None
 

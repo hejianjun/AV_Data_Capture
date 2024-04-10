@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from functools import lru_cache
 import re
 import json
 from .parser import Parser
@@ -35,7 +36,7 @@ class Scraping:
     """
     adult_full_sources = ['javlibrary', 'javdb', 'javbus', 'airav', 'fanza', 'xcity', 'jav321',
                           'mgstage', 'fc2', 'avsox', 'dlsite', 'carib', 'madou', 'msin',
-                          'getchu', 'gcolle', 'javday', 'pissplay', 'javmenu', 'pcolle', 'caribpr'
+                          'getchu', 'gcolle', 'javday', 'pissplay', 'javmenu', 'pcolle', 'caribpr','madouji'
                           ]
 
     general_full_sources = ['tmdb', 'imdb']
@@ -69,6 +70,7 @@ class Scraping:
         else:
             return self.searchGeneral(number, sources)
 
+    @lru_cache(maxsize=None)
     def searchGeneral(self, name, sources):
         """ 查询电影电视剧
         imdb,tmdb
@@ -115,6 +117,7 @@ class Scraping:
 
         return json_data
 
+    @lru_cache(maxsize=None)
     def searchAdult(self, number, sources):
         if self.specifiedSource:
             sources = [self.specifiedSource]

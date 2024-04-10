@@ -65,13 +65,19 @@ class Javdb(Parser):
 
     def search(self, number: str):
         self.number = number
+        number = number.upper()
+        if 'FC2-PPV' in number or 'FC2PPV' in number:
+            number= number.replace('FC2-PPV', 'FC2').replace('FC2PPV', 'FC2')
+            print(number)
+            self.allow_number_change = True
+            self.uncensored = True
         self.session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
             self.detailurl = self.queryNumberUrl(number)
         self.deatilpage = self.session.get(self.detailurl).text
-        if '此內容需要登入才能查看或操作' in self.deatilpage or '需要VIP權限才能訪問此內容' in self.deatilpage:
+        if '此內容需要登入才能查看或操作' in self.deatilpage or '需要VIP權限才能訪問此內容' in self.deatilpage or '開通VIP' in self.deatilpage:
             self.noauth = True
             self.imagecut = 0
             result = self.dictformat(self.querytree)
@@ -98,10 +104,6 @@ class Javdb(Parser):
             correct_url = urls[0]
         else:
             ids = self.getTreeAll(self.querytree, '//*[contains(@class,"movie-list")]/div/a/div[contains(@class, "video-title")]/strong/text()')
-            if 'fc2-ppv' in number:
-                number= number.replace('fc2-ppv', 'fc2')
-                self.allow_number_change = True
-                self.uncensored = True
             try:
                 self.queryid = ids.index(number)
                 correct_url = urls[self.queryid]
