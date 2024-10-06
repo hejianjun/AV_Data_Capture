@@ -31,8 +31,8 @@ def get_data_from_json(
     :return 给定影片名称的具体信息
     """
     try:
-        actor_mapping_data = etree.parse(str(Path.home() / '.local' / 'share' / 'mdc' / 'mapping_actor.xml'))
-        info_mapping_data = etree.parse(str(Path.home() / '.local' / 'share' / 'mdc' / 'mapping_info.xml'))
+        actor_mapping_data = etree.parse(str(Path(__file__).parent / 'MappingTable' / 'mapping_actor.xml'))
+        info_mapping_data = etree.parse(str(Path(__file__).parent / 'MappingTable' / 'mapping_info.xml'))
     except:
         actor_mapping_data = etree.fromstring("<html></html>", etree.HTMLParser())
         info_mapping_data = etree.fromstring("<html></html>", etree.HTMLParser())
@@ -90,7 +90,7 @@ def get_data_from_json(
 
     # 增加number严格判断，避免提交任何number，总是返回"本橋実来 ADZ335"，这种返回number不一致的数据源故障
     # 目前选用number命名规则是javdb.com Domain Creation Date: 2013-06-19T18:34:27Z
-    # 然而也可以跟进关注其它命名规则例如airav.wiki Domain Creation Date: 2019-08-28T07:18:42.0Z
+    # 然而也可以跟进关注其它命名规则��如airav.wiki Domain Creation Date: 2019-08-28T07:18:42.0Z
     # 如果将来javdb.com命名规则下不同Studio出现同名碰撞导致无法区分，可考虑更换规则，更新相应的number分析和抓取代码。
     if str(json_data.get('number')).upper() != file_number.upper():
         try:
@@ -292,7 +292,7 @@ def get_data_from_json(
             item = json_data.get(i)
             naming_rule += item if type(item) is not list else "&".join(item)
             # PATCH：处理[title]存在翻译的情况，后续NFO文件的original_name只会直接沿用naming_rule,这导致original_name非原始名
-            # 理应在翻译处处理 naming_rule和original_naming_rule
+            # 理应在翻译处理 naming_rule和original_naming_rule
             if i == 'title':
                 item = json_data.get('original_title')
             original_naming_rule += item if type(item) is not list else "&".join(item)
