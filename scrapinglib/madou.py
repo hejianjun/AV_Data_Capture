@@ -6,7 +6,7 @@ from urllib.parse import urlparse, unquote
 from .parser import Parser
 
 NUM_RULES3=[
-    r'(?P<eng>(mm|tz|mmz|msd|mdm|yk|pm|pme|pmd|pmc|pmx|qdog|qqog|fsog|rs|xkg|xsj|91cm|91kcm|91ycm|tmw|tmq|misav|ps|gx|EMTC|KCM|DAD|JDXYX|EMX|xkyp)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
+    r'(?P<eng>(mm|tz|mmz|msd|mdm|yk|pm|pme|pmd|pmc|pmx|qdog|qqog|fsog|rs|xkg|xsj|91cm|91kcm|91ycm|tmw|tmq|misav|ps|gx|EMTC|KCM|DAD|JDXYX|EMX|xkyp|xkvp|NFDM|jdyl)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
     r'(?P<eng>(mky-?[a-z]{2,2})-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
     r'(?P<eng>xk|xkca|xktc|cz|ly|tmtc|wmog)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
 ]
@@ -17,7 +17,7 @@ NUM_RULES2=[
 
 NUM_RULES4=[
     r'(?P<eng>(?<!\w)md[a-ln-z]{0,2}-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
-    r'(?P<eng>(mcy|ras|tmp|fcd|id|tmy|xkk9|blx|xjx|idg|MPG)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
+    r'(?P<eng>(mcy|ras|tmp|fcd|id|tmy|xkk9|blx|xjx|idg|MPG|AV)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*',
 ]
 
 # modou提取number
