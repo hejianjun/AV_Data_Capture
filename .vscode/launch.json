@@ -6,16 +6,16 @@
     "configurations": [
         {
             "name": "Python: test",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "program": "D:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
-            "cwd": "Z:\\test",
+            "program": "E:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
+            "cwd": "Z:\\japan",
             "console": "integratedTerminal",
             "justMyCode": true
         },
         {
             "name": "Python: 当前文件",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "console": "integratedTerminal",
             "env": {
