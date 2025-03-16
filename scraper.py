@@ -10,11 +10,8 @@ from lxml import etree
 # project wide definitions
 import config
 from ADC_function import (translate,
-                          load_cookies,
-                          file_modification_days,
                           delete_all_elements_in_str,
-                          delete_all_elements_in_list
-                          )
+                          delete_all_elements_in_list)
 from scrapinglib.api import search
 
 
@@ -31,16 +28,19 @@ def get_data_from_json(
     :return 给定影片名称的具体信息
     """
     try:
-        actor_mapping_data = etree.parse(str(Path(__file__).parent / 'MappingTable' / 'mapping_actor.xml'))
-        info_mapping_data = etree.parse(str(Path(__file__).parent / 'MappingTable' / 'mapping_info.xml'))
+        actor_mapping_data = etree.parse(
+            str(Path(__file__).parent / 'MappingTable' / 'mapping_actor.xml'))
+        info_mapping_data = etree.parse(
+            str(Path(__file__).parent / 'MappingTable' / 'mapping_info.xml'))
     except:
-        actor_mapping_data = etree.fromstring("<html></html>", etree.HTMLParser())
-        info_mapping_data = etree.fromstring("<html></html>", etree.HTMLParser())
+        actor_mapping_data = etree.fromstring(
+            "<html></html>", etree.HTMLParser())
+        info_mapping_data = etree.fromstring(
+            "<html></html>", etree.HTMLParser())
 
     conf = config.getInstance()
     # default fetch order list, from the beginning to the end
-    sources = conf.sources()
-
+    sources = conf.sources().split(',')
     # TODO 准备参数
     # - 清理 ADC_function, webcrawler
     proxies: dict = None
@@ -51,38 +51,15 @@ def get_data_from_json(
     # javdb website logic
     # javdb have suffix
     javdb_sites = conf.javdb_sites().split(',')
-    for i in javdb_sites:
-        javdb_sites[javdb_sites.index(i)] = "javdb" + i
-    javdb_sites.append("javdb")
-    # 不加载过期的cookie，javdb登录界面显示为7天免登录，故假定cookie有效期为7天
-    has_valid_cookie = False
-    for cj in javdb_sites:
-        javdb_site = cj
-        cookie_json = javdb_site + '.json'
-        cookies_dict, cookies_filepath = load_cookies(cookie_json)
-        if isinstance(cookies_dict, dict) and isinstance(cookies_filepath, str):
-            cdays = file_modification_days(cookies_filepath)
-            if cdays < 7:
-                javdb_cookies = cookies_dict
-                has_valid_cookie = True
-                break
-            elif cdays != 9999:
-                print(
-                    f'[!]Cookies file {cookies_filepath} was updated {cdays} days ago, it will not be used for HTTP requests.')
-    if not has_valid_cookie:
-        # get real random site from javdb_sites, because random is not really random when the seed value is known
-        javdb_site = secrets.choice(javdb_sites)
-        javdb_cookies = None
-
+    javdb_sites = [f"javdb{site}" for site in javdb_sites] + ["javdb"]
     ca_cert = None
     if conf.cacert_file():
         ca_cert = conf.cacert_file()
 
     json_data = search(file_number, sources, proxies=proxies, verify=ca_cert,
-                        dbsite=javdb_site, dbcookies=javdb_cookies,
-                        morestoryline=conf.is_storyline(),
-                        specifiedSource=specified_source, specifiedUrl=specified_url,
-                        debug = conf.debug())
+                       dbsite=secrets.choice(javdb_sites), morestoryline=conf.is_storyline(),
+                       specifiedSource=specified_source, specifiedUrl=specified_url,
+                       debug=conf.debug())
     # Return if data not found in all sources
     if not json_data or not json_data.get('number'):
         print('[-]Movie Number not found!')
@@ -97,7 +74,8 @@ def get_data_from_json(
             if json_data.get('allow_number_change'):
                 pass
         except:
-            print('[-]Movie number has changed! [{}]->[{}]'.format(file_number, str(json_data.get('number'))))
+            print('[-]Movie number has changed! [{}]->[{}]'.format(file_number,
+                  str(json_data.get('number'))))
             return None
 
     # ================================================网站规则添加结束================================================
@@ -107,7 +85,8 @@ def get_data_from_json(
         return None
 
     title = json_data.get('title')
-    actor_list = str(json_data.get('actor')).strip("[ ]").replace("'", '').split(',')  # 字符串转列表
+    actor_list = str(json_data.get('actor')).strip(
+        "[ ]").replace("'", '').split(',')  # 字符串转列表
     actor_list = [actor.strip() for actor in actor_list]  # 去除空白
     director = json_data.get('director')
     release = json_data.get('release')
@@ -136,12 +115,13 @@ def get_data_from_json(
         extrafanart = ''
 
     imagecut = json_data.get('imagecut')
-    tag = str(json_data.get('tag')).strip("[ ]").replace("'", '').replace(" ", '').split(',')  # 字符串转列表 @
+    tag = str(json_data.get('tag')).strip("[ ]").replace(
+        "'", '').replace(" ", '').split(',')  # 字符串转列表 @
     while 'XXXX' in tag:
         tag.remove('XXXX')
     while 'xxx' in tag:
         tag.remove('xxx')
-    if json_data['source'] =='pissplay': # pissplay actor为英文名，不用去除空格
+    if json_data['source'] == 'pissplay':  # pissplay actor为英文名，不用去除空格
         actor = str(actor_list).strip("[ ]").replace("'", '')
     else:
         actor = str(actor_list).strip("[ ]").replace("'", '').replace(" ", '')
@@ -209,14 +189,17 @@ def get_data_from_json(
             else:
                 if len(json_data[translate_value]):
                     if type(json_data[translate_value]) == str:
-                        json_data[translate_value] = special_characters_replacement(json_data[translate_value])
-                        json_data[translate_value] = translate(json_data[translate_value])
+                        json_data[translate_value] = special_characters_replacement(
+                            json_data[translate_value])
+                        json_data[translate_value] = translate(
+                            json_data[translate_value])
                     else:
                         for i in range(len(json_data[translate_value])):
                             json_data[translate_value][i] = special_characters_replacement(
                                 json_data[translate_value][i])
                         list_in_str = ",".join(json_data[translate_value])
-                        json_data[translate_value] = translate(list_in_str).split(',')
+                        json_data[translate_value] = translate(
+                            list_in_str).split(',')
 
     if open_cc:
         cc_vars = conf.cc_convert_vars().split(",")
@@ -226,7 +209,8 @@ def get_data_from_json(
             total = []
             for i in vars:
                 if len(mapping_data.xpath('a[contains(@keyword, $name)]/@' + language, name=f",{i},")) != 0:
-                    i = mapping_data.xpath('a[contains(@keyword, $name)]/@' + language, name=f",{i},")[0]
+                    i = mapping_data.xpath(
+                        'a[contains(@keyword, $name)]/@' + language, name=f",{i},")[0]
                 total.append(i)
             return total
 
@@ -242,41 +226,60 @@ def get_data_from_json(
             if cc == "actor":
                 try:
                     if ccm == 1:
-                        json_data['actor_list'] = convert_list(actor_mapping_data, "zh_cn", json_data['actor_list'])
-                        json_data['actor'] = convert(actor_mapping_data, "zh_cn", json_data['actor'])
+                        json_data['actor_list'] = convert_list(
+                            actor_mapping_data, "zh_cn", json_data['actor_list'])
+                        json_data['actor'] = convert(
+                            actor_mapping_data, "zh_cn", json_data['actor'])
                     elif ccm == 2:
-                        json_data['actor_list'] = convert_list(actor_mapping_data, "zh_tw", json_data['actor_list'])
-                        json_data['actor'] = convert(actor_mapping_data, "zh_tw", json_data['actor'])
+                        json_data['actor_list'] = convert_list(
+                            actor_mapping_data, "zh_tw", json_data['actor_list'])
+                        json_data['actor'] = convert(
+                            actor_mapping_data, "zh_tw", json_data['actor'])
                     elif ccm == 3:
-                        json_data['actor_list'] = convert_list(actor_mapping_data, "jp", json_data['actor_list'])
-                        json_data['actor'] = convert(actor_mapping_data, "jp", json_data['actor'])
+                        json_data['actor_list'] = convert_list(
+                            actor_mapping_data, "jp", json_data['actor_list'])
+                        json_data['actor'] = convert(
+                            actor_mapping_data, "jp", json_data['actor'])
                 except:
-                    json_data['actor_list'] = [open_cc.convert(aa) for aa in json_data['actor_list']]
+                    json_data['actor_list'] = [open_cc.convert(
+                        aa) for aa in json_data['actor_list']]
                     json_data['actor'] = open_cc.convert(json_data['actor'])
             elif cc == "tag":
                 try:
                     if ccm == 1:
-                        json_data[cc] = convert_list(info_mapping_data, "zh_cn", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_list("删除", json_data[cc])
+                        json_data[cc] = convert_list(
+                            info_mapping_data, "zh_cn", json_data[cc])
+                        json_data[cc] = delete_all_elements_in_list(
+                            "删除", json_data[cc])
                     elif ccm == 2:
-                        json_data[cc] = convert_list(info_mapping_data, "zh_tw", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_list("删除", json_data[cc])
+                        json_data[cc] = convert_list(
+                            info_mapping_data, "zh_tw", json_data[cc])
+                        json_data[cc] = delete_all_elements_in_list(
+                            "删除", json_data[cc])
                     elif ccm == 3:
-                        json_data[cc] = convert_list(info_mapping_data, "jp", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_list("删除", json_data[cc])
+                        json_data[cc] = convert_list(
+                            info_mapping_data, "jp", json_data[cc])
+                        json_data[cc] = delete_all_elements_in_list(
+                            "删除", json_data[cc])
                 except:
                     json_data[cc] = [open_cc.convert(t) for t in json_data[cc]]
             else:
                 try:
                     if ccm == 1:
-                        json_data[cc] = convert(info_mapping_data, "zh_cn", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_str("删除", json_data[cc])
+                        json_data[cc] = convert(
+                            info_mapping_data, "zh_cn", json_data[cc])
+                        json_data[cc] = delete_all_elements_in_str(
+                            "删除", json_data[cc])
                     elif ccm == 2:
-                        json_data[cc] = convert(info_mapping_data, "zh_tw", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_str("删除", json_data[cc])
+                        json_data[cc] = convert(
+                            info_mapping_data, "zh_tw", json_data[cc])
+                        json_data[cc] = delete_all_elements_in_str(
+                            "删除", json_data[cc])
                     elif ccm == 3:
-                        json_data[cc] = convert(info_mapping_data, "jp", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_str("删除", json_data[cc])
+                        json_data[cc] = convert(
+                            info_mapping_data, "jp", json_data[cc])
+                        json_data[cc] = delete_all_elements_in_str(
+                            "删除", json_data[cc])
                 except IndexError:
                     json_data[cc] = open_cc.convert(json_data[cc])
                 except:
@@ -295,7 +298,8 @@ def get_data_from_json(
             # 理应在翻译处理 naming_rule和original_naming_rule
             if i == 'title':
                 item = json_data.get('original_title')
-            original_naming_rule += item if type(item) is not list else "&".join(item)
+            original_naming_rule += item if type(
+                item) is not list else "&".join(item)
 
     json_data['naming_rule'] = naming_rule
     json_data['original_naming_rule'] = original_naming_rule

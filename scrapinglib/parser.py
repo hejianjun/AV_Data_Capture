@@ -107,6 +107,9 @@ class Parser:
             self.morestoryline = True
         if core.specifiedSource == self.source:
             self.specifiedUrl = core.specifiedUrl
+        # 动态获取当前爬虫的cookie
+        source = self.source  # 每个子类需要定义自己的source
+        self.cookies = core.dbcookies.get(source, None)
 
     def queryNumberUrl(self, number):
         """ 根据番号查询详细信息url

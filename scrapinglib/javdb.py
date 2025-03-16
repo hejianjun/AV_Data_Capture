@@ -13,7 +13,7 @@ class Javdb(Parser):
     expr_number = '//strong[contains(text(),"番號")]/../span/text()'
     expr_number2 = '//strong[contains(text(),"番號")]/../span/a/text()'
     expr_title = "/html/head/title/text()"
-    expr_title_no = '//*[contains(@class,"movie-list")]/div/a/div[contains(@class, "video-title")]/text()'
+    expr_title_no = '//*[contains(@class,"movie-list")]/div/a/div[contains(@class, "video-title")]/strong/text()'
     expr_runtime = '//strong[contains(text(),"時長")]/../span/text()'
     expr_runtime2 = '//strong[contains(text(),"時長")]/../span/a/text()'
     expr_uncensored = '//strong[contains(text(),"類別")]/../span/a[contains(@href,"/tags/uncensored?") or contains(@href,"/tags/western?")]'
@@ -54,14 +54,15 @@ class Javdb(Parser):
         if core.specifiedSource == self.source:
             self.specifiedUrl = core.specifiedUrl
         # special
-        if core.dbcookies:
-            self.cookies = core.dbcookies
-        else:
-            self.cookies =  {'over18':'1', 'theme':'auto', 'locale':'zh'}
         if core.dbsite:
             self.dbsite = core.dbsite
         else:
             self.dbsite = 'javdb'
+        if core.dbcookies:
+            self.cookies = core.dbcookies.get(self.source, {'over18':'1', 'theme':'auto', 'locale':'zh'})
+        else:
+            self.cookies =  {'over18':'1', 'theme':'auto', 'locale':'zh'}
+
 
     def search(self, number: str):
         self.number = number
@@ -87,31 +88,33 @@ class Javdb(Parser):
         return result
 
     def queryNumberUrl(self, number):
-        javdb_url = 'https://' + self.dbsite + '.com/search?q=' + number + '&f=all'
+        javdb_url = f'https://{self.dbsite}.com/search?q={number}&f=all'
         try:
             resp = self.session.get(javdb_url)
         except Exception as e:
-            print(e)
-            raise Exception(f'[!] {self.number}: page not fond in javdb')
+            raise Exception(f'[!] {self.number}: 访问JavDB时出错 - {str(e)}')
 
-        self.querytree = etree.fromstring(resp.text, etree.HTMLParser()) 
-        # javdb sometime returns multiple results,
-        # and the first elememt maybe not the one we are looking for
-        # iterate all candidates and find the match one
+        self.querytree = etree.fromstring(resp.text, etree.HTMLParser())
         urls = self.getTreeAll(self.querytree, '//*[contains(@class,"movie-list")]/div/a/@href')
-        # 记录一下欧美的ids  ['Blacked','Blacked']
-        if re.search(r'[a-zA-Z]+\.\d{2}\.\d{2}\.\d{2}', number):
-            correct_url = urls[0]
-        else:
-            ids = self.getTreeAll(self.querytree, '//*[contains(@class,"movie-list")]/div/a/div[contains(@class, "video-title")]/strong/text()')
-            try:
-                self.queryid = ids.index(number)
-                correct_url = urls[self.queryid]
-            except:
-                # 为避免获得错误番号，只要精确对应的结果
-                if ids[0].upper() != number.upper():
-                    raise ValueError("number not found in javdb")
-                correct_url = urls[0]
+        ids = self.getTreeAll(self.querytree, self.expr_title_no)
+
+        print(f"搜索的番号: {number}")
+        print(f"提取的ID列表: {ids}")
+        print(f"提取的URL列表: {urls}")
+        if not ids:
+            raise ValueError(f"番号 {number} 在JavDB中未找到")
+        try:
+            self.queryid = ids.index(number)
+            correct_url = urls[self.queryid]
+        except ValueError:
+            # 如果精确匹配失败，检查是否为部分匹配或格式差异
+            for idx, _id in enumerate(ids):
+                if _id.upper().replace(' ', '') == number.upper().replace(' ', ''):
+                    self.queryid = idx
+                    correct_url = urls[idx]
+                    break
+            else:
+                raise ValueError(f"精确匹配失败，但可能找到近似结果：{ids[0]}")
         return urljoin(resp.url, correct_url)
 
     def getNum(self, htmltree):

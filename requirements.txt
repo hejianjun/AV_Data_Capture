@@ -2,7 +2,6 @@ requests
 dlib-bin
 Click
 numpy
-face-recognition-models
 lxml
 beautifulsoup4
 pillow==9.5.0
@@ -13,3 +12,4 @@ certifi
 MechanicalSoup
 opencc-python-reimplemented
 chardet
+face-recognition-models

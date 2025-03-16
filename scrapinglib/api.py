@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from functools import lru_cache
+import os
 import re
 import json
 from .parser import Parser
 import config
 import importlib
 import traceback
+import secrets
+from ADC_function import (load_cookies,
+                          file_modification_days)
 
 
 def search(number, sources: str = None, **kwargs):
@@ -36,7 +40,7 @@ class Scraping:
     """
     adult_full_sources = ['javlibrary', 'javdb', 'javbus', 'airav', 'fanza', 'xcity', 'jav321',
                           'mgstage', 'fc2', 'avsox', 'dlsite', 'carib', 'madou', 'msin',
-                          'getchu', 'gcolle', 'javday', 'pissplay', 'javmenu', 'pcolle', 'caribpr','madouji'
+                          'getchu', 'gcolle', 'javday', 'pissplay', 'javmenu', 'pcolle', 'caribpr', 'madouji'
                           ]
 
     general_full_sources = ['tmdb', 'imdb']
@@ -52,23 +56,52 @@ class Scraping:
     dbsite = None
     # 使用storyline方法进一步获取故事情节
     morestoryline = False
+    # 新增方法：根据爬虫名称加载对应cookie
+
+    def load_cookies_for_source(self, source, dbsite):
+        """统一cookie加载逻辑"""
+        # 特殊处理javdb多站点逻辑
+        if source == "javdb":
+            cookie_file = f"{dbsite}.json"
+        else:
+            cookie_file = f"{source}.json"
+        cookies_dict, cookies_path = load_cookies(cookie_file)
+        if not isinstance(cookies_dict, dict):
+            return None
+        # 有效期验证
+        cdays = file_modification_days(cookies_path)
+        if cdays < 7:
+            if self.debug:
+                print(f"[Cookie] 加载有效cookie文件: {cookies_path}")
+            return cookies_dict
+
+        return None
 
     def search(self, number, sources=None, proxies=None, verify=None, type='adult',
                specifiedSource=None, specifiedUrl=None,
-               dbcookies=None, dbsite=None, morestoryline=False,
+               dbsite=None, morestoryline=False,
                debug=False):
         self.debug = debug
         self.proxies = proxies
         self.verify = verify
         self.specifiedSource = specifiedSource
         self.specifiedUrl = specifiedUrl
-        self.dbcookies = dbcookies
-        self.dbsite = dbsite
         self.morestoryline = morestoryline
+        # 动态加载各爬虫的cookie
+        valid_cookies = {}
+        for source in sources:
+            if source_cookies := self.load_cookies_for_source(source, dbsite):
+                valid_cookies[source] = source_cookies
+
+        # 构造爬虫配置
+        self.dbsite = dbsite
+        self.dbcookies = valid_cookies  # 改为字典结构存储多爬虫cookie
+
+        print(f"当前爬虫sources: {sources}")
         if type == 'adult':
-            return self.searchAdult(number, sources)
+            return self.searchAdult(number, tuple(sources))
         else:
-            return self.searchGeneral(number, sources)
+            return self.searchGeneral(number, tuple(sources))
 
     @lru_cache(maxsize=None)
     def searchGeneral(self, name, sources):
@@ -85,7 +118,8 @@ class Scraping:
                 if self.debug:
                     print('[+]select', source)
                 try:
-                    module = importlib.import_module('.' + source, 'scrapinglib')
+                    module = importlib.import_module(
+                        '.' + source, 'scrapinglib')
                     parser_type = getattr(module, source.capitalize())
                     parser: Parser = parser_type()
                     data = parser.scrape(name, self)
@@ -98,7 +132,8 @@ class Scraping:
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):
                     if self.debug:
-                        print(f"[+]Find movie [{name}] metadata on website '{source}'")
+                        print(
+                            f"[+]Find movie [{name}] metadata on website '{source}'")
                     break
             except:
                 continue
@@ -121,7 +156,7 @@ class Scraping:
     def searchAdult(self, number, sources):
         if self.specifiedSource:
             sources = [self.specifiedSource]
-        elif type(sources) is list:
+        elif len(sources) > 1:
             pass
         else:
             sources = self.checkAdultSources(sources, number)
@@ -131,7 +166,8 @@ class Scraping:
                 if self.debug:
                     print('[+]select', source)
                 try:
-                    module = importlib.import_module('.' + source, 'scrapinglib')
+                    module = importlib.import_module(
+                        '.' + source, 'scrapinglib')
                     parser_type = getattr(module, source.capitalize())
                     parser: Parser = parser_type()
                     data = parser.scrape(number, self)
@@ -140,12 +176,13 @@ class Scraping:
                     json_data = json.loads(data)
                 except Exception as e:
                     if config.getInstance().debug():
-                        print(e)
+                        traceback.print_exception(e)
                     # json_data = self.func_mapping[source](number, self)
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):
                     if self.debug:
-                        print(f"[+]Find movie [{number}] metadata on website '{source}'")
+                        print(
+                            f"[+]Find movie [{number}] metadata on website '{source}'")
                     break
             except:
                 continue
@@ -160,7 +197,8 @@ class Scraping:
                 if other_json_data is not None and 'cover' in other_json_data and other_json_data['cover'] != '':
                     json_data['cover'] = other_json_data['cover']
                     if self.debug:
-                        print(f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
+                        print(
+                            f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
             except:
                 pass
             # search other sources
@@ -171,7 +209,8 @@ class Scraping:
                 if other_json_data is not None and 'cover' in other_json_data and other_json_data['cover'] != '':
                     json_data['cover'] = other_json_data['cover']
                     if self.debug:
-                        print(f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
+                        print(
+                            f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
             except:
                 pass
 
@@ -189,12 +228,8 @@ class Scraping:
 
         return json_data
 
-    def checkGeneralSources(self, c_sources, name):
-        if not c_sources:
-            sources = self.general_full_sources
-        else:
-            sources = c_sources.split(',')
-
+    def checkGeneralSources(self, sources, name):
+        sources = list(sources)
         # check sources in func_mapping
         todel = []
         for s in sources:
@@ -206,11 +241,7 @@ class Scraping:
             sources.remove(d)
         return sources
 
-    def checkAdultSources(self, c_sources, file_number):
-        if not c_sources:
-            sources = self.adult_full_sources
-        else:
-            sources = c_sources.split(',')
+    def checkAdultSources(self, sources, file_number):
 
         def insert(sources, source):
             if source in sources:
@@ -233,7 +264,7 @@ class Scraping:
             elif "pcolle" in sources and "pcolle" in lo_file_number:
                 sources = ["pcolle"]
             elif "fc2" in lo_file_number:
-                sources = ["fc2", "avsox", "msin"]
+                sources = ["javdb","fc2", "avsox", "msin"]
             elif (re.search(r"\d+\D+-", file_number) or "siro" in lo_file_number):
                 if "mgstage" in sources:
                     sources = insert(sources, "mgstage")
@@ -241,7 +272,8 @@ class Scraping:
                 sources = insert(sources, "gcolle")
             elif re.search(r"^\d{5,}", file_number) or \
                     (re.search(r"^\d{6}-\d{3}", file_number)) or "heyzo" in lo_file_number:
-                sources = ["avsox", "carib", "caribpr", "javbus", "xcity", "javdb"]
+                sources = ["avsox", "carib", "caribpr",
+                           "javbus", "xcity", "javdb"]
             elif re.search(r"^[a-z0-9]{3,}$", lo_file_number):
                 if "xcity" in sources:
                     sources = insert(sources, "xcity")
