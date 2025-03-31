@@ -3,6 +3,8 @@
 import re
 from urllib.parse import urljoin
 from lxml import etree
+
+from scrapinglib import QueryError
 from .httprequest import request_session
 from .parser import Parser
 
@@ -92,17 +94,18 @@ class Javdb(Parser):
         try:
             resp = self.session.get(javdb_url)
         except Exception as e:
-            raise Exception(f'[!] {self.number}: 访问JavDB时出错 - {str(e)}')
-
+            raise QueryError(number,f'[!] {self.number}: 访问JavDB时出错 - {str(e)}')
+        if '由於版權限制' in resp.text:
+            raise QueryError(number, f"JavDB: 该影片由于版权限制无法访问")
         self.querytree = etree.fromstring(resp.text, etree.HTMLParser())
         urls = self.getTreeAll(self.querytree, '//*[contains(@class,"movie-list")]/div/a/@href')
         ids = self.getTreeAll(self.querytree, self.expr_title_no)
-
+        print(f"搜索的URL: {javdb_url}")
         print(f"搜索的番号: {number}")
         print(f"提取的ID列表: {ids}")
         print(f"提取的URL列表: {urls}")
         if not ids:
-            raise ValueError(f"番号 {number} 在JavDB中未找到")
+            raise QueryError(number,f"番号 {number} 在JavDB中未找到{resp.text}")
         try:
             self.queryid = ids.index(number)
             correct_url = urls[self.queryid]
@@ -114,7 +117,7 @@ class Javdb(Parser):
                     correct_url = urls[idx]
                     break
             else:
-                raise ValueError(f"精确匹配失败，但可能找到近似结果：{ids[0]}")
+                raise QueryError(number,f"精确匹配失败{resp.text}，但可能找到近似结果：{ids[0]}")
         return urljoin(resp.url, correct_url)
 
     def getNum(self, htmltree):

@@ -4,6 +4,8 @@ from functools import lru_cache
 import os
 import re
 import json
+
+from scrapinglib import QueryError
 from .parser import Parser
 import config
 import importlib
@@ -126,9 +128,13 @@ class Scraping:
                     if data == 404:
                         continue
                     json_data = json.loads(data)
+                except QueryError as e:  # 捕获特定异常
+                    if self.debug:
+                        print(f"[!] 查询异常: {e.message}")
+                    continue  # 直接跳过不打印堆栈
                 except Exception as e:
-                    if config.getInstance().debug():
-                        print(e)
+                    if self.debug:
+                        traceback.print_exception(e)
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):
                     if self.debug:
@@ -174,8 +180,12 @@ class Scraping:
                     if data == 404:
                         continue
                     json_data = json.loads(data)
+                except QueryError as e:  # 捕获特定异常
+                    if self.debug:
+                        print(f"[!] 查询异常: {e.message}")
+                    continue  # 直接跳过不打印堆栈
                 except Exception as e:
-                    if config.getInstance().debug():
+                    if self.debug:
                         traceback.print_exception(e)
                     # json_data = self.func_mapping[source](number, self)
                 # if any service return a valid return, break
