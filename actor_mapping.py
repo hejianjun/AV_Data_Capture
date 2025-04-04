@@ -71,54 +71,57 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         print(f"ERROR处理文件 {nfo_path}: {str(e)}", file=sys.stderr)
         return None, [], False
 
-def migrate_files(src_dir: Path, new_actor_dir: str):
-    """迁移整个影片目录到新路径"""
-    # 构建新路径
-    base_path = src_dir.parent.parent  # 原路径的祖父目录
-    movie_id = src_dir.name  # 影片ID
+def migrate_files(src_dir: Path, new_actor_dir: str, reason: str):
+    """移动整个影片目录到新路径（带原因说明）"""
+    base_path = src_dir.parent.parent
+    movie_id = src_dir.name
     dest_dir = base_path / new_actor_dir / movie_id
+    # 打印移动原因（在操作前输出）
+    print(f"\n【移动原因】{reason}")
+    print(f"旧路径：{src_dir}")
+    print(f"新路径：{dest_dir}")
+    # 创建目标父目录
+    (base_path / new_actor_dir).mkdir(parents=True, exist_ok=True)
     
-    # 创建目标目录
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    
-    # 移动所有文件
-    for src_file in src_dir.glob('*'):
-        if src_file.is_file():
-            dest_file = dest_dir / src_file.name
-            # 仅当目标不存在时才复制（防止覆盖）
-            if not dest_file.exists():
-                shutil.copy2(src_file, dest_file)
-    
-    # 删除原目录（谨慎操作！测试时可注释掉）
-    # shutil.rmtree(src_dir)
+    try:
+        # 移动整个目录
+        shutil.move(str(src_dir), str(dest_dir))
+        print("└─ 状态：移动成功")
+    except Exception as e:
+        print(f"└─ 状态：移动失败 | 错误：{str(e)}", file=sys.stderr)
+
 
 def process_movie_dir(movie_dir: Path):
-    """处理单个影片目录"""
+    """处理单个影片目录（增强版）"""
     nfo_files = list(movie_dir.glob('*.nfo'))
     if not nfo_files:
         return
     
-    # 处理主NFO文件
     main_nfo = nfo_files[0]
     new_content, new_actors, modified = modify_nfo_content(main_nfo)
     
     if not modified and len(new_actors) == 0:
         return
     
-    # 生成新演员目录名
     new_actor_dir = ','.join(new_actors)
-    
-    # 获取原演员目录
     original_actor_dir = movie_dir.parent.name
-    if new_actor_dir == original_actor_dir:
-        return  # 无需修改
     
-    # 写入修改后的NFO内容
-    with open(main_nfo, 'w', encoding='utf-8') as f:
-        f.write(new_content)
-    
-    # 迁移文件到新路径
-    migrate_files(movie_dir, new_actor_dir)
+    # 构建变更说明
+    if new_actor_dir != original_actor_dir:
+        change_reason = (
+            f"演员目录标准化转换：\n"
+            f"原始名称：{original_actor_dir}\n"
+            f"更新名称：{new_actor_dir}\n"
+            f"影响文件：{main_nfo.name}"
+        )
+        
+        # 写入修改后的NFO内容
+        with open(main_nfo, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        
+        # 执行迁移（包含详细原因）
+        migrate_files(movie_dir, new_actor_dir, change_reason)
+
 
 def main(base_path: str = r"Z:\破解"):
     """主处理流程"""
