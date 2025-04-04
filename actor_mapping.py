@@ -123,6 +123,38 @@ def process_movie_dir(movie_dir: Path):
         migrate_files(movie_dir, new_actor_dir, change_reason)
 
 
+def is_movie_dir(path: Path) -> bool:
+    """判断是否为有效影片目录的标准"""
+    return (
+        path.is_dir() and 
+        any(path.glob('*.nfo')) and  # 包含NFO文件
+        not any(child.is_dir() for child in path.iterdir())  # 没有子目录
+    )
+def find_movie_dirs(root: Path) -> list[Path]:
+    """智能递归查找所有符合条件的影片目录"""
+    movie_dirs = []
+    
+    # 先检查当前目录本身是否符合条件
+    if is_movie_dir(root):
+        movie_dirs.append(root)
+        return movie_dirs
+    
+    # 递归遍历子目录
+    for child in safe_iterdir(root):
+        if child.is_dir():
+            # 深度优先搜索
+            movie_dirs.extend(find_movie_dirs(child))
+    
+    return movie_dirs
+def safe_iterdir(path: Path) -> list[Path]:
+    """带异常处理的目录遍历"""
+    try:
+        return list(path.iterdir())
+    except (FileNotFoundError, PermissionError) as e:
+        print(f"目录访问异常：{path} | {str(e)}")
+        return []
+
+
 def main(base_path: str = r"Z:\\破解\\JAV_output"):
     """增强安全性的主流程"""
     root = Path(base_path)
@@ -130,15 +162,7 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
     # 新增路径存在性检查
     if not root.exists():
         raise FileNotFoundError(f"根目录不存在: {base_path}")
-    # 提前收集所有待处理目录（原子操作）
-    processed_dirs = []
-    try:
-        # 安全遍历方法
-        for movie_dir in root.glob('*/*'):  # 匹配 分类目录/影片ID 结构
-            if movie_dir.is_dir() and any(movie_dir.glob('*.nfo')):
-                processed_dirs.append(movie_dir)
-    except FileNotFoundError as e:
-        print(f"警告：部分目录无法访问，已跳过 | {str(e)}")
+    processed_dirs = find_movie_dirs(root)
     # 批量处理已收集的目录
     for movie_dir in processed_dirs:
         # 新增处理前二次验证
@@ -153,4 +177,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main('Z:\\破解\\JAV_output')
+    main('Z:\日本\JAV_output')
