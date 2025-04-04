@@ -123,19 +123,34 @@ def process_movie_dir(movie_dir: Path):
         migrate_files(movie_dir, new_actor_dir, change_reason)
 
 
-def main(base_path: str = r"Z:\破解"):
-    """主处理流程"""
+def main(base_path: str = r"Z:\\破解\\JAV_output"):
+    """增强安全性的主流程"""
     root = Path(base_path)
-    if not root.exists():
-        raise FileNotFoundError(f"路径不存在: {base_path}")
     
-    # 收集所有影片目录
-    processed = set()
-    for nfo_file in root.rglob('*.nfo'):
-        movie_dir = nfo_file.parent
-        if movie_dir not in processed:
-            processed.add(movie_dir)
+    # 新增路径存在性检查
+    if not root.exists():
+        raise FileNotFoundError(f"根目录不存在: {base_path}")
+    # 提前收集所有待处理目录（原子操作）
+    processed_dirs = []
+    try:
+        # 安全遍历方法
+        for movie_dir in root.glob('*/*'):  # 匹配 分类目录/影片ID 结构
+            if movie_dir.is_dir() and any(movie_dir.glob('*.nfo')):
+                processed_dirs.append(movie_dir)
+    except FileNotFoundError as e:
+        print(f"警告：部分目录无法访问，已跳过 | {str(e)}")
+    # 批量处理已收集的目录
+    for movie_dir in processed_dirs:
+        # 新增处理前二次验证
+        if not movie_dir.exists():
+            print(f"跳过已移动目录：{movie_dir}")
+            continue
+            
+        try:
             process_movie_dir(movie_dir)
+        except Exception as e:
+            print(f"处理失败：{movie_dir} | {str(e)}")
+
 
 if __name__ == "__main__":
-    main()
+    main('Z:\\破解\\JAV_output')
