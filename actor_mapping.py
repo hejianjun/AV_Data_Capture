@@ -128,7 +128,7 @@ def is_movie_dir(path: Path) -> bool:
     return (
         path.is_dir() and 
         any(path.glob('*.nfo')) and  # 包含NFO文件
-        not any(child.is_dir() for child in path.iterdir())  # 没有子目录
+        not any(child.is_dir() and child.name !='translated' for child in path.iterdir())  # 没有子目录
     )
 def find_movie_dirs(root: Path) -> list[Path]:
     """智能递归查找所有符合条件的影片目录"""
@@ -141,7 +141,7 @@ def find_movie_dirs(root: Path) -> list[Path]:
     
     # 递归遍历子目录
     for child in safe_iterdir(root):
-        if child.is_dir():
+        if child.is_dir() and child.name !='translated':
             # 深度优先搜索
             movie_dirs.extend(find_movie_dirs(child))
     
@@ -177,4 +177,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main('Z:\日本\JAV_output')
+    main()
