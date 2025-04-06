@@ -32,6 +32,11 @@ def get_actor_mapping():
                 _actor_mapping[zh_cn.lower()] = zh_cn
     return _actor_mapping
 
+import re
+from pathlib import Path
+import sys
+from lxml import etree
+
 def modify_nfo_content(nfo_path: Path) -> tuple:
     """修改NFO文件内容并返回新演员列表"""
     try:
@@ -50,16 +55,42 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
                 continue
             
             original = name_node.text.strip()
-            # 标准化处理
-            normalized = mapping.get(original.lower(), original)
-            
+            normalized = original
+            needs_check = False
+
+            # 正则匹配包含括号的情况
+            if '(' in original and ')' in original:
+                match = re.match(r'^([^(]*)\(([^)]*)\)$', original)
+                if match:
+                    outer = match.group(1).strip()
+                    inner = match.group(2).strip()
+                    
+                    # 分别处理括号内外部分
+                    norm_outer = mapping.get(outer.lower(), outer)
+                    norm_inner = mapping.get(inner.lower(), inner)
+                    
+                    # 比较映射结果
+                    if norm_outer == norm_inner:
+                        normalized = norm_outer
+                    else:
+                        normalized = f"{norm_outer}({norm_inner})"
+                        print(f"ALERT: 演员名称映射冲突 {original} -> {normalized}", 
+                             file=sys.stderr)
+                        return None, [], False
+
+            # 普通处理（无括号或正则匹配失败的情况）
+            else:
+                normalized = mapping.get(original.lower(), original)
+
+            # 更新节点内容
             if normalized != original:
                 name_node.text = normalized
                 modified = True
-            
+
             # 收集标准化后的名称
-            if normalized not in new_actors:
-                new_actors.append(normalized)
+            clean_normalized = normalized.split('(')[0].strip()
+            if clean_normalized not in new_actors:
+                new_actors.append(clean_normalized)
 
         return (
             etree.tostring(root, encoding='utf-8', pretty_print=True).decode('utf-8'),
@@ -70,6 +101,7 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
     except Exception as e:
         print(f"ERROR处理文件 {nfo_path}: {str(e)}", file=sys.stderr)
         return None, [], False
+
 
 def migrate_files(src_dir: Path, new_actor_dir: str, reason: str):
     """移动整个影片目录到新路径（带原因说明）"""
@@ -177,4 +209,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main()
+    main("Z:\破解\JAV_output\Hitomi（田中瞳）")
