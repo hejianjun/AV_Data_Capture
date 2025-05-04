@@ -222,4 +222,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Y:\JAV_output")
+    main("Z:\破解\JAV_output")
