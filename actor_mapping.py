@@ -60,33 +60,36 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
 
             # 正则匹配包含括号的情况
             if '（' in original and '）' in original:
-                match = re.match(r'^([^(]*)（([^)]*)）$', original)
+                # 使用全角括号进行正则匹配
+                match = re.match(r'^([^（]*)（([^）]*)）$', original)
                 if match:
                     outer = match.group(1).strip()
                     inner = match.group(2).strip()
                     
-                    # 分别处理括号内外部分
-                    norm_outer = mapping.get(outer.lower(), outer)
-                    if '、' in inner:
-                        inner_parts = inner.split('、')
-                        for inner_part in inner_parts:
-                            norm_inner_part = mapping.get(inner_part.lower(), inner_part)
-                            if norm_inner_part != norm_outer:
-                                normalized = f"{norm_outer}({norm_inner_part})"
-                                print(f"ALERT: 演员名称映射冲突 {original} -> {normalized}", 
-                                    file=sys.stderr)
-                                return None, [], False
-                    else:
-                        norm_inner = mapping.get(inner.lower(), inner)
+                    # 处理外层部分
+                    norm_outer = mapping.get(outer.lower(), outer).strip()
                     
-                    # 比较映射结果
-                    if norm_outer == norm_inner:
-                        normalized = norm_outer
+                    # 处理内层部分
+                    if '、' in inner:
+                        inner_parts = [p.strip() for p in inner.split('、')]
+                        norm_inner_parts = [mapping.get(p.lower(), p).strip() for p in inner_parts]
+                        # 检查所有内层部分是否映射后与外层一致
+                        if all(p == norm_outer for p in norm_inner_parts):
+                            normalized = norm_outer
+                        else:
+                            normalized_inner = '、'.join(norm_inner_parts)
+                            normalized = f"{norm_outer}({normalized_inner})"
+                            print(f"ALERT: 演员名称映射冲突 {original} -> {normalized}", file=sys.stderr)
+                            return None, [], False
                     else:
-                        normalized = f"{norm_outer}({norm_inner})"
-                        print(f"ALERT: 演员名称映射冲突 {original} -> {normalized}", 
-                             file=sys.stderr)
-                        return None, [], False
+                        norm_inner = mapping.get(inner.lower(), inner).strip()
+                        if norm_inner == norm_outer:
+                            normalized = norm_outer
+                        else:
+                            normalized = f"{norm_outer}({norm_inner})"
+                            print(f"ALERT: 演员名称映射冲突 {original} -> {normalized}", file=sys.stderr)
+                            return None, [], False
+            
 
             # 普通处理（无括号或正则匹配失败的情况）
             else:
@@ -219,4 +222,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Z:\日本\JAV_output")
+    main("Y:\JAV_output")
