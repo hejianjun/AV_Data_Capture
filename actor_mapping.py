@@ -67,7 +67,17 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
                     
                     # 分别处理括号内外部分
                     norm_outer = mapping.get(outer.lower(), outer)
-                    norm_inner = mapping.get(inner.lower(), inner)
+                    if '、' in inner:
+                        inner_parts = inner.split('、')
+                        for inner_part in inner_parts:
+                            norm_inner_part = mapping.get(inner_part.lower(), inner_part)
+                            if norm_inner_part != norm_outer:
+                                normalized = f"{norm_outer}({norm_inner_part})"
+                                print(f"ALERT: 演员名称映射冲突 {original} -> {normalized}", 
+                                    file=sys.stderr)
+                                return None, [], False
+                    else:
+                        norm_inner = mapping.get(inner.lower(), inner)
                     
                     # 比较映射结果
                     if norm_outer == norm_inner:
@@ -209,4 +219,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Y:\JAV_output\桜井萌")
+    main("Z:\日本\JAV_output")
