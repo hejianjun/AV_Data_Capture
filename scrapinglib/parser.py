@@ -13,30 +13,45 @@ class Parser:
     """
     source = 'base'
     # xpath expr
-    expr_number = ''
-    expr_title = ''
-    expr_studio = ''
-    expr_studio2 = ''
-    expr_runtime = ''
-    expr_runtime2 = ''
-    expr_release = ''
-    expr_outline = ''
-    expr_director = ''
-    expr_actor = ''
-    expr_tags = ''
-    expr_label = ''
-    expr_label2 = ''
-    expr_series = ''
-    expr_series2 = ''
-    expr_cover = ''
-    expr_cover2 = ''
-    expr_smallcover = ''
-    expr_extrafanart = ''
-    expr_trailer = ''
-    expr_actorphoto = ''
-    expr_uncensored = ''
-    expr_userrating = ''
-    expr_uservotes = ''
+    # 元数据匹配规则/表达式变量声明
+    # 影片唯一标识符/番号匹配规则(如ABP-123)
+    expr_number = ''  
+    # 标题相关匹配规则
+    expr_title = ''      # 主要标题/原标题匹配规则
+    expr_studio = ''     # 制片商匹配规则(主)
+    expr_studio2 = ''    # 副制片商/别名匹配规则
+    expr_runtime = ''    # 影片时长匹配规则(原始字符串)
+    expr_runtime2 = ''   # 转换后的时长数值匹配规则(分钟数)
+    expr_release = ''    # 发行日期匹配规则
+    expr_outline = ''    # 剧情大纲/简介匹配规则
+    
+    # 人员信息匹配规则
+    expr_director = ''   # 导演姓名匹配规则
+    expr_actor = ''      # 演员列表匹配规则(逗号分隔)
+    
+    # 分类标签匹配规则
+    expr_tags = ''       # 特征标签/分类匹配规则
+    expr_label = ''      # 主标签分类匹配规则
+    expr_label2 = ''     # 副标签分类匹配规则
+    
+    # 系列信息匹配规则
+    expr_series = ''     # 所属系列匹配规则(主)
+    expr_series2 = ''    # 子系列/衍生系列匹配规则
+    
+    # 媒体资源匹配规则
+    expr_cover = ''      # 封面图URL匹配规则(主)
+    expr_cover2 = ''     # 备用封面图URL匹配规则
+    expr_smallcover = '' # 小尺寸封面图匹配规则
+    expr_extrafanart = ''# 额外剧照图集匹配规则
+    expr_trailer = ''    # 预告片URL匹配规则
+    expr_actorphoto = '' # 演员照片路径匹配规则
+    
+    # 特殊属性匹配规则
+    expr_uncensored = '' # 无码标识匹配规则
+    
+    # 用户评价匹配规则
+    expr_userrating = '' # 用户评分匹配规则(0-5分)
+    expr_uservotes = ''  # 评分人数匹配规则
 
     def init(self):
         """ 初始化参数
@@ -171,6 +186,7 @@ class Parser:
             dic = self.extradict(dic)
         except Exception as e:
             if config.getInstance().debug():
+                print(self.detailurl)
                 traceback.print_exception(e)
             dic = {"title": ""}
         js = json.dumps(dic, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
