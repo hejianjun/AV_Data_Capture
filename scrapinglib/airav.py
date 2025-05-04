@@ -9,15 +9,14 @@ from lxml import etree
 class Airav(Parser):
     source = 'airav'
 
-    expr_title = '/html/head/title/text()'
-    expr_number = '/html/head/title/text()'
-    expr_studio = '//a[contains(@href,"?video_factory=")]/text()'
-    expr_release = '//li[contains(text(),"發片日期")]/text()'
-    expr_outline = "string(//div[@class='d-flex videoDataBlock']/div[@class='synopsis']/p)"
-    expr_actor = '//ul[@class="videoAvstarList"]/li/a[starts-with(@href,"/idol/")]/text()'
-    expr_cover = '//img[contains(@src,"/storage/big_pic/")]/@src'
-    expr_tags = '//div[@class="tagBtnMargin"]/a/text()'
-    expr_extrafanart = '//div[@class="mobileImgThumbnail"]/a/@href'
+    expr_title = "//div[@class='video-title my-3']/h1/text()"
+    expr_number = "//div[@class='info-list my-2']/ul/li[contains(text(),'番號')]/span/text()"
+    expr_studio = "//div[class='video-item']/div[class='me-4']/text()"
+    expr_release = "//div[@class='video-title my-3']/h1/text()"
+    expr_outline = "/html/head/meta[@property='og:description']/@content"
+    expr_actor = "//div[@class='info-list my-2']/ul/li[contains(text(),'女優')]/a/text()"
+    expr_cover = "/html/head/meta[@property='og:image']/@content"
+    expr_tags = "//div[@class='info-list my-2']/ul/li[contains(text(),'標籤')]/a/text()"
 
     def extraInit(self):
         # for javbus
@@ -32,21 +31,9 @@ class Airav(Parser):
             return "https://airav.io" + i.attrib['href']
         return 'https://airav.io/video?jid=' + number
 
-    def getNum(self, htmltree):
-        # if self.addtion_Javbus:
-        #     result = self.javbus.get('number')
-        #     if isinstance(result, str) and len(result):
-        #         return result
-        # number = super().getNum(htmltree)
-        # result = str(re.findall('^\[(.*?)]', number)[0])
-        result = htmltree["barcode"]
-        return result
-
     def getTitle(self, htmltree):
-        # title = super().getTitle(htmltree)
-        # result = str(re.findall('](.*?)- AIRAV-WIKI', title)[0]).strip()
-        result = htmltree["name"]
-        return result
+        title = self.getTreeElement(htmltree, self.expr_title)
+        return title.split(' ',1)[1]
 
     def getStudio(self, htmltree):
         if self.addtion_Javbus:
@@ -55,32 +42,6 @@ class Airav(Parser):
                 return result
         return super().getStudio(htmltree)
 
-    def getRelease(self, htmltree):
-        if self.addtion_Javbus:
-            result = self.javbus.get('release')
-            if isinstance(result, str) and len(result):
-                return result
-        try:
-            return re.search(r'\d{4}-\d{2}-\d{2}', str(super().getRelease(htmltree))).group()
-        except:
-            return ''
-
-    def getYear(self, htmltree):
-        if self.addtion_Javbus:
-            result = self.javbus.get('year')
-            if isinstance(result, str) and len(result):
-                return result
-        release = self.getRelease(htmltree)
-        return str(re.findall('\d{4}', release)).strip(" ['']")
-
-    def getOutline(self, htmltree):
-
-        # return self.getTreeAll(htmltree, self.expr_outline).replace('\n','').strip()
-        try:
-            result = htmltree["description"]
-        except:
-            result = ""
-        return result
 
     def getRuntime(self, htmltree):
         if self.addtion_Javbus:
@@ -96,34 +57,6 @@ class Airav(Parser):
                 return result
         return ''
 
-    def getActors(self, htmltree):
-        # a = super().getActors(htmltree)
-        # b = [ i.strip() for i in a if len(i)]
-        # if len(b):
-        #     return b
-        # if self.addtion_Javbus:
-        #     result = self.javbus.get('actor')
-        #     if isinstance(result, list) and len(result):
-        #         return result
-        # return []
-        a = htmltree["actors"]
-        if a:
-            b = []
-            for i in a:
-                b.append(i["name"])
-        else:
-            b = []
-        return b
-
-    def getCover(self, htmltree):
-        if self.addtion_Javbus:
-            result = self.javbus.get('cover')
-            if isinstance(result, str) and len(result):
-                return result
-        result = htmltree['img_url']
-        if isinstance(result, str) and len(result):
-            return result
-        return super().getCover(htmltree)
 
     def getSeries(self, htmltree):
         if self.addtion_Javbus:
@@ -131,19 +64,4 @@ class Airav(Parser):
             if isinstance(result, str) and len(result):
                 return result
         return ''
-    def getExtrafanart(self,htmltree):
-        try:
-            result = htmltree["images"]
-        except:
-            result = ""
-        return result
 
-    def getTags(self, htmltree):
-        try:
-            tag = htmltree["tags"]
-            tags = []
-            for i in tag:
-                tags.append(i["name"])
-        except:
-            tags = []
-        return tags
