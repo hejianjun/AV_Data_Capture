@@ -4,7 +4,6 @@ import json
 import re
 from .parser import Parser
 from .javbus import Javbus
-from lxml import etree
 
 class Airav(Parser):
     source = 'airav'
@@ -24,13 +23,36 @@ class Airav(Parser):
         self.specifiedSource = None
         self.addtion_Javbus = False
 
-    def queryNumberUrl(self, number):
-        queryUrl =  "https://airav.io/search_result?kw=" + number
-        queryTree = self.getHtmlTree(queryUrl)
-        results = self.getTreeAll(queryTree, '//div[contains(@class,"oneVideo-top")]/a')
-        for i in results:
-            return "https://airav.io" + i.attrib['href']
-        return 'https://airav.io/video?jid=' + number
+    def search(self, number):
+        self.number = number
+        if self.specifiedUrl:
+            self.detailurl = self.specifiedUrl
+        else:
+            self.detailurl = "https://www.airav.wiki/api/video/barcode/" + self.number.upper() + "?lng=zh-CN"
+        if self.addtion_Javbus:
+            engine = Javbus()
+            javbusinfo = engine.scrape(self.number, self)
+            if javbusinfo == 404:
+                self.javbus = {"title": ""}
+            else:
+                self.javbus = json.loads(javbusinfo)
+        self.htmlcode = self.getHtml(self.detailurl)
+        # htmltree = etree.fromstring(self.htmlcode, etree.HTMLParser())
+        #result = self.dictformat(htmltree)
+        htmltree = json.loads(self.htmlcode)["result"]
+        result = self.dictformat(htmltree)
+        return result
+
+    # def queryNumberUrl(self, number):
+    #     queryUrl =  "https://cn.airav.wiki/?search=" + number
+    #     queryTree = self.getHtmlTree(queryUrl)
+    #     results = self.getTreeAll(queryTree, '//div[contains(@class,"videoList")]/div/a')
+    #     for i in results:
+    #         num = self.getTreeElement(i, '//div/div[contains(@class,"videoNumber")]/p[1]/text()')
+    #         if num.replace('-','') == number.replace('-','').upper():
+    #             self.number = num
+    #             return "https://cn.airav.wiki" + i.attrib['href']
+    #     return 'https://cn.airav.wiki/video/' + number
 
     def getNum(self, htmltree):
         # if self.addtion_Javbus:

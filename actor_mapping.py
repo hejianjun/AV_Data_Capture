@@ -59,8 +59,8 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
             needs_check = False
 
             # 正则匹配包含括号的情况
-            if '(' in original and ')' in original:
-                match = re.match(r'^([^(]*)\(([^)]*)\)$', original)
+            if '（' in original and '）' in original:
+                match = re.match(r'^([^(]*)（([^)]*)）$', original)
                 if match:
                     outer = match.group(1).strip()
                     inner = match.group(2).strip()
@@ -209,4 +209,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Z:\破解\JAV_output\Hitomi（田中瞳）")
+    main("Y:\JAV_output\桜井萌")
