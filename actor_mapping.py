@@ -178,8 +178,6 @@ def migrate_files(src_dir: Path, new_actor_dir: str, reason: str):
     except Exception as e:
         print(f"└─ 状态：移动失败 | 错误：{str(e)}", file=sys.stderr)
 
-# 其余辅助函数保持原有逻辑，根据需要添加异常处理
-# ...
 def process_movie_dir(movie_dir: Path):
     """处理单个影片目录（增强版）"""
     nfo_files = list(movie_dir.glob('*.nfo'))
@@ -189,27 +187,25 @@ def process_movie_dir(movie_dir: Path):
     main_nfo = nfo_files[0]
     new_content, new_actors, modified = modify_nfo_content(main_nfo)
     
-    if not modified and len(new_actors) == 0:
-        return
-    
-    new_actor_dir = ','.join(new_actors)
-    original_actor_dir = movie_dir.parent.name
-    
-    # 构建变更说明
-    if new_actor_dir != original_actor_dir:
-        change_reason = (
-            f"演员目录标准化转换：\n"
-            f"原始名称：{original_actor_dir}\n"
-            f"更新名称：{new_actor_dir}\n"
-            f"影响文件：{main_nfo.name}"
-        )
-        
-        # 写入修改后的NFO内容
+    # 只要NFO内容被修改（包含tag/genre的修改），就写入文件
+    if modified and new_content is not None:
         with open(main_nfo, 'w', encoding='utf-8') as f:
             f.write(new_content)
+        print(f"√ 已更新NFO文件：{main_nfo.name}")
+
+    # 仅在演员目录变化时执行迁移
+    if len(new_actors) > 0:
+        new_actor_dir = ','.join(new_actors)
+        original_actor_dir = movie_dir.parent.name
         
-        # 执行迁移（包含详细原因）
-        migrate_files(movie_dir, new_actor_dir, change_reason)
+        if new_actor_dir != original_actor_dir:
+            change_reason = (
+                f"演员目录标准化转换：\n"
+                f"原始名称：{original_actor_dir}\n"
+                f"更新名称：{new_actor_dir}\n"
+                f"影响文件：{main_nfo.name}"
+            )
+            migrate_files(movie_dir, new_actor_dir, change_reason)
 
 
 def is_movie_dir(path: Path) -> bool:
@@ -266,4 +262,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Z:\日本\JAV_output\乙白沙也加\SSNI-779")
+    main("Z:\日本\JAV_output\乙白沙也加")
