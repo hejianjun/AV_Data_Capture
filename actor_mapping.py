@@ -109,8 +109,10 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         # 处理演员信息
         for actor in root.xpath('.//actor'):
             name_node = actor.find('name')
-            if not name_node or not name_node.text:
+            # 使用更明确的检查方式
+            if name_node is None or name_node.text is None or name_node.text.strip() == '':
                 continue
+
 
             original = name_node.text.strip()
             normalized = process_special_actor_name(original, actor_mapping)
