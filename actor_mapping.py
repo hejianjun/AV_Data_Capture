@@ -70,13 +70,13 @@ def process_text_mapping(text: str, mapping: dict) -> tuple:
 
 def process_special_actor_name(original: str, actor_mapping: dict) -> str:
     """处理带括号的特殊演员名称"""
-    if '（' not in original or '）' not in original:
+    if ('（' not in original or '）' not in original) and ('(' not in original or ')' not in original) :
         return actor_mapping.get(original.lower(), original)
 
     # 处理全角括号
-    match = re.match(r'^([^（]*)（([^）]*)）$', original)
+    match = re.match(r'(.*)[（|\(](.*)[）|\)]', original)
     if not match:
-        return actor_mapping.get(original.lower(), original)
+        return actor_mapping.get(original.strip().lower(), original)
 
     outer, inner = match.groups()
     norm_outer = actor_mapping.get(outer.strip().lower(), outer.strip())
@@ -262,4 +262,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Z:\日本\JAV_output\乙白沙也加")
+    main("Z:\日本\JAV_output\宇都宫しをん(RION)")
