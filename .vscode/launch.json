@@ -23,6 +23,15 @@
             "justMyCode": true
         },
         {
+            "name": "Python: 佚名",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "E:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
+            "cwd": "Z:\\破解\\JAV_output\\佚名",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: 当前文件",
             "type": "debugpy",
             "request": "launch",

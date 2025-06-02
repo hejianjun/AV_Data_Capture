@@ -127,10 +127,19 @@ class Javdb(Parser):
         part1 = self.getTreeElement(htmltree, self.expr_number)
         part2 = self.getTreeElement(htmltree, self.expr_number2)
         dp_number = part2 + part1
-        # NOTE 检测匹配与更新 self.number
-        if dp_number.upper() != self.number.upper():
+        # 检测番号是否为空
+        if not dp_number:
+            raise Exception(f'[!] {self.number}: found empty number in javdb')
+        # 转换为大写进行比较
+        original_upper = self.number.upper()
+        dp_upper = dp_number.upper()
+        # 去除原番号开头的所有数字
+        stripped_original = original_upper.lstrip('0123456789')
+        # 检查是否完全匹配或存在数字前缀且剩余部分匹配
+        if original_upper == dp_upper or (stripped_original == dp_upper and len(stripped_original) < len(original_upper)):
+            self.number = dp_number
+        else:
             raise Exception(f'[!] {self.number}: find [{dp_number}] in javdb, not match')
-        self.number = dp_number
         return self.number
 
     def getTitle(self, htmltree):
