@@ -42,7 +42,10 @@ class Jav321(Parser):
         return None
 
     def getNum(self, htmltree):
-        return super().getNum(htmltree).split(": ")[1]
+        num = super().getNum(htmltree)
+        if num is None:
+            return ''
+        return num.split(": ")[1]
 
     def getTrailer(self, htmltree):
         videourl_pather = re.compile(r'<source src=\"(.*?)\"')
