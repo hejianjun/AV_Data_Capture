@@ -143,6 +143,7 @@ class Parser:
             or '<title>未找到页面' in resp \
             or '404 Not Found' in resp \
             or '<title>404' in resp \
+            or 'AVが見つかりませんでした。' in resp \
             or '<title>お探しの商品が見つかりません' in resp:
             return 404
         return resp
