@@ -29,10 +29,12 @@ class Airav(Parser):
         results = self.getTreeAll(queryTree, '//div[contains(@class,"oneVideo-top")]/a')
         for i in results:
             return "https://airav.io" + i.attrib['href']
-        return 'https://airav.io/video?jid=' + number
+        return ''
 
     def getTitle(self, htmltree):
         title = self.getTreeElement(htmltree, self.expr_title)
+        if title is None:
+            return ''
         return title.split(' ',1)[1]
 
     def getStudio(self, htmltree):

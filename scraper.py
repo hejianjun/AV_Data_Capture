@@ -51,7 +51,7 @@ def get_data_from_json(
     # javdb website logic
     # javdb have suffix
     javdb_sites = conf.javdb_sites().split(',')
-    javdb_sites = [f"javdb{site}" for site in javdb_sites] + ["javdb"]
+    javdb_sites = [f"javdb{site}" for site in javdb_sites]
     ca_cert = None
     if conf.cacert_file():
         ca_cert = conf.cacert_file()

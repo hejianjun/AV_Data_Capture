@@ -59,7 +59,7 @@ class Javdb(Parser):
         if core.dbsite:
             self.dbsite = core.dbsite
         else:
-            self.dbsite = 'javdb'
+            self.dbsite = 'javdb459'
         if core.dbcookies:
             self.cookies = core.dbcookies.get(self.source, {'over18':'1', 'theme':'auto', 'locale':'zh'})
         else:
