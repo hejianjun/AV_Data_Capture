@@ -382,7 +382,7 @@ def load_cookies(cookie_json_filename: str) -> typing.Tuple[typing.Optional[dict
     if not len(filename):
         return None, None
     path_search_order = (
-        # Path.cwd() / filename,
+        Path.cwd() / filename,
         Path.home() / filename,
         Path.home() / f".mdc/{filename}",
         Path.home() / f".local/share/mdc/{filename}"

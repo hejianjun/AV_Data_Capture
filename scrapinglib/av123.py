@@ -34,8 +34,8 @@ class Av123(Parser):
         Returns the URL to query the number.
         """
         self.number = number.lower()
-        if self.number.startswith('fc2-') and not self.number.startswith('fc2-ppv-'):
-            self.number = self.number.replace('fc2-', 'fc2-ppv-')
+        if not self.number.startswith('fc2-ppv-'):
+            self.number = self.number.replace('fc2-', 'fc2-ppv-').replace('fc2ppv-', 'fc2-ppv-')
         return f'https://123av.ws/ja/v/{self.number}'
     
     def getTitle(self, htmltree):

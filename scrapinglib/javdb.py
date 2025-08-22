@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from ssl import SSLError
 from urllib.parse import urljoin
 from lxml import etree
 
@@ -59,7 +60,7 @@ class Javdb(Parser):
         if core.dbsite:
             self.dbsite = core.dbsite
         else:
-            self.dbsite = 'javdb459'
+            self.dbsite = 'javdb'
         if core.dbcookies:
             self.cookies = core.dbcookies.get(self.source, {'over18':'1', 'theme':'auto', 'locale':'zh'})
         else:
@@ -92,16 +93,25 @@ class Javdb(Parser):
     def queryNumberUrl(self, number):
         javdb_url = f'https://{self.dbsite}.com/search?q={number}&f=all'
         try:
-            resp = self.session.get(javdb_url)
-        except Exception as e:
+            print(f"搜索的URL: {javdb_url}")
+            resp = self.session.get(
+                    javdb_url,
+                    cookies=self.cookies,
+                    verify=False,  # 忽略证书验证
+                    timeout=(3.05, 10)  # 连接超时3.05秒，读取超时10秒
+            )
+            print(f"访问JavDB: {javdb_url}, 状态码: {resp.status_code}")
+        except SSLError as e:
+            print(f"SSL错误: {e}")   
+        except BaseException as e:
             raise QueryError(number,f'[!] {self.number}: 访问JavDB时出错 - {str(e)}')
         if '由於版權限制' in resp.text:
             raise QueryError(number, f"JavDB: 该影片由于版权限制无法访问")
+        print(f"搜索的URL: {javdb_url}")
+        print(f"搜索的番号: {number}")
         self.querytree = etree.fromstring(resp.text, etree.HTMLParser())
         urls = self.getTreeAll(self.querytree, '//*[contains(@class,"movie-list")]/div/a/@href')
         ids = self.getTreeAll(self.querytree, self.expr_title_no)
-        print(f"搜索的URL: {javdb_url}")
-        print(f"搜索的番号: {number}")
         print(f"提取的ID列表: {ids}")
         print(f"提取的URL列表: {urls}")
         if not ids:

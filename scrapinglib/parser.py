@@ -102,6 +102,7 @@ class Parser:
             self.detailurl = self.queryNumberUrl(number)
         if not self.detailurl:
             return 404
+        print('Querying URL:', self.detailurl)
         htmltree = self.getHtmlTree(self.detailurl)
         result = self.dictformat(htmltree)
         return result

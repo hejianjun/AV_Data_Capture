@@ -32,13 +32,7 @@ class Avsox(Parser):
         self.searchtree = self.getHtmlTree(site + '/cn/search/' + number)
         result1 = self.getTreeElement(self.searchtree, '//*[@id="waterfall"]/div/a/@href')
         if result1 == '' or result1 == 'null' or result1 == 'None' or result1.find('movie') == -1:
-            self.searchtree = self.getHtmlTree(site + '/cn/search/' + number.replace('-', '_'))
-            result1 = self.getTreeElement(self.searchtree, '//*[@id="waterfall"]/div/a/@href')
-            if result1 == '' or result1 == 'null' or result1 == 'None' or result1.find('movie') == -1:
-                self.searchtree = self.getHtmlTree(site + '/cn/search/' + number.replace('_', ''))
-                result1 = self.getTreeElement(self.searchtree, '//*[@id="waterfall"]/div/a/@href')
-                if result1 == '' or result1 == 'null' or result1 == 'None' or result1.find('movie') == -1:
-                    return None
+            return None
         return "https:" + result1
 
     def getNum(self, htmltree):
