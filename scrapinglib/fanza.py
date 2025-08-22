@@ -87,7 +87,13 @@ class Fanza(Parser):
             return ''
 
     def getRuntime(self, htmltree):
-        return str(re.search(r'\d+', super().getRuntime(htmltree)).group()).strip(" ['']")
+        runtime = super().getRuntime(htmltree)
+        if not runtime:
+            return ''
+        match = re.search(r'\d+', runtime)
+        if match:
+            return str(match.group()).strip(" ['']")
+        return ''
 
     def getDirector(self, htmltree):
         if "anime" not in self.detailurl:
@@ -123,13 +129,21 @@ class Fanza(Parser):
     def getCover(self, htmltree):
         cover_number = self.number
         try:
-            result = htmltree.xpath('//*[@id="' + cover_number + '"]/@href')[0]
+            xpath_result = htmltree.xpath('//*[@id="' + cover_number + '"]/@href')
+            if xpath_result:
+                result = xpath_result[0]
+            else:
+                raise IndexError("No results found")
         except:
             # sometimes fanza modify _ to \u0005f for image id
             if "_" in cover_number:
                 cover_number = cover_number.replace("_", r"\u005f")
             try:
-                result = htmltree.xpath('//*[@id="' + cover_number + '"]/@href')[0]
+                xpath_result = htmltree.xpath('//*[@id="' + cover_number + '"]/@href')
+                if xpath_result:
+                    result = xpath_result[0]
+                else:
+                    raise IndexError("No results found")
             except:
                 # (TODO) handle more edge case
                 # print(html)

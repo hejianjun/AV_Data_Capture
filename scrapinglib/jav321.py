@@ -42,10 +42,15 @@ class Jav321(Parser):
         return None
 
     def getNum(self, htmltree):
+        if htmltree is None:
+            return ''
         num = super().getNum(htmltree)
         if num is None:
             return ''
-        return num.split(": ")[1]
+        try:
+            return num.split(": ")[1]
+        except (IndexError, AttributeError):
+            return ''
 
     def getTrailer(self, htmltree):
         videourl_pather = re.compile(r'<source src=\"(.*?)\"')
@@ -57,7 +62,23 @@ class Jav321(Parser):
             return ''
 
     def getRelease(self, htmltree):
-        return super().getRelease(htmltree).split(": ")[1]
+        if htmltree is None:
+            return ''
+        release = super().getRelease(htmltree)
+        if not release or ": " not in release:
+            return ''
+        try:
+            return release.split(": ")[1]
+        except IndexError:
+            return ''
     
     def getRuntime(self, htmltree):
-        return super().getRuntime(htmltree).split(": ")[1]
+        if htmltree is None:
+            return ''
+        runtime = super().getRuntime(htmltree)
+        if not runtime or ": " not in runtime:
+            return ''
+        try:
+            return runtime.split(": ")[1]
+        except IndexError:
+            return ''
