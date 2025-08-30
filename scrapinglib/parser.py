@@ -147,6 +147,8 @@ class Parser:
             or 'AVが見つかりませんでした。' in resp \
             or '<title>お探しの商品が見つかりません' in resp:
             return 404
+        if 'ネットワークの安全性をご確認ください。' in resp:
+            return 403
         return resp
 
     def getHtmlTree(self, url, type = None):

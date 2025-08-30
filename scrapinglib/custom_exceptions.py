@@ -4,3 +4,5 @@ class QueryError(Exception):
     def __init__(self, number, message):
         self.number = number
         super().__init__(f"[{number}] {message}")
+
+    pass

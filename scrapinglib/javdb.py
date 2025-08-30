@@ -5,7 +5,7 @@ from ssl import SSLError
 from urllib.parse import urljoin
 from lxml import etree
 
-from scrapinglib import QueryError
+from .custom_exceptions import QueryError
 from .httprequest import request_session
 from .parser import Parser
 
