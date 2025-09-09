@@ -9,7 +9,8 @@ import opencc
 from lxml import etree
 # project wide definitions
 import config
-from ADC_function import (translate,
+from translation import translate
+from ADC_function import (
                           delete_all_elements_in_str,
                           delete_all_elements_in_list)
 from scrapinglib.api import search
