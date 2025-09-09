@@ -14,6 +14,15 @@
             "justMyCode": true
         },
         {
+            "name": "Python: un",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "E:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
+            "cwd": "Z:\\un",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: japan",
             "type": "debugpy",
             "request": "launch",
@@ -28,6 +37,29 @@
             "request": "launch",
             "program": "E:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
             "cwd": "Z:\\破解\\JAV_output\\佚名",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: 国产",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "E:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
+            "cwd": "Z:\\download",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: 补全",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "E:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
+            "args": [
+                "-p",
+                "Z:\\日本\\JAV_output\\香澄せな\\mgmq-142",
+                "-m",
+                "3"
+            ],
             "console": "integratedTerminal",
             "justMyCode": true
         },

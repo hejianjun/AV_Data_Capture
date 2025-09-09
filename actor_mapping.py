@@ -8,7 +8,7 @@ import re
 _actor_mapping = None
 _info_mapping = None
 
-def load_mapping(mapping_file: str) -> dict:
+def load_mapping(mode,mapping_file: str) -> dict:
     """通用映射加载函数"""
     global_mapping = {}
     mapping_path = Path(__file__).parent / 'MappingTable' / mapping_file
@@ -19,8 +19,13 @@ def load_mapping(mapping_file: str) -> dict:
     doc = etree.parse(str(mapping_path))
     
     for item in doc.xpath('//a'):
-        zh_cn = item.get('zh_cn')
-        if zh_cn is None:
+        if mode==1:
+            lang = item.get('zh_cn')
+        elif mode==2:
+            lang = item.get('zh_tw')
+        elif mode==3:
+            lang = item.get('jp')
+        if lang is None:
             continue
         
         # 收集所有可能的别名
@@ -35,10 +40,10 @@ def load_mapping(mapping_file: str) -> dict:
         # 建立映射关系
         for alias in filter(None, aliases):
             normalized_alias = alias.strip().lower()
-            global_mapping[normalized_alias] = zh_cn
+            global_mapping[normalized_alias] = lang
         
         # 建立中文名到自身的映射
-        global_mapping[zh_cn.lower()] = zh_cn
+        global_mapping[lang.lower()] = lang
     
     return global_mapping
 
@@ -46,14 +51,14 @@ def get_actor_mapping(mode):
     """获取演员映射表"""
     global _actor_mapping
     if _actor_mapping is None:
-        _actor_mapping = load_mapping('mapping_actor.xml')
+        _actor_mapping = load_mapping(mode,'mapping_actor.xml')
     return _actor_mapping
 
 def get_info_mapping(mode):
     """获取信息标签映射表"""
     global _info_mapping
     if _info_mapping is None:
-        _info_mapping = load_mapping('mapping_info.xml')
+        _info_mapping = load_mapping(mode,'mapping_info.xml')
     return _info_mapping
 
 def process_text_mappings(json_data: dict, mapping: dict) -> dict:
