@@ -42,20 +42,31 @@ def load_mapping(mapping_file: str) -> dict:
     
     return global_mapping
 
-def get_actor_mapping():
+def get_actor_mapping(mode):
     """获取演员映射表"""
     global _actor_mapping
     if _actor_mapping is None:
         _actor_mapping = load_mapping('mapping_actor.xml')
     return _actor_mapping
 
-def get_info_mapping():
+def get_info_mapping(mode):
     """获取信息标签映射表"""
     global _info_mapping
     if _info_mapping is None:
         _info_mapping = load_mapping('mapping_info.xml')
     return _info_mapping
 
+def process_text_mappings(json_data: dict, mapping: dict) -> dict:
+    """处理文本映射"""
+    if isinstance(json_data, list):
+        newlists = []
+        for text in json_data:
+            normalized, should_delete = process_text_mapping(text, mapping)
+            if not should_delete:
+                newlists.append(normalized)
+        return newlists
+    return process_text_mappings(json_data, mapping)
+    
 def process_text_mapping(text: str, mapping: dict) -> tuple:
     """
     处理文本映射
@@ -102,8 +113,8 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         root = etree.fromstring(content.encode('utf-8'))
         
         modified = False
-        actor_mapping = get_actor_mapping()
-        info_mapping = get_info_mapping()
+        actor_mapping = get_actor_mapping('')
+        info_mapping = get_info_mapping('')
         new_actors = []
 
         # 处理演员信息

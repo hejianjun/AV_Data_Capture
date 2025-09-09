@@ -473,26 +473,6 @@ def parallel_download_files(dn_list: typing.Iterable[typing.Sequence], parallel:
     return results
 
 
-def delete_all_elements_in_list(string: str, lists: typing.Iterable[str]):
-    """
-    delete same string in given list
-    """
-    new_lists = []
-    for i in lists:
-        if i != string:
-            new_lists.append(i)
-    return new_lists
-
-
-def delete_all_elements_in_str(string_delete: str, string: str):
-    """
-    delete same string in given list
-    """
-    for i in string:
-        if i == string_delete:
-            string = string.replace(i, "")
-    return string
-
 
 # print format空格填充对齐内容包含中文时的空格计算
 def cn_space(v: str, n: int) -> int:

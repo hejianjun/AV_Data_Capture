@@ -8,11 +8,9 @@ from pathlib import Path
 import opencc
 from lxml import etree
 # project wide definitions
+from actor_mapping import get_actor_mapping, get_info_mapping, process_special_actor_name, process_text_mapping, process_text_mappings
 import config
 from translation import translate
-from ADC_function import (
-                          delete_all_elements_in_str,
-                          delete_all_elements_in_list)
 from scrapinglib.api import search
 
 
@@ -28,18 +26,12 @@ def get_data_from_json(
     :param specified_url: 指定的数据查询地址, 目前未使用
     :return 给定影片名称的具体信息
     """
-    try:
-        actor_mapping_data = etree.parse(
-            str(Path(__file__).parent / 'MappingTable' / 'mapping_actor.xml'))
-        info_mapping_data = etree.parse(
-            str(Path(__file__).parent / 'MappingTable' / 'mapping_info.xml'))
-    except:
-        actor_mapping_data = etree.fromstring(
-            "<html></html>", etree.HTMLParser())
-        info_mapping_data = etree.fromstring(
-            "<html></html>", etree.HTMLParser())
-
     conf = config.getInstance()
+    ccm = conf.cc_convert_mode()
+    actor_mapping_data = get_actor_mapping(ccm)
+    info_mapping_data = get_info_mapping(ccm)
+
+
     # default fetch order list, from the beginning to the end
     sources = conf.sources().split(',')
     # TODO 准备参数
@@ -204,83 +196,29 @@ def get_data_from_json(
 
     if open_cc:
         cc_vars = conf.cc_convert_vars().split(",")
-        ccm = conf.cc_convert_mode()
 
-        def convert_list(mapping_data, language, vars):
-            total = []
-            for i in vars:
-                if len(mapping_data.xpath('a[contains(@keyword, $name)]/@' + language, name=f",{i},")) != 0:
-                    i = mapping_data.xpath(
-                        'a[contains(@keyword, $name)]/@' + language, name=f",{i},")[0]
-                total.append(i)
-            return total
-
-        def convert(mapping_data, language, vars):
-            if len(mapping_data.xpath('a[contains(@keyword, $name)]/@' + language, name=vars)) != 0:
-                return mapping_data.xpath('a[contains(@keyword, $name)]/@' + language, name=vars)[0]
-            else:
-                raise IndexError('keyword not found')
 
         for cc in cc_vars:
             if json_data[cc] == "" or len(json_data[cc]) == 0:
                 continue
             if cc == "actor":
                 try:
-                    if ccm == 1:
-                        json_data['actor_list'] = convert_list(
-                            actor_mapping_data, "zh_cn", json_data['actor_list'])
-                        json_data['actor'] = convert(
-                            actor_mapping_data, "zh_cn", json_data['actor'])
-                    elif ccm == 2:
-                        json_data['actor_list'] = convert_list(
-                            actor_mapping_data, "zh_tw", json_data['actor_list'])
-                        json_data['actor'] = convert(
-                            actor_mapping_data, "zh_tw", json_data['actor'])
-                    elif ccm == 3:
-                        json_data['actor_list'] = convert_list(
-                            actor_mapping_data, "jp", json_data['actor_list'])
-                        json_data['actor'] = convert(
-                            actor_mapping_data, "jp", json_data['actor'])
+                    json_data['actor_list'] = [process_special_actor_name(
+                        actor, actor_mapping_data) for actor in json_data['actor_list']]
+                    json_data['actor'] = process_special_actor_name(
+                        json_data['actor'], actor_mapping_data)
                 except:
                     json_data['actor_list'] = [open_cc.convert(
                         aa) for aa in json_data['actor_list']]
                     json_data['actor'] = open_cc.convert(json_data['actor'])
             elif cc == "tag":
                 try:
-                    if ccm == 1:
-                        json_data[cc] = convert_list(
-                            info_mapping_data, "zh_cn", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_list(
-                            "删除", json_data[cc])
-                    elif ccm == 2:
-                        json_data[cc] = convert_list(
-                            info_mapping_data, "zh_tw", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_list(
-                            "删除", json_data[cc])
-                    elif ccm == 3:
-                        json_data[cc] = convert_list(
-                            info_mapping_data, "jp", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_list(
-                            "删除", json_data[cc])
+                    json_data[cc] = process_text_mappings(json_data[cc], info_mapping_data)
                 except:
                     json_data[cc] = [open_cc.convert(t) for t in json_data[cc]]
             else:
                 try:
-                    if ccm == 1:
-                        json_data[cc] = convert(
-                            info_mapping_data, "zh_cn", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_str(
-                            "删除", json_data[cc])
-                    elif ccm == 2:
-                        json_data[cc] = convert(
-                            info_mapping_data, "zh_tw", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_str(
-                            "删除", json_data[cc])
-                    elif ccm == 3:
-                        json_data[cc] = convert(
-                            info_mapping_data, "jp", json_data[cc])
-                        json_data[cc] = delete_all_elements_in_str(
-                            "删除", json_data[cc])
+                    json_data[cc] = process_text_mappings(json_data[cc], info_mapping_data)
                 except IndexError:
                     json_data[cc] = open_cc.convert(json_data[cc])
                 except:
