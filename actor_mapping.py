@@ -118,8 +118,8 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         root = etree.fromstring(content.encode('utf-8'))
         
         modified = False
-        actor_mapping = get_actor_mapping('')
-        info_mapping = get_info_mapping('')
+        actor_mapping = get_actor_mapping(1)
+        info_mapping = get_info_mapping(1)
         new_actors = []
 
         # 处理演员信息

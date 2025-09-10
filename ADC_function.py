@@ -363,11 +363,7 @@ def file_not_exist_or_empty(filepath) -> bool:
     return not os.path.isfile(filepath) or os.path.getsize(filepath) == 0
 
 
-def is_japanese(raw: str) -> bool:
-    """
-    日语简单检测
-    """
-    return bool(re.search(r'[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F]', raw, re.UNICODE))
+
 
 
 def download_file_with_filename(url: str, filename: str, path: str) -> None:

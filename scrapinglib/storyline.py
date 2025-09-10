@@ -19,16 +19,12 @@ from multiprocessing.dummy import Pool as ThreadPool
 from .airav import Airav
 from .xcity import Xcity
 from .httprequest import get_html_by_form, get_html_by_scraper, request_session
+from translation import is_japanese
 
 # 舍弃 Amazon 源
 G_registered_storyline_site = {"airavwiki", "airav", "avno1", "xcity", "58avgo"}
 
 G_mode_txt = ('顺序执行','线程池')
-def is_japanese(raw: str) -> bool:
-    """
-    日语简单检测
-    """
-    return bool(re.search(r'[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F]', raw, re.UNICODE))
 
 class noThread(object):
     def map(self, fn, param):
