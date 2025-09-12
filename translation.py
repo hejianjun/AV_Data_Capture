@@ -93,10 +93,14 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         # 翻译：仅对最终保留下来的唯一 plot 非空内容执行一次翻译
         if plot_node is not None:
             original = plot_node.text
-            normalized = translate(original)
-            if normalized and normalized != original:
-                plot_node.text = normalized
-                modified = True
+            if original:  # 仅处理非空内容
+                original = original.strip()
+                normalized = translate(original)
+                if normalized and normalized != original:
+                    plot_node.text = normalized
+                    modified = True
+            else:
+                print(f"WARNING: 跳过空内容：{nfo_path}")
         
         # 生成最终内容
         if modified:
@@ -181,4 +185,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("W:\\JAV_output\\南梨央奈")
+    main("W:\\JAV_output")
