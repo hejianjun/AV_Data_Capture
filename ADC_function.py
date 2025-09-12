@@ -48,7 +48,7 @@ def get_html(url, cookies: dict = None, ua: str = None, return_type: str = None,
             if config_proxy.enable:
                 proxies = config_proxy.proxies()
                 result = requests.get(str(url), headers=headers, timeout=config_proxy.timeout, proxies=proxies,
-                                      verify=verify,
+                                      verify=False,
                                       cookies=cookies)
             else:
                 result = requests.get(str(url), headers=headers, timeout=config_proxy.timeout, cookies=cookies)

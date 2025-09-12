@@ -29,6 +29,8 @@ def translate(
     :raises ValueError: Non-existent translation engine
     """
     trans_result = ""
+    if not src:
+        return src
     # 中文句子如果包含&等符号会被谷歌翻译截断损失内容，而且中文翻译到中文也没有意义，故而忽略，只翻译带有日语假名的
     if (is_japanese(src) == False) and ("zh_" in target_language):
         return src
@@ -82,17 +84,18 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         root = etree.fromstring(content.encode('utf-8'))
         
         modified = False
-        # 处理简介信息
-        for outline in root.xpath('.//outline'):
-            normalized = translate(outline.text)
-            if normalized != outline.text:
-                outline.text = normalized
-                modified = True
+        # 处理简介信息：合并去重，仅保留一个 plot，且空内容安全处理
+        outlines = root.xpath('.//outline')
+        plots = root.xpath('.//plot')
 
-        for plot in root.xpath('.//plot'):
-            normalized = translate(plot.text)
-            if normalized != plot.text:
-                plot.text = normalized
+        plot_node = plots[0] if len(plots) else outlines[0]
+
+        # 翻译：仅对最终保留下来的唯一 plot 非空内容执行一次翻译
+        if plot_node is not None:
+            original = plot_node.text
+            normalized = translate(original)
+            if normalized and normalized != original:
+                plot_node.text = normalized
                 modified = True
         
         # 生成最终内容
@@ -108,7 +111,7 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
 
     except Exception as e:
         print(f"ERROR处理文件 {nfo_path}: {str(e)}", file=sys.stderr)
-        return None, [], False
+        return content, False
 
 def process_movie_dir(movie_dir: Path):
     """处理单个影片目录（增强版）"""
@@ -178,4 +181,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Z:\\破解\\JAV_output\\夏目彩春\\MIDE-064")
+    main("W:\\JAV_output\\南梨央奈")
