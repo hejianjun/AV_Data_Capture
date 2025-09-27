@@ -129,7 +129,6 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
             if name_node is None or name_node.text is None or name_node.text.strip() == '':
                 continue
 
-
             original = name_node.text.strip()
             normalized = process_special_actor_name(original, actor_mapping)
             
@@ -170,6 +169,9 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         
         return content, new_actors, False
 
+    except FileNotFoundError as e:
+        print(f"文件未找到 {nfo_path}: {str(e)}", file=sys.stderr)
+        return None, [], False
     except Exception as e:
         print(f"ERROR处理文件 {nfo_path}: {str(e)}", file=sys.stderr)
         return None, [], False
@@ -185,6 +187,16 @@ def migrate_files(src_dir: Path, new_actor_dir: str, reason: str):
     print(f"\n【移动原因】{reason}")
     print(f"旧路径：{src_dir}\n新路径：{dest_dir}")
     
+    # 检查目标路径长度，避免在Windows上出错
+    import os
+    if os.name == 'nt':  # Windows系统
+        dest_str = str(dest_dir)
+        if len(dest_str) >= 250:  # 保守限制，留一些余量给文件名
+            print(f"警告：目标路径可能过长 ({len(dest_str)} 字符)，尝试使用长路径支持")
+            # 尝试使用Windows长路径前缀
+            dest_str = '\\\\?\\' + dest_str
+            dest_dir = Path(dest_str)
+    
     try:
         dest_dir.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(src_dir), str(dest_dir))
@@ -194,8 +206,20 @@ def migrate_files(src_dir: Path, new_actor_dir: str, reason: str):
     except Exception as e:
         print(f"└─ 状态：移动失败 | 错误：{str(e)}", file=sys.stderr)
 
+
 def process_movie_dir(movie_dir: Path):
     """处理单个影片目录（增强版）"""
+    # 检查路径长度
+    import os
+    if os.name == 'nt':  # Windows系统
+        dir_str = str(movie_dir)
+        if len(dir_str) >= 250:
+            print(f"警告：路径过长 ({len(dir_str)} 字符)，尝试使用长路径支持")
+            # 尝试使用Windows长路径前缀
+            long_path = '\\\\?\\' + dir_str
+            if Path(long_path).exists():
+                movie_dir = Path(long_path)
+    
     nfo_files = list(movie_dir.glob('*.nfo'))
     if not nfo_files:
         return
@@ -205,14 +229,27 @@ def process_movie_dir(movie_dir: Path):
     
     # 只要NFO内容被修改（包含tag/genre的修改），就写入文件
     if modified and new_content is not None:
-        with open(main_nfo, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-        print(f"√ 已更新NFO文件：{main_nfo.name}")
+        try:
+            with open(main_nfo, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+            print(f"√ 已更新NFO文件：{main_nfo.name}")
+        except Exception as e:
+            print(f"写入文件失败 {main_nfo}: {str(e)}", file=sys.stderr)
+            return
 
     # 仅在演员目录变化时执行迁移
     if len(new_actors) > 0:
         new_actor_dir = ','.join(new_actors)
         original_actor_dir = movie_dir.parent.name
+        
+        # 检查新路径长度
+        if os.name == 'nt':  # Windows系统
+            base_path = movie_dir.parent.parent
+            dest_dir = base_path / new_actor_dir / movie_dir.name
+            dest_str = str(dest_dir)
+            if len(dest_str) >= 250:
+                print(f"警告：目标路径过长 ({len(dest_str)} 字符)，将不会执行移动操作")
+                return
         
         if new_actor_dir != original_actor_dir:
             change_reason = (
@@ -254,10 +291,29 @@ def safe_iterdir(path: Path) -> list[Path]:
     except (FileNotFoundError, PermissionError) as e:
         print(f"目录访问异常：{path} | {str(e)}")
         return []
+    except OSError as e:
+        # 处理路径过长等操作系统错误
+        if e.errno == 63 or "name too long" in str(e).lower():
+            print(f"路径过长导致无法访问：{path}")
+        else:
+            print(f"系统错误导致无法访问：{path} | {str(e)}")
+        return []
 
 
 def main(base_path: str = r"Z:\\破解\\JAV_output"):
     """增强安全性的主流程"""
+    # 在Windows系统上启用长路径支持
+    import os
+    if os.name == 'nt':  # Windows系统
+        try:
+            # 尝试使用Windows长路径前缀
+            if not base_path.startswith('\\\\?\\'):
+                long_path_base = '\\\\?\\' + base_path
+                if Path(long_path_base).exists():
+                    base_path = long_path_base
+        except Exception:
+            pass
+    
     root = Path(base_path)
     
     # 新增路径存在性检查
@@ -278,4 +334,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Z:\\日本\\JAV_output\\优梨舞奈,沙月恵奈,南見つばさ,伊织ひなの,二宫もも")
+    main("Y:\\JAV_output\\1")
