@@ -136,7 +136,7 @@ href：演员主页，刮削时在主界面点击演员名可以打开主页。-
   <a zh_cn="MERU" zh_tw="MERU" jp="MERU" keyword=",MERU," href="https://javdb.com/actors/JYad" />
   <a zh_cn="MIKA" zh_tw="MIKA" jp="MIKA" keyword=",MIKA," href="https://javdb.com/actors/dRra" />
   <a zh_cn="MIMI" zh_tw="MIMI" jp="MIMI" keyword=",MIMI," href="https://javdb.com/actors/mQBY" />
-  <a zh_cn="MINAMO" zh_tw="MINAMO" jp="MINAMO" keyword=",MINAMO,"
+  <a zh_cn="MINAMO" zh_tw="MINAMO" jp="MINAMO" keyword=",MINAMO,minamo,"
     href="https://javdb.com/actors/k4O90" />
   <a zh_cn="MIRANO" zh_tw="MIRANO" jp="MIRANO" keyword=",MIRANO,"
     href="https://javdb.com/actors/8N4K" />
@@ -4220,8 +4220,6 @@ href：演员主页，刮削时在主界面点击演员名可以打开主页。-
     href="https://javdb.com/actors/P4w2" />
   <a zh_cn="川井まゆ" zh_tw="川井まゆ" jp="川井まゆ" keyword=",川井まゆ," href="https://javdb.com/actors/gkEy" />
   <a zh_cn="川井もか" zh_tw="川井もか" jp="川井もか" keyword=",川井もか," href="https://javdb.com/actors/1Y4W" />
-  <a zh_cn="川北明沙" zh_tw="川北明沙" jp="川北メイサ" keyword=",川北明沙,川北メイサ,"
-    href="https://javdb.com/actors/J20zB" />
   <a zh_cn="川北絵莉花" zh_tw="川北絵莉花" jp="川北絵莉花" keyword=",川北絵莉花," href="https://javdb.com/actors/eK49b" />
   <a zh_cn="川北里菜" zh_tw="川北里菜" jp="川北りな" keyword=",川北里菜,川北りな,あや,"
     href="https://javdb.com/actors/36mN" />
@@ -6673,8 +6671,7 @@ href：演员主页，刮削时在主界面点击演员名可以打开主页。-
     href="https://javdb.com/actors/rmYqk" />
   <a zh_cn="水谷あおい" zh_tw="水谷あおい" jp="水谷あおい" keyword=",水谷あおい,市川留美,安達理沙,速水奈々聖,鈴木さとみ,"
     href="https://javdb.com/actors/Q8DM" />
-  <a zh_cn="水谷心音" zh_tw="水谷心音" jp="水谷心音" keyword=",水谷心音," href="https://javdb.com/actors/B1Qd" />
-  <a zh_cn="水谷心音" zh_tw="水谷心音" jp="水谷心音" keyword=",水谷心音," href="https://javdb.com/actors/WkxR" />
+  <a zh_cn="水谷心音" zh_tw="水谷心音" jp="水谷心音" keyword=",水谷心音,藤崎りお," href="https://javdb.com/actors/B1Qd" />
   <a zh_cn="水野あすみ" zh_tw="水野あすみ" jp="水野あすみ" keyword=",水野あすみ," href="https://javdb.com/actors/0Vx7" />
   <a zh_cn="水野ちか" zh_tw="水野ちか" jp="水野ちか" keyword=",水野ちか," href="https://javdb.com/actors/qX6M" />
   <a zh_cn="水野ちなつ" zh_tw="水野ちなつ" jp="水野ちなつ" keyword=",水野ちなつ," href="https://javdb.com/actors/zK5W" />
@@ -10768,6 +10765,6 @@ href：演员主页，刮削时在主界面点击演员名可以打开主页。-
   <a zh_cn="春野由子" zh_tw="春野由子" jp="春野ゆこ" keyword=",春野ゆこ," href="https://javdb.com/actors/3Or3" />
   <a zh_cn="乃乃果花" zh_tw="乃乃果花" jp="乃々果花" keyword=",乃々果花,石川 恵理,石川エリ,七色あん," href="https://javdb.com/actors/3Or3" />
   <a zh_cn="みけだ実希" zh_tw="みけだ実希" jp="みけだ実希" keyword=",みけだ実希," href="https://javdb.com/actors/3Or3" />
-  <a zh_cn="凤美优" zh_tw="凤美优" jp="凤みゆ" keyword=",凤みゆ,Ootori Mayu,川北めいさ,川北友里,川北明沙," href="https://javdb.com/actors/3Or3" />
+  <a zh_cn="凤美优" zh_tw="凤美优" jp="凤みゆ" keyword=",凤みゆ,Ootori Mayu,川北めいさ,川北友里,川北明沙,川北メイサ,澤北南,沢北みなみ," href="https://javdb.com/actors/3Or3" />
   <a zh_cn="朝仓心奈" zh_tw="朝仓心奈" jp="朝仓ここな" keyword=",朝仓ここな,朝仓心奈,Asakura Kokona,"/>
 </actor>
