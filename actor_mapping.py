@@ -278,4 +278,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("W:\\JAV_output\\一ノ瀬梓")
+    main("Z:\\日本\\JAV_output\\优梨舞奈,沙月恵奈,南見つばさ,伊织ひなの,二宫もも")
