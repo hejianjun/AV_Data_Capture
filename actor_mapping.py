@@ -334,4 +334,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
 
 
 if __name__ == "__main__":
-    main("Y:\\JAV_output\\三崎なな")
+    main("Z:\\日本\\JAV_output\\佚名")

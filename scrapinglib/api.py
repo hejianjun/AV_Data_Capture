@@ -248,6 +248,8 @@ class Scraping:
         return sources
 
     def checkAdultSources(self, sources, file_number):
+        # Convert tuple to list since we need to modify the order
+        sources = list(sources)
 
         def insert(sources, source):
             if source in sources:

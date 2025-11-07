@@ -26,16 +26,24 @@ def change_number(number):
     for rules in NUM_RULES4:
         m = re.search(rules, number, re.I)
         if m:
-            return (m.group('eng'),m.group('num').zfill(4),m.group('part'))
+            return (m.group('eng'),m.group('num').zfill(4),m.group('part') or '')
     for rules in NUM_RULES3:
         m = re.search(rules, number, re.I)
         if m:
-            return (m.group('eng'),m.group('num').zfill(3),m.group('part'))
+            return (m.group('eng'),m.group('num').zfill(3),m.group('part') or '')
     for rules in NUM_RULES2:
         m = re.search(rules, number, re.I)
         if m:
-            return (m.group('eng'),m.group('num').zfill(2),m.group('part'))
-    return number.split('-')
+            return (m.group('eng'),m.group('num').zfill(2),m.group('part') or '')
+    # Handle the case where no regex matches by returning a default structure
+    parts = number.split('-', 2)  # Split into max 3 parts
+    if len(parts) < 2:
+        # If there's no hyphen, treat the whole string as the number part
+        return ('', number, '')
+    elif len(parts) == 2:
+        return (parts[0], parts[1], '')
+    else:  # len(parts) == 3
+        return (parts[0], parts[1], parts[2])
 
 
 
@@ -56,13 +64,14 @@ class Madou(Parser):
 
     def search(self, number):
         n1, n2, n3 = change_number(number)
-        number = n1.replace('-','') + n2 + (n3 or '')
-        if self.number!=number:
+        transformed_number = n1.replace('-','') + n2 + (n3 or '')
+        if hasattr(self, 'number') and self.number != transformed_number:
             print(self.number)
+        self.number = transformed_number
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = "https://madou.club/" + self.number + ".html"
+            self.detailurl = "https://madou.club/" + transformed_number + ".html"
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404:
             return 404
