@@ -228,7 +228,7 @@ def extrafanart_download_one_by_one(data, path, filepath, json_data=None):
             return
         for i in range(configProxy.retry):
             if file_not_exist_or_empty(jpg_fullpath):
-                print('[!]Image Download Failed! Trying again. [{}/3]', i + 1)
+                print(f'[!]Image Download Failed! Trying again. [{i + 1}/3]')
                 download_file_with_filename(url, jpg_filename, path, filepath, json_data)
                 continue
             else:
@@ -299,7 +299,7 @@ def image_download(cover, fanart_path, thumb_path, path, filepath, json_headers=
     configProxy = config.getInstance().proxy()
     for i in range(configProxy.retry):
         if file_not_exist_or_empty(full_filepath):
-            print('[!]Image Download Failed! Trying again. [{}/3]', i + 1)
+            print(f'[!]Image Download Failed! Trying again. [{i + 1}/3]')
             if json_headers != None:
                 download_file_with_filename(cover, thumb_path, path, filepath, json_headers['headers'])
             else:
