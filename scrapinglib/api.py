@@ -280,7 +280,7 @@ class Scraping:
                 sources = insert(sources, "gcolle")
             elif re.search(r"^\d{5,}", file_number) or \
                     (re.search(r"^\d{6}-\d{3}", file_number)) or "heyzo" in lo_file_number:
-                sources = ["avsox", "carib", "caribpr",
+                sources = ["airav","avsox", "carib", "caribpr",
                            "javbus", "xcity", "javdb"]
             elif re.search(r"^[a-z0-9]{3,}$", lo_file_number):
                 if "xcity" in sources:
