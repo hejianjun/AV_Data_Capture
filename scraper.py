@@ -198,35 +198,47 @@ def get_data_from_json(
                         json_data[translate_value] = translate(
                             list_in_str).split(',')
 
+    # 无论是否开启open_cc，都处理演员信息
+    try:
+        # 处理actor_list中的每个演员
+        json_data['actor_list'] = [process_special_actor_name(
+            actor, actor_mapping_data) for actor in json_data['actor_list']]
+        # 重新生成actor字段，确保使用处理后的actor_list
+        if json_data['source'] == 'pissplay':
+            json_data['actor'] = str(json_data['actor_list']).strip("[ ]").replace("'", '')
+        else:
+            json_data['actor'] = str(json_data['actor_list']).strip("[ ]").replace("'", '').replace(" ", '')
+    except Exception as e:
+        print(f"[-]处理演员信息失败: {e}")
+
+    # 处理tag和其他字段
+    try:
+        json_data['tag'] = process_text_mappings(json_data['tag'], info_mapping_data)
+    except Exception as e:
+        print(f"[-]处理标签信息失败: {e}")
+
+    # 处理其他需要映射的字段
+    mapping_fields = ['outline', 'series', 'studio', 'title']
+    for field in mapping_fields:
+        if field in json_data and json_data[field]:
+            try:
+                json_data[field] = process_text_mappings(json_data[field], info_mapping_data)
+            except Exception as e:
+                print(f"[-]处理{field}信息失败: {e}")
+
+    # 繁简转换
     if open_cc:
         cc_vars = conf.cc_convert_vars().split(",")
-
-
         for cc in cc_vars:
             if json_data[cc] == "" or len(json_data[cc]) == 0:
                 continue
-            if cc == "actor":
-                try:
-                    json_data['actor_list'] = [process_special_actor_name(
-                        actor, actor_mapping_data) for actor in json_data['actor_list']]
-                    json_data['actor'] = process_special_actor_name(
-                        json_data['actor'], actor_mapping_data)
-                except:
-                    json_data['actor_list'] = [open_cc.convert(
-                        aa) for aa in json_data['actor_list']]
-                    json_data['actor'] = open_cc.convert(json_data['actor'])
-            elif cc == "tag":
-                try:
-                    json_data[cc] = process_text_mappings(json_data[cc], info_mapping_data)
-                except:
+            try:
+                if isinstance(json_data[cc], list):
                     json_data[cc] = [open_cc.convert(t) for t in json_data[cc]]
-            else:
-                try:
-                    json_data[cc] = process_text_mappings(json_data[cc], info_mapping_data)
-                except IndexError:
+                else:
                     json_data[cc] = open_cc.convert(json_data[cc])
-                except:
-                    pass
+            except Exception as e:
+                print(f"[-]繁简转换{cc}失败: {e}")
 
     naming_rule = ""
     original_naming_rule = ""

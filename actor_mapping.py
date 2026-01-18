@@ -3,6 +3,7 @@ from lxml import etree
 import shutil
 import sys
 import re
+import typing
 
 # 全局映射缓存
 _actor_mapping = None
@@ -61,7 +62,7 @@ def get_info_mapping(mode):
         _info_mapping = load_mapping(mode,'mapping_info.xml')
     return _info_mapping
 
-def process_text_mappings(json_data: dict, mapping: dict) -> dict:
+def process_text_mappings(json_data: typing.Union[str, list, dict], mapping: dict) -> typing.Union[str, list, dict]:
     """处理文本映射"""
     if isinstance(json_data, list):
         newlists = []
@@ -70,7 +71,10 @@ def process_text_mappings(json_data: dict, mapping: dict) -> dict:
             if not should_delete:
                 newlists.append(normalized)
         return newlists
-    return process_text_mappings(json_data, mapping)
+    elif isinstance(json_data, str):
+        normalized, should_delete = process_text_mapping(json_data, mapping)
+        return normalized if not should_delete else json_data
+    return json_data
     
 def process_text_mapping(text: str, mapping: dict) -> tuple:
     """
