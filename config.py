@@ -313,8 +313,11 @@ class Config:
         except ValueError:
             self._exit("common")
 
-    def cacert_file(self) -> str:
-        return self.conf.get('proxy', 'cacert_file')
+    def cacert_file(self) -> typing.Union[str, bool]:
+        value = self.conf.get('proxy', 'cacert_file')
+        if value.lower() == 'false':
+            return False
+        return value
 
     def media_type(self) -> str:
         return self.conf.get('media', 'media_type')

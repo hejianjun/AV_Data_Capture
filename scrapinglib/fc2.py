@@ -39,6 +39,14 @@ class Fc2(Parser):
         result = self.dictformat(htmltree)
         return result
 
+
+    def getTitle(self, htmltree):
+        title = self.getTreeElement(htmltree, self.expr_title).strip()
+        prefix = 'FC2-' + self.number
+        if title.startswith(prefix):
+            title = title[len(prefix):].lstrip(' -')
+        return title
+        
     def getNum(self, htmltree):
         return 'FC2-' + self.number
 
