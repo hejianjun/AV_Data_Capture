@@ -160,21 +160,34 @@ def get_data_from_json(
     json_data['director'] = director
 
     if conf.is_translate():
+        print(f"[DEBUG] Translation enabled, translate_values: {conf.translate_values()}")
         translate_values = conf.translate_values().split(",")
         for translate_value in translate_values:
+            print(f"[DEBUG] Processing translate_value: {translate_value}")
             if json_data[translate_value] == "":
+                print(f"[DEBUG] Skipping empty translate_value: {translate_value}")
                 continue
             if translate_value == "title":
+                print(f"[DEBUG] Processing title translation for number: {number}")
                 title_dict = {}
                 title_file = Path.home() / '.local' / 'share' / 'mdc' / 'c_number.json'
+                print(f"[DEBUG] Checking title_file: {title_file}")
                 if title_file.exists():
                     try:
                         title_dict = json.loads(title_file.read_text(encoding="utf-8"))
+                        print(f"[DEBUG] Loaded title_dict with {len(title_dict)} entries")
                         if number in title_dict:
+                            print(f"[DEBUG] Found title in title_dict: {title_dict[number]}")
                             json_data[translate_value] = title_dict[number]
                             continue
+                        else:
+                            print(f"[DEBUG] Number {number} not found in title_dict")
                     except Exception as e:
-                        pass
+                        print(f"[DEBUG] Error reading title_dict: {e}")
+                else:
+                    print(f"[DEBUG] title_file does not exist, proceeding to translate")
+            
+            print(f"[DEBUG] Calling translate for {translate_value}: '{json_data[translate_value]}'")
             if conf.get_translate_engine() == "azure":
                 t = translate(
                     json_data[translate_value],
@@ -196,6 +209,7 @@ def get_data_from_json(
                         list_in_str = ",".join(json_data[translate_value])
                         json_data[translate_value] = translate(
                             list_in_str).split(',')
+            print(f"[DEBUG] Translated result for {translate_value}: '{json_data[translate_value]}'")
 
     if open_cc:
         cc_vars = conf.cc_convert_vars().split(",")

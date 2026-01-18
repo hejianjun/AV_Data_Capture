@@ -28,12 +28,20 @@ def translate(
     翻译日语假名到简体中文
     :raises ValueError: Non-existent translation engine
     """
+    print(f"[DEBUG] Translate input: src='{src}', target_language='{target_language}', engine='{engine}'")
     trans_result = ""
     if not src:
+        print(f"[DEBUG] Translate skipped: empty src")
         return src
+    
+    is_jp = is_japanese(src)
+    print(f"[DEBUG] is_japanese(src) = {is_jp}, contains_jp_chars: {bool(re.search(r'[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F]', src, re.UNICODE))}")
+    
     # 中文句子如果包含&等符号会被谷歌翻译截断损失内容，而且中文翻译到中文也没有意义，故而忽略，只翻译带有日语假名的
-    if (is_japanese(src) == False) and ("zh_" in target_language):
+    if (is_jp == False) and ("zh_" in target_language):
+        print(f"[DEBUG] Translate skipped: no japanese characters found and target is chinese")
         return src
+    
     if engine == "google-free":
         gsite = config.getInstance().get_translate_service_site()
         if not re.match('^translate\.google\.(com|com\.\w{2}|\w{2})$', gsite):
@@ -41,13 +49,21 @@ def translate(
         url = (
             f"https://{gsite}/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto&tl={target_language}&q={src}"
         )
+        print(f"[DEBUG] Google-free URL: {url}")
         result = get_html(url=url, return_type="object")
         if not result.ok:
-            print('[-]Google-free translate web API calling failed.')
+            print(f'[-]Google-free translate web API calling failed. Status: {result.status_code}, Text: {result.text}')
             return ''
-
-        translate_list = [i["trans"] for i in result.json()["sentences"]]
-        trans_result = trans_result.join(translate_list)
+        
+        try:
+            json_data = result.json()
+            print(f"[DEBUG] Google-free response: {json_data}")
+            translate_list = [i["trans"] for i in json_data["sentences"]]
+            trans_result = trans_result.join(translate_list)
+            print(f"[DEBUG] Google-free translated: '{src}' -> '{trans_result}'")
+        except Exception as e:
+            print(f"[DEBUG] Google-free parse error: {e}")
+            return ''
     elif engine == "azure":
         url = "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=" + target_language
         headers = {
@@ -57,22 +73,42 @@ def translate(
             'X-ClientTraceId': str(uuid.uuid4())
         }
         body = json.dumps([{'text': src}])
+        print(f"[DEBUG] Azure translate: URL={url}, Headers={headers}, Body={body}")
         result = post_html(url=url, query=body, headers=headers)
-        translate_list = [i["text"] for i in result.json()[0]["translations"]]
-        trans_result = trans_result.join(translate_list)
+        try:
+            json_data = result.json()
+            print(f"[DEBUG] Azure response: {json_data}")
+            translate_list = [i["text"] for i in json_data[0]["translations"]]
+            trans_result = trans_result.join(translate_list)
+            print(f"[DEBUG] Azure translated: '{src}' -> '{trans_result}'")
+        except Exception as e:
+            print(f"[DEBUG] Azure parse error: {e}")
+            return ''
     elif engine == "deeplx":
         url = config.getInstance().get_translate_service_site()
+        print(f"[DEBUG] DeepLX translate: URL={url}, Text={src}")
         res = requests.post(f"{url}/translate", json={
             'text': src,
             'source_lang': 'auto',
             'target_lang': target_language,
         })
         if res.text.strip():
-            trans_result = res.json().get('data')
+            try:
+                json_data = res.json()
+                print(f"[DEBUG] DeepLX response: {json_data}")
+                trans_result = json_data.get('data')
+                print(f"[DEBUG] DeepLX translated: '{src}' -> '{trans_result}'")
+            except Exception as e:
+                print(f"[DEBUG] DeepLX parse error: {e}")
+                return ''
+        else:
+            print(f"[DEBUG] DeepLX empty response")
     else:
+        print(f"[DEBUG] Unknown engine: {engine}")
         raise ValueError("Non-existent translation engine")
 
     time.sleep(delay)
+    print(f"[DEBUG] Final translated result: '{trans_result}'")
     return trans_result
 
 def modify_nfo_content(nfo_path: Path) -> tuple:
