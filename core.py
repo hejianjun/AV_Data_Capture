@@ -383,7 +383,7 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
             # 处理标题相关元素
             if main_mode == 3:
                 # 模式3下保留原有标题信息
-                for elem in ['title', 'originaltitle', 'sorttitle']:
+                for elem in ['originaltitle', 'sorttitle']:
                     if elem in old_nfo_dict:
                         if not config.getInstance().jellyfin():
                             print(f"  <{elem}><![CDATA[{old_nfo_dict[elem]}]]></{elem}>", file=code)
