@@ -320,7 +320,8 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
     conf = config.getInstance()
     title, studio, year, outline, runtime, director, actor_photo, release, number, cover, trailer, website, series, label = get_info(
         json_data)
-    if config.getInstance().main_mode() == 3:  # 模式3下，由于视频文件不做任何改变，.nfo文件必须和视频文件名称除后缀外完全一致，KODI等软件方可支持
+    main_mode = config.getInstance().main_mode()
+    if main_mode == 3:  # 模式3下，由于视频文件不做任何改变，.nfo文件必须和视频文件名称除后缀外完全一致，KODI等软件方可支持
         nfo_path = str(Path(filepath).with_suffix('.nfo'))
     else:
         nfo_path = os.path.join(path, f"{number}{part}{leak_word}{c_word}{hack_word}.nfo")
@@ -333,54 +334,148 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
                 os._exit(0)
 
         old_nfo = None
+        old_nfo_dict = {}
         try:
             if os.path.isfile(nfo_path):
                 old_nfo = etree.parse(nfo_path)
+                # 提取原有NFO中的所有元素值
+                elements_to_check = ['title', 'originaltitle', 'sorttitle', 'customrating', 'mpaa', 'set', 'studio', 
+                                    'year', 'outline', 'plot', 'runtime', 'director', 'poster', 'thumb', 'fanart', 
+                                    'maker', 'label', 'num', 'premiered', 'releasedate', 'release', 'cover', 'website',
+                                    'trailer', 'userrating', 'rating', 'criticrating']
+                for elem in elements_to_check:
+                    try:
+                        old_value = old_nfo.xpath(f'//{elem}/text()')[0]
+                        if old_value:
+                            old_nfo_dict[elem] = old_value
+                    except:
+                        pass
         except:
             pass
-        # KODI内查看影片信息时找不到number，配置naming_rule=number+'#'+title虽可解决
-        # 但使得标题太长，放入时常为空的outline内会更适合，软件给outline留出的显示版面也较大
-        if not outline:
-            pass
-        elif json_data['source'] == 'pissplay':
-            outline = f"{outline}"
+        
+        # 模式3下，保留原有值，仅当新值非空时覆盖
+        if main_mode == 3:
+            # 处理outline和plot
+            if not outline:
+                if 'outline' in old_nfo_dict:
+                    outline = old_nfo_dict['outline']
+                # 对于plot，使用与outline相同的值
+                plot_value = outline
+            else:
+                if json_data['source'] == 'pissplay':
+                    outline = f"{outline}"
+                else:
+                    outline = f"{number}#{outline}"
+                plot_value = outline
         else:
-            outline = f"{number}#{outline}"
+            # 非模式3下的原有逻辑
+            if not outline:
+                pass
+            elif json_data['source'] == 'pissplay':
+                outline = f"{outline}"
+            else:
+                outline = f"{number}#{outline}"
+            plot_value = outline
         with open(nfo_path, "wt", encoding='UTF-8') as code:
             print('<?xml version="1.0" encoding="UTF-8" ?>', file=code)
             print("<movie>", file=code)
-            if not config.getInstance().jellyfin():
-                print("  <title><![CDATA[" + naming_rule + "]]></title>", file=code)
-                print("  <originaltitle><![CDATA[" + json_data['original_naming_rule'] + "]]></originaltitle>",
-                      file=code)
-                print("  <sorttitle><![CDATA[" + naming_rule + "]]></sorttitle>", file=code)
+            
+            # 处理标题相关元素
+            if main_mode == 3:
+                # 模式3下保留原有标题信息
+                for elem in ['title', 'originaltitle', 'sorttitle']:
+                    if elem in old_nfo_dict:
+                        if not config.getInstance().jellyfin():
+                            print(f"  <{elem}><![CDATA[{old_nfo_dict[elem]}]]></{elem}>", file=code)
+                        else:
+                            print(f"  <{elem}>{old_nfo_dict[elem]}</{elem}>", file=code)
+                    else:
+                        # 原有标题不存在时使用新生成的
+                        if elem == 'title' or elem == 'sorttitle':
+                            value = naming_rule
+                        else:
+                            value = json_data['original_naming_rule']
+                        if not config.getInstance().jellyfin():
+                            print(f"  <{elem}><![CDATA[{value}]]></{elem}>", file=code)
+                        else:
+                            print(f"  <{elem}>{value}</{elem}>", file=code)
             else:
-                print("  <title>" + naming_rule + "</title>", file=code)
-                print("  <originaltitle>" + json_data['original_naming_rule'] + "</originaltitle>", file=code)
-                print("  <sorttitle>" + naming_rule + "</sorttitle>", file=code)
+                # 非模式3下的原有逻辑
+                if not config.getInstance().jellyfin():
+                    print("  <title><![CDATA[" + naming_rule + "]]></title>", file=code)
+                    print("  <originaltitle><![CDATA[" + json_data['original_naming_rule'] + "]]></originaltitle>",
+                          file=code)
+                    print("  <sorttitle><![CDATA[" + naming_rule + "]]></sorttitle>", file=code)
+                else:
+                    print("  <title>" + naming_rule + "</title>", file=code)
+                    print("  <originaltitle>" + json_data['original_naming_rule'] + "</originaltitle>", file=code)
+                    print("  <sorttitle>" + naming_rule + "</sorttitle>", file=code)
+            
+            # 处理customrating和mpaa
             print("  <customrating>JP-18+</customrating>", file=code)
             print("  <mpaa>JP-18+</mpaa>", file=code)
-            try:
-                print("  <set>" + series + "</set>", file=code)
-            except:
-                print("  <set></set>", file=code)
-            print("  <studio>" + studio + "</studio>", file=code)
-            print("  <year>" + year + "</year>", file=code)
-            if not config.getInstance().jellyfin():
-                print("  <outline><![CDATA[" + outline + "]]></outline>", file=code)
-                print("  <plot><![CDATA[" + outline + "]]></plot>", file=code)
-            else:
-                print("  <outline>" + outline + "</outline>", file=code)
-                print("  <plot>" + outline + "</plot>", file=code)
-            print("  <runtime>" + str(runtime).replace(" ", "") + "</runtime>", file=code)
             
-            if False != conf.get_direct(): 
+            # 处理set
+            if main_mode == 3 and 'set' in old_nfo_dict:
+                print(f"  <set>{old_nfo_dict['set']}</set>", file=code)
+            else:
+                try:
+                    print("  <set>" + series + "</set>", file=code)
+                except:
+                    print("  <set></set>", file=code)
+            
+            # 处理studio
+            if main_mode == 3 and 'studio' in old_nfo_dict and not studio:
+                print(f"  <studio>{old_nfo_dict['studio']}</studio>", file=code)
+            else:
+                print("  <studio>" + studio + "</studio>", file=code)
+            
+            # 处理year
+            if main_mode == 3 and 'year' in old_nfo_dict and not year:
+                print(f"  <year>{old_nfo_dict['year']}</year>", file=code)
+            else:
+                print("  <year>" + year + "</year>", file=code)
+            
+            # 处理outline和plot
+            if not config.getInstance().jellyfin():
+                print(f"  <outline><![CDATA[{outline}]]></outline>", file=code)
+                print(f"  <plot><![CDATA[{plot_value}]]></plot>", file=code)
+            else:
+                print(f"  <outline>{outline}</outline>", file=code)
+                print(f"  <plot>{plot_value}</plot>", file=code)
+            
+            # 处理runtime
+            if main_mode == 3 and 'runtime' in old_nfo_dict and not runtime:
+                print(f"  <runtime>{old_nfo_dict['runtime']}</runtime>", file=code)
+            else:
+                print("  <runtime>" + str(runtime).replace(" ", "") + "</runtime>", file=code)
+            
+            # 处理director
+            if main_mode == 3 and 'director' in old_nfo_dict and not director:
+                print(f"  <director>{old_nfo_dict['director']}</director>", file=code)
+            elif False != conf.get_direct():
                 print("  <director>" + director + "</director>", file=code)
-                
-            print("  <poster>" + poster_path + "</poster>", file=code)
-            print("  <thumb>" + thumb_path + "</thumb>", file=code)
+            
+            # 处理poster
+            if main_mode == 3 and 'poster' in old_nfo_dict:
+                print(f"  <poster>{old_nfo_dict['poster']}</poster>", file=code)
+            else:
+                print("  <poster>" + poster_path + "</poster>", file=code)
+            
+            # 处理thumb
+            if main_mode == 3 and 'thumb' in old_nfo_dict:
+                print(f"  <thumb>{old_nfo_dict['thumb']}</thumb>", file=code)
+            else:
+                print("  <thumb>" + thumb_path + "</thumb>", file=code)
+            
+            # 处理fanart
             if not config.getInstance().jellyfin():  # jellyfin 不需要保存fanart
-                print("  <fanart>" + fanart_path + "</fanart>", file=code)
+                if main_mode == 3 and 'fanart' in old_nfo_dict:
+                    print(f"  <fanart>{old_nfo_dict['fanart']}</fanart>", file=code)
+                else:
+                    print("  <fanart>" + fanart_path + "</fanart>", file=code)
+            
+            # 处理actors
             try:
                 for key in actor_list:
                     print("  <actor>", file=code)
@@ -392,8 +487,18 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
                     print("  </actor>", file=code)
             except:
                 pass
-            print("  <maker>" + studio + "</maker>", file=code)
-            print("  <label>" + label + "</label>", file=code)
+            
+            # 处理maker
+            if main_mode == 3 and 'maker' in old_nfo_dict and not studio:
+                print(f"  <maker>{old_nfo_dict['maker']}</maker>", file=code)
+            else:
+                print("  <maker>" + studio + "</maker>", file=code)
+            
+            # 处理label
+            if main_mode == 3 and 'label' in old_nfo_dict and not label:
+                print(f"  <label>{old_nfo_dict['label']}</label>", file=code)
+            else:
+                print("  <label>" + label + "</label>", file=code)
 
             jellyfin = config.getInstance().jellyfin()
             if not jellyfin:
@@ -433,10 +538,21 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
                     print("  <genre>" + i + "</genre>", file=code)
             except:
                 pass
-            print("  <num>" + number + "</num>", file=code)
-            print("  <premiered>" + release + "</premiered>", file=code)
-            print("  <releasedate>" + release + "</releasedate>", file=code)
-            print("  <release>" + release + "</release>", file=code)
+            
+            # 处理num
+            if main_mode == 3 and 'num' in old_nfo_dict and not number:
+                print(f"  <num>{old_nfo_dict['num']}</num>", file=code)
+            else:
+                print("  <num>" + number + "</num>", file=code)
+            
+            # 处理premiered, releasedate, release
+            for elem in ['premiered', 'releasedate', 'release']:
+                if main_mode == 3 and elem in old_nfo_dict and not release:
+                    print(f"  <{elem}>{old_nfo_dict[elem]}</{elem}>", file=code)
+                else:
+                    print(f"  <{elem}>{release}</{elem}>", file=code)
+            
+            # 处理userrating, rating, criticrating 等评分相关
             if old_nfo:
                 try:
                     xur = old_nfo.xpath('//userrating/text()')[0]
@@ -472,10 +588,26 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
   </ratings>""", file=code)
                     except:
                         pass
-            print("  <cover>" + cover + "</cover>", file=code)
+            
+            # 处理cover
+            if main_mode == 3 and 'cover' in old_nfo_dict and not cover:
+                print(f"  <cover>{old_nfo_dict['cover']}</cover>", file=code)
+            else:
+                print("  <cover>" + cover + "</cover>", file=code)
+            
+            # 处理trailer
             if config.getInstance().is_trailer():
-                print("  <trailer>" + trailer + "</trailer>", file=code)
-            print("  <website>" + website + "</website>", file=code)
+                if main_mode == 3 and 'trailer' in old_nfo_dict and not trailer:
+                    print(f"  <trailer>{old_nfo_dict['trailer']}</trailer>", file=code)
+                else:
+                    print("  <trailer>" + trailer + "</trailer>", file=code)
+            
+            # 处理website
+            if main_mode == 3 and 'website' in old_nfo_dict and not website:
+                print(f"  <website>{old_nfo_dict['website']}</website>", file=code)
+            else:
+                print("  <website>" + website + "</website>", file=code)
+            
             print("</movie>", file=code)
             print("[+]Wrote!            " + nfo_path)
     except IOError as e:
