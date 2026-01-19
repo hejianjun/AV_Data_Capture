@@ -22,14 +22,14 @@ from number_parser import get_number
 from core import core_main, core_main_no_net_op, moveFailedFolder, debug_print
 
 
-def check_update(local_version):
+def check_update(local_version: str) -> None:
     htmlcode = get_html(
         "https://api.github.com/repos/yoshiko2/Movie_Data_Capture/releases/latest"
     )
     data = json.loads(htmlcode)
     remote = int(data["tag_name"].replace(".", ""))
-    local_version = int(local_version.replace(".", ""))
-    if local_version < remote:
+    local_version_int = int(local_version.replace(".", ""))
+    if local_version_int < remote:
         print("[*]" + ("* New update " + str(data["tag_name"]) + " *").center(54))
         print("[*]" + "↓ Download ↓".center(54))
         print("[*]https://github.com/yoshiko2/Movie_Data_Capture/releases")
@@ -279,7 +279,7 @@ class ErrLogger(OutLogger):
             self.log = None
 
 
-def dupe_stdout_to_logfile(logdir: str):
+def dupe_stdout_to_logfile(logdir: str) -> None:
     if not isinstance(logdir, str) or len(logdir) == 0:
         return
     log_dir = Path(logdir)
@@ -299,10 +299,10 @@ def dupe_stdout_to_logfile(logdir: str):
     sys.stderr = ErrLogger(errlog)
 
 
-def close_logfile(logdir: str):
+def close_logfile(logdir: str) -> typing.Optional[Path]:
     if not isinstance(logdir, str) or len(logdir) == 0 or not os.path.isdir(logdir):
-        return
-    # 日志关闭前保存日志路径
+        return None
+    # Save log file path before closing
     filepath = None
     try:
         filepath = sys.stdout.filepath
@@ -419,19 +419,19 @@ def close_logfile(logdir: str):
     return filepath
 
 
-def signal_handler(*args):
+def signal_handler(*args) -> None:
     print("[!]Ctrl+C detected, Exit.")
     os._exit(9)
 
 
-def sigdebug_handler(*args):
+def sigdebug_handler(*args) -> None:
     conf = config.getInstance()
     conf.set_override(f"debug_mode:switch={int(not conf.debug())}")
     print(f"[!]Debug {('oFF', 'On')[int(conf.debug())]}")
 
 
-# 新增失败文件列表跳过处理，及.nfo修改天数跳过处理，提示跳过视频总数，调试模式(-g)下详细被跳过文件，跳过小广告
-def movie_lists(source_folder, regexstr: str) -> typing.List[str]:
+# Skip failed file list processing, .nfo modification days skip processing, prompt skipped video count, detailed skipped files in debug mode (-g), skip small ads
+def movie_lists(source_folder: str, regexstr: str) -> typing.List[str]:
     conf = config.getInstance()
     main_mode = conf.main_mode()
     debug = conf.debug()
@@ -552,9 +552,9 @@ def movie_lists(source_folder, regexstr: str) -> typing.List[str]:
     return total
 
 
-def create_failed_folder(failed_folder: str):
+def create_failed_folder(failed_folder: str) -> None:
     """
-    新建failed文件夹
+    Create failed folder
     """
     if not os.path.exists(failed_folder):
         try:
@@ -564,13 +564,13 @@ def create_failed_folder(failed_folder: str):
             os._exit(0)
 
 
-def rm_empty_folder(path):
+def rm_empty_folder(path: str) -> None:
     abspath = os.path.abspath(path)
     deleted = set()
     for current_dir, subdirs, files in os.walk(abspath, topdown=False):
         try:
             still_has_subdirs = any(
-                _
+                True
                 for subdir in subdirs
                 if os.path.join(current_dir, subdir) not in deleted
             )
@@ -586,7 +586,7 @@ def rm_empty_folder(path):
             pass
 
 
-def create_data_and_move(movie_path: str, zero_op: bool, no_net_op: bool, oCC):
+def create_data_and_move(movie_path: str, zero_op: bool, no_net_op: bool, oCC: typing.Optional[OpenCC]) -> None:
     # Normalized number, eg: 111xxx-222.mp4 -> xxx-222.mp4
     debug = config.getInstance().debug()
     n_number = get_number(debug, os.path.basename(movie_path))
@@ -629,8 +629,8 @@ def create_data_and_move(movie_path: str, zero_op: bool, no_net_op: bool, oCC):
 
 
 def create_data_and_move_with_custom_number(
-    file_path: str, custom_number, oCC, specified_source, specified_url
-):
+    file_path: str, custom_number: str, oCC: typing.Optional[OpenCC], specified_source: str, specified_url: str
+) -> None:
     conf = config.getInstance()
     file_name = os.path.basename(file_path)
     try:
@@ -657,7 +657,7 @@ def create_data_and_move_with_custom_number(
                 print("[!]", err)
 
 
-def main(args: tuple) -> Path:
+def main(args: tuple) -> typing.Optional[Path]:
     (
         single_file_path,
         custom_number,
@@ -818,20 +818,20 @@ def main(args: tuple) -> Path:
     return close_logfile(logdir)
 
 
-def 分析日志文件(logfile):
+def analyze_log_file(logfile: typing.Optional[Path]) -> typing.Tuple[typing.Optional[int], typing.Optional[int], typing.Optional[int]]:
     try:
         if not (isinstance(logfile, Path) and logfile.is_file()):
             raise FileNotFoundError("log file not found")
         logtxt = logfile.read_text(encoding="utf-8")
-        扫描电影数 = int(re.findall(r"\[\+]Find (.*) movies\.", logtxt)[0])
-        已处理 = int(re.findall(r"\[1/(.*?)] -", logtxt)[0])
-        完成数 = logtxt.count(r"[+]Wrote!")
-        return 扫描电影数, 已处理, 完成数
+        scanned_movies = int(re.findall(r"\[\+]Find (.*) movies\.", logtxt)[0])
+        processed_count = int(re.findall(r"\[1/(.*?)] -", logtxt)[0])
+        success_count = logtxt.count(r"[+]Wrote!")
+        return scanned_movies, processed_count, success_count
     except:
         return None, None, None
 
 
-def period(delta, pattern):
+def period(delta: timedelta, pattern: str) -> str:
     d = {"d": delta.days}
     d["h"], rem = divmod(delta.seconds, 3600)
     d["m"], d["s"] = divmod(rem, 60)
@@ -849,34 +849,34 @@ if __name__ == "__main__":
     # Parse command line args
     args = tuple[str | bool, ...](argparse_function(version))
 
-    再运行延迟 = conf.rerun_delay()
-    if 再运行延迟 > 0 and conf.stop_counter() > 0:
+    rerun_delay = conf.rerun_delay()
+    if rerun_delay > 0 and conf.stop_counter() > 0:
         while True:
             try:
                 logfile = main(args)
-                (扫描电影数, 已处理, 完成数) = 分析结果元组 = tuple(
-                    分析日志文件(logfile)
+                (scanned_movies, processed_count, success_count) = analysis_result = tuple(
+                    analyze_log_file(logfile)
                 )
-                if all(isinstance(v, int) for v in 分析结果元组):
-                    剩余个数 = 扫描电影数 - 已处理
-                    总用时 = timedelta(seconds=time.time() - app_start)
+                if all(isinstance(v, int) for v in analysis_result):
+                    remaining_count = scanned_movies - processed_count
+                    total_elapsed = timedelta(seconds=time.time() - app_start)
                     print(
-                        f"All movies:{扫描电影数}  processed:{已处理}  successes:{完成数}  remain:{剩余个数}"
+                        f"All movies:{scanned_movies}  processed:{processed_count}  successes:{success_count}  remain:{remaining_count}"
                         + "  Elapsed time {}".format(
-                            period(总用时, "{d} day {h}:{m:02}:{s:02}")
-                            if 总用时.days == 1
-                            else period(总用时, "{d} days {h}:{m:02}:{s:02}")
-                            if 总用时.days > 1
-                            else period(总用时, "{h}:{m:02}:{s:02}")
+                            period(total_elapsed, "{d} day {h}:{m:02}:{s:02}")
+                            if total_elapsed.days == 1
+                            else period(total_elapsed, "{d} days {h}:{m:02}:{s:02}")
+                            if total_elapsed.days > 1
+                            else period(total_elapsed, "{h}:{m:02}:{s:02}")
                         )
                     )
-                    if 剩余个数 == 0:
+                    if remaining_count == 0:
                         break
-                    下次运行 = datetime.now() + timedelta(seconds=再运行延迟)
+                    next_run_time = datetime.now() + timedelta(seconds=rerun_delay)
                     print(
-                        f"Next run time: {下次运行.strftime('%H:%M:%S')}, rerun_delay={再运行延迟}, press Ctrl+C stop run."
+                        f"Next run time: {next_run_time.strftime('%H:%M:%S')}, rerun_delay={rerun_delay}, press Ctrl+C stop run."
                     )
-                    time.sleep(再运行延迟)
+                    time.sleep(rerun_delay)
                 else:
                     break
             except:
