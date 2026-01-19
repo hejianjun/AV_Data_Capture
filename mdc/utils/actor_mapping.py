@@ -13,7 +13,7 @@ _info_mapping = None
 def load_mapping(mode, mapping_file: str) -> dict:
     """通用映射加载函数"""
     global_mapping = {}
-    mapping_path = Path(__file__).parent.parent / "data" / "mapping" / "MappingTable" / mapping_file
+    mapping_path = Path(__file__).parent.parent / "data" / "mapping" / mapping_file
 
     if not mapping_path.exists():
         raise FileNotFoundError(f"映射文件不存在: {mapping_path}")
