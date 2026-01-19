@@ -8,20 +8,20 @@ import typing
 import urllib3
 import signal
 import platform
-import config
+from mdc.config import config
 import logging
 
 from datetime import datetime, timedelta
 from pathlib import Path
 from opencc import OpenCC
 
-from scraper import get_data_from_json
-from ADC_function import file_modification_days, get_html
-from number_parser import get_number
-from core import core_main, core_main_no_net_op, debug_print
-from cli import argparse_function
-from movie_list import movie_lists
-from file_utils import moveFailedFolder, create_failed_folder, rm_empty_folder
+from mdc.core.scraper import get_data_from_json
+from mdc.utils.ADC_function import file_modification_days, get_html
+from mdc.utils.number_parser import get_number
+from mdc.core.core import core_main, core_main_no_net_op, debug_print
+from mdc.cli.cli import argparse_function
+from mdc.file.movie_list import movie_lists
+from mdc.file.file_utils import moveFailedFolder, create_failed_folder, rm_empty_folder
 
 
 # 日志配置

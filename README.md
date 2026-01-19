@@ -69,14 +69,14 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 遍历每个影片文件
   ↓
 ┌─────────────────────────────────┐
-│ 1. 番号识别 (number_parser.py)  │
+│ 1. 番号识别 (mdc/utils/number_parser.py) │
 │    - 从文件名提取番号            │
 │    - 应用自定义正则规则          │
 │    - 处理特殊格式                │
 └─────────────────────────────────┘
   ↓
 ┌─────────────────────────────────┐
-│ 2. 元数据获取 (scraper.py)      │
+│ 2. 元数据获取 (mdc/core/scraper.py) │
 │    - 按优先级查询数据源          │
 │    - 获取影片详细信息            │
 │    - 演员映射和信息映射          │
@@ -85,7 +85,7 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 └─────────────────────────────────┘
   ↓
 ┌─────────────────────────────────┐
-│ 3. 文件整理 (core.py)           │
+│ 3. 文件整理 (mdc/core/core.py) │
 │    - 创建目标文件夹              │
 │    - 生成 NFO 文件               │
 │    - 下载封面图片                │
@@ -112,7 +112,7 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 
 ### 详细处理流程
 
-#### 1. 番号识别阶段 (number_parser.py)
+#### 1. 番号识别阶段 (mdc/utils/number_parser.py)
 
 ```python
 文件名: "SSIS-001-C.mp4"
@@ -138,7 +138,7 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 - 1Pondo/Muramura：`123456_789`
 - 欧美格式：`site.YY.MM.DD`
 
-#### 2. 元数据获取阶段 (scraper.py)
+#### 2. 元数据获取阶段 (mdc/core/scraper.py)
 
 ```python
 番号: "SSIS-001"
@@ -168,16 +168,16 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
   - 封面 URL
   - 剧照 URL
   ↓
-演员信息映射 (actor_mapping.py)
+演员信息映射 (mdc/utils/actor_mapping.py)
   - 处理特殊演员名
   - 应用演员映射表
   ↓
-信息文本映射 (actor_mapping.py)
+信息文本映射 (mdc/utils/actor_mapping.py)
   - 标签映射
   - 标题映射
   - 系列映射
   ↓
-翻译处理 (translation.py)
+翻译处理 (mdc/utils/translation.py)
   - 标题翻译
   - 简介翻译
   ↓
@@ -192,7 +192,7 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 返回完整 JSON 数据
 ```
 
-#### 3. 文件整理阶段 (core.py)
+#### 3. 文件整理阶段 (mdc/core/core.py)
 
 ```python
 获取元数据 JSON
@@ -210,7 +210,7 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 下载封面图片
   ↓
 ┌─────────────────────────────┐
-│ 封面处理 (ImageProcessing)  │
+│ 封面处理 (mdc/image/imgproc) │
 │  - 人脸识别 (face_recognition)│
 │  - 智能裁剪                  │
 │  - 生成 poster/fanart/thumb  │
@@ -241,7 +241,44 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 
 ## 核心模块说明
 
-### Movie_Data_Capture.py
+### 项目结构
+
+```
+mdc/
+├── core/          # 核心处理模块
+│   ├── core.py      # 核心处理协调
+│   ├── scraper.py   # 元数据刮削
+│   └── metadata.py  # 元数据管理
+├── data/          # 数据相关模块
+│   ├── mapping/     # 映射表
+│   └── images/      # 图片资源
+├── download/      # 下载相关模块
+│   ├── downloader.py  # 资源下载
+│   └── subtitles/     # 字幕下载
+├── file/          # 文件系统模块
+│   ├── file_utils.py  # 文件操作
+│   └── movie_list.py  # 电影列表处理
+├── image/         # 图片处理模块
+│   ├── imgproc/  # 图像处理实现
+│   └── Img/              # 水印图片资源
+├── scraping/      # 数据源模块
+│   ├── api.py           # 数据源API接口
+│   ├── parser.py        # 基础刮削类
+│   └── 各数据源实现文件    # 如javbus.py, javdb.py等
+├── config/        # 配置模块
+│   └── config.py         # 配置管理
+├── cli/           # 命令行模块
+│   └── cli.py            # 命令行参数处理
+└── utils/         # 工具模块
+    ├── ADC_function.py   # HTTP请求和辅助功能
+    ├── actor_mapping.py  # 演员和信息映射
+    ├── number_parser.py  # 番号识别
+    └── translation.py    # 翻译功能
+```
+
+### 主要模块说明
+
+#### Movie_Data_Capture.py
 主程序入口，负责：
 - 程序启动和初始化
 - 配置文件加载
@@ -249,95 +286,39 @@ Movie Data Capture 是一个功能强大的影片元数据管理工具，支持�
 - 更新检查
 - 信号处理
 
-### cli.py
-命令行参数处理模块，负责：
-- 解析命令行参数
-- 处理配置覆盖
-- 生成帮助信息
+#### mdc/core/ 核心处理模块
+- **core.py**: 协调整个处理流程，调用各功能模块，处理多碟影片和失败文件
+- **scraper.py**: 调用各数据源 API，进行数据解析和标准化，处理演员和信息映射，实现翻译和繁简转换
+- **metadata.py**: 生成 NFO 文件，写入元数据，提取和整理信息
 
-### logging_utils.py
-日志管理模块，负责：
-- 日志文件生成
-- 日志级别控制
-- 标准输出重定向到日志
-- 日志文件自动清理和归档
+#### mdc/config/ 配置管理模块
+- **config.py**: 读取 config.ini 配置文件，提供配置项访问接口，支持命令行参数覆盖配置
 
-### movie_list.py
-电影列表处理模块，负责：
-- 扫描源文件夹
-- 过滤媒体文件
-- 应用正则表达式过滤
-- 跳过失败列表和最近更新的 NFO 文件
+#### mdc/cli/ 命令行处理模块
+- **cli.py**: 解析命令行参数，处理配置覆盖，生成帮助信息
 
-### config.py
-配置管理模块，负责：
-- 读取 config.ini 配置文件
-- 提供配置项访问接口
-- 支持命令行参数覆盖配置
-- 配置验证和默认值处理
+#### mdc/file/ 文件系统模块
+- **file_utils.py**: 处理路径特殊字符，创建和管理文件夹，移动和复制文件，处理失败文件
+- **movie_list.py**: 扫描源文件夹，过滤媒体文件，应用正则表达式过滤，跳过失败列表和最近更新的 NFO 文件
 
-### number_parser.py
-番号识别模块，负责：
-- 从文件名提取番号
-- 支持多种番号格式
-- 自定义正则规则
-- 有码/无码判断
+#### mdc/download/ 资源下载模块
+- **downloader.py**: 下载图片资源，批量下载剧照，下载演员照片，支持并行下载和代理处理
+- **subtitles/**: 下载字幕文件
 
-### scraper.py
-元数据刮削模块，负责：
-- 调用各数据源 API
-- 数据解析和标准化
-- 演员和信息映射
-- 翻译和繁简转换
-- 生成命名规则
+#### mdc/image/ 图片处理模块
+- **imgproc/**: 实现人脸识别、封面裁剪、水印添加等功能
+- **Img/**: 存储水印图片资源
 
-### core.py
-核心处理协调模块，负责：
-- 协调整个处理流程
-- 调用各功能模块
-- 多碟影片处理
-- 失败文件处理
+#### mdc/scraping/ 数据源模块
+- **api.py**: 提供数据源搜索和获取接口
+- **parser.py**: 定义基础刮削类和通用方法
+- **各数据源文件**: 实现 javbus, javdb, fanza 等 30+ 数据源的具体调用和解析
 
-### file_utils.py
-文件系统操作模块，负责：
-- 路径特殊字符处理
-- 文件夹创建和管理
-- 文件移动和复制
-- 失败文件处理
-
-### downloader.py
-资源下载模块，负责：
-- 图片下载
-- 剧照批量下载
-- 演员照片下载
-- 并行下载支持
-- 代理和网络错误处理
-
-### metadata.py
-元数据管理模块，负责：
-- NFO 文件生成
-- 元数据写入
-- 信息提取和整理
-
-### ADC_function.py
-辅助功能模块，提供：
-- HTTP 请求封装
-- 代理支持
-- Cookie 管理
-- 文件下载
-- 并行下载
-
-### scrapinglib/
-数据源实现目录，包含：
-- 各数据源的具体实现
-- API 调用和页面解析
-- 数据标准化处理
-
-### ImageProcessing/
-图片处理目录，包含：
-- 人脸识别 (face-recognition)
-- 封面裁剪
-- 水印添加
+#### mdc/utils/ 工具模块
+- **ADC_function.py**: 提供 HTTP 请求封装、代理支持、Cookie 管理、文件下载和并行下载功能
+- **actor_mapping.py**: 处理演员和信息映射，支持自定义映射规则
+- **number_parser.py**: 从文件名中提取番号，支持多种番号格式和自定义正则规则
+- **translation.py**: 实现多语言翻译功能，支持多种翻译引擎
 
 ## 配置文件说明
 
