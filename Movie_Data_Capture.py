@@ -660,7 +660,7 @@ if __name__ == '__main__':
     conf = config.getInstance()
 
     # Parse command line args
-    args = tuple(argparse_function(version))
+    args = tuple[str | bool, ...](argparse_function(version))
 
     再运行延迟 = conf.rerun_delay()
     if 再运行延迟 > 0 and conf.stop_counter() > 0:
