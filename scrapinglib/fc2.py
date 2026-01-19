@@ -8,13 +8,17 @@ from .parser import Parser
 
 
 class Fc2(Parser):
-    source = 'fc2'
+    source = "fc2"
 
-    expr_title = '/html/head/title/text()'
-    expr_studio = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
+    expr_title = "/html/head/title/text()"
+    expr_studio = (
+        '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
+    )
     expr_release = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/div[2]/p/text()'
     expr_runtime = "//p[@class='items_article_info']/text()"
-    expr_director = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
+    expr_director = (
+        '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
+    )
     expr_actor = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
     expr_cover = "//div[@class='items_article_MainitemThumb']/span/img/@src"
     expr_extrafanart = '//ul[@class="items_article_SampleImagesArea"]/li/a/@href'
@@ -26,12 +30,21 @@ class Fc2(Parser):
         self.uncensored = True
 
     def search(self, number):
-        self.number = number.lower().replace('fc2ppv-', '').replace('fc2-ppv-', '').replace('fc2-', '').replace('fc-', '').replace('fc_', '')
+        self.number = (
+            number.lower()
+            .replace("fc2ppv-", "")
+            .replace("fc2-ppv-", "")
+            .replace("fc2-", "")
+            .replace("fc-", "")
+            .replace("fc_", "")
+        )
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = 'https://adult.contents.fc2.com/article/' + self.number + '/'
-            #self.detailurl = 'https://adult.contents.fc2.com/article/' + self.number + '/review'
+            self.detailurl = (
+                "https://adult.contents.fc2.com/article/" + self.number + "/"
+            )
+            # self.detailurl = 'https://adult.contents.fc2.com/article/' + self.number + '/review'
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404 or self.htmlcode == 403:
             return 404
@@ -39,39 +52,43 @@ class Fc2(Parser):
         result = self.dictformat(htmltree)
         return result
 
-
     def getTitle(self, htmltree):
         title = self.getTreeElement(htmltree, self.expr_title).strip()
-        prefix = 'FC2-' + self.number
+        prefix = "FC2-" + self.number
         if title.startswith(prefix):
-            title = title[len(prefix):].lstrip(' -')
+            title = title[len(prefix) :].lstrip(" -")
         return title
-        
+
     def getNum(self, htmltree):
-        return 'FC2-' + self.number
+        return "FC2-" + self.number
 
     def getRelease(self, htmltree):
-        return super().getRelease(htmltree).strip(" ['販売日 : ']").replace('/','-')
-    
+        return super().getRelease(htmltree).strip(" ['販売日 : ']").replace("/", "-")
+
     def getActors(self, htmltree):
         actors = super().getActors(htmltree)
         if not actors:
-            actors = '素人'
+            actors = "素人"
         return actors
 
     def getCover(self, htmltree):
-        return urljoin('https://adult.contents.fc2.com', super().getCover(htmltree)) 
+        return urljoin("https://adult.contents.fc2.com", super().getCover(htmltree))
 
     def getTrailer(self, htmltree):
-        video_pather = re.compile(r'\'[a-zA-Z0-9]{32}\'')
+        video_pather = re.compile(r"\'[a-zA-Z0-9]{32}\'")
         video = video_pather.findall(self.htmlcode)
         if video:
             try:
-                video_url = video[0].replace('\'', '')
-                video_url = 'https://adult.contents.fc2.com/api/v2/videos/' + self.number + '/sample?key=' + video_url
-                url_json = eval(self.getHtml(video_url))['path'].replace('\\', '')
+                video_url = video[0].replace("'", "")
+                video_url = (
+                    "https://adult.contents.fc2.com/api/v2/videos/"
+                    + self.number
+                    + "/sample?key="
+                    + video_url
+                )
+                url_json = eval(self.getHtml(video_url))["path"].replace("\\", "")
                 return url_json
             except:
-                return ''
+                return ""
         else:
-            return ''
+            return ""

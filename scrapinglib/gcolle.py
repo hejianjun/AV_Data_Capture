@@ -7,7 +7,7 @@ from .parser import Parser
 
 
 class Gcolle(Parser):
-    source = 'gcolle'
+    source = "gcolle"
 
     expr_r18 = '//*[@id="main_content"]/table[1]/tbody/tr/td[2]/table/tbody/tr/td/h4/a[2]/@href'
     expr_number = '//td[contains(text(),"商品番号")]/../td[2]/text()'
@@ -28,17 +28,21 @@ class Gcolle(Parser):
         self.imagecut = 4
 
     def search(self, number: str):
-        self.number = number.upper().replace('GCOLLE-', '')
+        self.number = number.upper().replace("GCOLLE-", "")
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = 'https://gcolle.net/product_info.php/products_id/' + self.number
-        session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
+            self.detailurl = (
+                "https://gcolle.net/product_info.php/products_id/" + self.number
+            )
+        session = request_session(
+            cookies=self.cookies, proxies=self.proxies, verify=self.verify
+        )
         htmlcode = session.get(self.detailurl).text
         htmltree = etree.HTML(htmlcode)
 
         r18url = self.getTreeElement(htmltree, self.expr_r18)
-        if r18url and r18url.startswith('http'):
+        if r18url and r18url.startswith("http"):
             htmlcode = session.get(r18url).text
             htmltree = etree.HTML(htmlcode)
         result = self.dictformat(htmltree)
@@ -47,7 +51,7 @@ class Gcolle(Parser):
     def getNum(self, htmltree):
         num = super().getNum(htmltree)
         if self.number != num:
-            raise Exception(f'[!] {self.number}: find [{num}] in gcolle, not match')
+            raise Exception(f"[!] {self.number}: find [{num}] in gcolle, not match")
         return "GCOLLE-" + str(num)
 
     def getOutline(self, htmltree):
@@ -58,7 +62,7 @@ class Gcolle(Parser):
             return ""
 
     def getRelease(self, htmltree):
-        return re.findall('\d{4}-\d{2}-\d{2}', super().getRelease(htmltree))[0]
+        return re.findall("\d{4}-\d{2}-\d{2}", super().getRelease(htmltree))[0]
 
     def getCover(self, htmltree):
         return "https:" + super().getCover(htmltree)
@@ -69,5 +73,5 @@ class Gcolle(Parser):
             extrafanart = self.getTreeAll(htmltree, self.expr_extrafanart2)
         # Add "https:" in each extrafanart url
         for i in range(len(extrafanart)):
-            extrafanart[i] = 'https:' + extrafanart[i]
+            extrafanart[i] = "https:" + extrafanart[i]
         return extrafanart

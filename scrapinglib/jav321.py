@@ -7,7 +7,7 @@ from .parser import Parser
 
 
 class Jav321(Parser):
-    source = 'jav321'
+    source = "jav321"
 
     expr_title = "/html/body/div[2]/div[1]/div[1]/div[1]/h3/text()"
     expr_cover = "/html/body/div[2]/div[2]/div[1]/p/a/img/@src"
@@ -20,21 +20,34 @@ class Jav321(Parser):
     expr_release = '//b[contains(text(),"配信開始日")]/following-sibling::node()'
     expr_runtime = '//b[contains(text(),"収録時間")]/following-sibling::node()'
     expr_series = '//b[contains(text(),"シリーズ")]/following-sibling::node()'
-    expr_extrafanart = '//div[@class="col-md-3"]/div[@class="col-xs-12 col-md-12"]/p/a/img/@src'
+    expr_extrafanart = (
+        '//div[@class="col-md-3"]/div[@class="col-xs-12 col-md-12"]/p/a/img/@src'
+    )
 
     def queryNumberUrl(self, number):
-        return 'https://www.jav321.com/search'
+        return "https://www.jav321.com/search"
 
     def getHtmlTree(self, url):
-        """ 
+        """
         特殊处理 仅获取页面调用一次
         """
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
-            resp = httprequest.get(self.detailurl, cookies=self.cookies, proxies=self.proxies, verify=self.verify)
+            resp = httprequest.get(
+                self.detailurl,
+                cookies=self.cookies,
+                proxies=self.proxies,
+                verify=self.verify,
+            )
             self.detailhtml = resp
             return etree.fromstring(resp, etree.HTMLParser())
-        resp = httprequest.post(url, data={"sn": self.number}, cookies=self.cookies, proxies=self.proxies, verify=self.verify)
+        resp = httprequest.post(
+            url,
+            data={"sn": self.number},
+            cookies=self.cookies,
+            proxies=self.proxies,
+            verify=self.verify,
+        )
         if "/video/" in resp.url:
             self.detailurl = resp.url
             self.detailhtml = resp.text
@@ -43,42 +56,46 @@ class Jav321(Parser):
 
     def getNum(self, htmltree):
         if htmltree is None:
-            return ''
+            return ""
         num = super().getNum(htmltree)
         if num is None:
-            return ''
+            return ""
         try:
             return num.split(": ")[1]
         except (IndexError, AttributeError):
-            return ''
+            return ""
 
     def getTrailer(self, htmltree):
-        videourl_pather = re.compile(r'<source src=\"(.*?)\"')
+        videourl_pather = re.compile(r"<source src=\"(.*?)\"")
         videourl = videourl_pather.findall(self.detailhtml)
         if videourl:
-            url = videourl[0].replace('awscc3001.r18.com', 'cc3001.dmm.co.jp').replace('cc3001.r18.com', 'cc3001.dmm.co.jp')
+            url = (
+                videourl[0]
+                .replace("awscc3001.r18.com", "cc3001.dmm.co.jp")
+                .replace("cc3001.r18.com", "cc3001.dmm.co.jp")
+            )
             return url
         else:
-            return ''
+            return ""
 
     def getRelease(self, htmltree):
         if htmltree is None:
-            return ''
+            return ""
         release = super().getRelease(htmltree)
         if not release or ": " not in release:
-            return ''
+            return ""
         try:
             return release.split(": ")[1]
         except IndexError:
-            return ''
-    
+            return ""
+
     def getRuntime(self, htmltree):
         if htmltree is None:
-            return ''
+            return ""
         runtime = super().getRuntime(htmltree)
         if not runtime or ": " not in runtime:
-            return ''
+            return ""
         try:
             return runtime.split(": ")[1]
         except IndexError:
-            return ''
+            return ""

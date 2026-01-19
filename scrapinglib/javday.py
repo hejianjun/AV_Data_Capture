@@ -6,7 +6,7 @@ from .madou import change_number
 
 
 class Javday(Parser):
-    source = 'javday'
+    source = "javday"
 
     expr_url = '/html/head/meta[@property="og:url"]/@content'
     expr_cover = '/html/head/meta[@property="og:image"]/@content'
@@ -26,8 +26,12 @@ class Javday(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            number = "".join(item for item in change_number(number) if item).replace('-','').upper()
-            if self.number!=number:
+            number = (
+                "".join(item for item in change_number(number) if item)
+                .replace("-", "")
+                .upper()
+            )
+            if self.number != number:
                 print(number)
             self.detailurl = "https://javday.tv/videos/" + number + "/"
         self.htmlcode = self.getHtml(self.detailurl)
@@ -43,15 +47,14 @@ class Javday(Parser):
         title = super().getTitle(htmltree)
         # 删除番号和网站名
         try:
-            title = str(re.sub("^[\w\-]+",'',title,1))
-            title = str(re.sub("[\w\.\-]+$",'',title,1))
+            title = str(re.sub("^[\w\-]+", "", title, 1))
+            title = str(re.sub("[\w\.\-]+$", "", title, 1))
         except:
             print("非标准标题" + title)
-            title = title.replace(self.number,"")
-            title = title.replace("JAVDAY.TV","")
+            title = title.replace(self.number, "")
+            title = title.replace("JAVDAY.TV", "")
         return title.strip("- ")
-    
+
     def getTags(self, htmltree) -> list:
         tags = super().getTags(htmltree)
-        return [tag for tag in tags if 'JAVDAY.TV' not in tag]
- 
+        return [tag for tag in tags if "JAVDAY.TV" not in tag]

@@ -19,10 +19,10 @@ NOTSET = 0
 
 class Logger:
     def __init__(self, name, buffer_size=0, file_name=None, roll_num=1):
-        self.err_color = '\033[0m'
-        self.warn_color = '\033[0m'
-        self.debug_color = '\033[0m'
-        self.reset_color = '\033[0m'
+        self.err_color = "\033[0m"
+        self.warn_color = "\033[0m"
+        self.debug_color = "\033[0m"
+        self.reset_color = "\033[0m"
         self.set_console_color = lambda color: sys.stderr.write(color)
         self.name = str(name)
         self.file_max_size = 1024 * 1024
@@ -41,7 +41,9 @@ class Logger:
             self.buffer_size = buffer_size
             buffer_len = len(self.buffer)
             if buffer_len > self.buffer_size:
-                for i in range(self.last_no - buffer_len, self.last_no - self.buffer_size):
+                for i in range(
+                    self.last_no - buffer_len, self.last_no - self.buffer_size
+                ):
                     try:
                         del self.buffer[i]
                     except:
@@ -67,23 +69,26 @@ class Logger:
         self.debug_color = None
         self.reset_color = None
         self.set_console_color = lambda x: None
-        if hasattr(sys.stderr, 'isatty') and sys.stderr.isatty():
-            if os.name == 'nt':
+        if hasattr(sys.stderr, "isatty") and sys.stderr.isatty():
+            if os.name == "nt":
                 self.err_color = 0x04
                 self.warn_color = 0x06
                 self.debug_color = 0x002
                 self.reset_color = 0x07
 
                 import ctypes
+
                 SetConsoleTextAttribute = ctypes.windll.kernel32.SetConsoleTextAttribute
                 GetStdHandle = ctypes.windll.kernel32.GetStdHandle
-                self.set_console_color = lambda color: SetConsoleTextAttribute(GetStdHandle(-11), color)
+                self.set_console_color = lambda color: SetConsoleTextAttribute(
+                    GetStdHandle(-11), color
+                )
 
-            elif os.name == 'posix':
-                self.err_color = '\033[31m'
-                self.warn_color = '\033[33m'
-                self.debug_color = '\033[32m'
-                self.reset_color = '\033[0m'
+            elif os.name == "posix":
+                self.err_color = "\033[31m"
+                self.warn_color = "\033[33m"
+                self.debug_color = "\033[32m"
+                self.reset_color = "\033[0m"
 
                 self.set_console_color = lambda color: sys.stderr.write(color)
 
@@ -113,7 +118,7 @@ class Logger:
 
     def log_console(self, level, console_color, fmt, *args, **kwargs):
         try:
-            console_string = '[%s] %s\n' % (level, fmt % args)
+            console_string = "[%s] %s\n" % (level, fmt % args)
             self.set_console_color(console_color)
             sys.stderr.write(console_string)
             self.set_console_color(self.reset_color)
@@ -122,11 +127,11 @@ class Logger:
 
     def log_to_file(self, level, console_color, fmt, *args, **kwargs):
         if self.log_fd:
-            if level == 'e':
-                string = '%s' % (fmt % args)
+            if level == "e":
+                string = "%s" % (fmt % args)
             else:
                 time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:23]
-                string = '%s [%s] [%s] %s\n' % (time_str, self.name, level, fmt % args)
+                string = "%s [%s] [%s] %s\n" % (time_str, self.name, level, fmt % args)
 
             self.log_fd.write(string)
             try:
@@ -156,8 +161,13 @@ class Logger:
                 if buffer_len > self.buffer_size:
                     del self.buffer[self.last_no - self.buffer_size]
         except Exception as e:
-            string = '%s - [%s]LOG_EXCEPT: %s, Except:%s<br> %s' % (
-            time.ctime()[4:-5], level, fmt % args, e, traceback.format_exc())
+            string = "%s - [%s]LOG_EXCEPT: %s, Except:%s<br> %s" % (
+                time.ctime()[4:-5],
+                level,
+                fmt % args,
+                e,
+                traceback.format_exc(),
+            )
             self.last_no += 1
             self.buffer[self.last_no] = string
             buffer_len = len(self.buffer)
@@ -169,17 +179,17 @@ class Logger:
     def debug(self, fmt, *args, **kwargs):
         if self.min_level > DEBUG:
             return
-        self.log('-', self.debug_color, '21610b', fmt, *args, **kwargs)
+        self.log("-", self.debug_color, "21610b", fmt, *args, **kwargs)
 
     def info(self, fmt, *args, **kwargs):
         if self.min_level > INFO:
             return
-        self.log('+', self.reset_color, '000000', fmt, *args)
+        self.log("+", self.reset_color, "000000", fmt, *args)
 
     def warning(self, fmt, *args, **kwargs):
         if self.min_level > WARN:
             return
-        self.log('#', self.warn_color, 'FF8000', fmt, *args, **kwargs)
+        self.log("#", self.warn_color, "FF8000", fmt, *args, **kwargs)
 
     def warn(self, fmt, *args, **kwargs):
         self.warning(fmt, *args, **kwargs)
@@ -187,20 +197,20 @@ class Logger:
     def error(self, fmt, *args, **kwargs):
         if self.min_level > ERROR:
             return
-        self.log('!', self.err_color, 'FE2E2E', fmt, *args, **kwargs)
+        self.log("!", self.err_color, "FE2E2E", fmt, *args, **kwargs)
 
     def exception(self, fmt, *args, **kwargs):
         self.error(fmt, *args, **kwargs)
-        string = '%s' % (traceback.format_exc())
-        self.log_to_file('e', self.err_color, string)
+        string = "%s" % (traceback.format_exc())
+        self.log_to_file("e", self.err_color, string)
 
     def critical(self, fmt, *args, **kwargs):
         if self.min_level > CRITICAL:
             return
-        self.log('!', self.err_color, 'D7DF01', fmt, *args, **kwargs)
+        self.log("!", self.err_color, "D7DF01", fmt, *args, **kwargs)
 
     def tofile(self, fmt, *args, **kwargs):
-        self.log_to_file('@', self.warn_color, fmt, *args, **kwargs)
+        self.log_to_file("@", self.warn_color, fmt, *args, **kwargs)
 
     # =================================================================
     def set_buffer_size(self, set_size):
@@ -248,7 +258,7 @@ class Logger:
             if type(line) is str:
                 return line
             else:
-                return str(line, errors='ignore')
+                return str(line, errors="ignore")
         except Exception as e:
             print(("unicode err:%r" % e))
             print(("line can't decode:%s" % line))
@@ -266,12 +276,12 @@ def getLogger(name=None, buffer_size=0, file_name=None, roll_num=1):
             name = n
             break
     if name is None:
-        name = u"default"
+        name = "default"
 
     if not isinstance(name, str):
-        raise TypeError('A logger name must be string or Unicode')
+        raise TypeError("A logger name must be string or Unicode")
     if isinstance(name, bytes):
-        name = name.encode('utf-8')
+        name = name.encode("utf-8")
 
     if name in loggerDict:
         return loggerDict[name]
@@ -313,7 +323,7 @@ def tofile(fmt, *args, **kwargs):
     default_log.tofile(fmt, *args, **kwargs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     log_file = os.path.join(os.path.dirname(sys.argv[0]), "test.log")
     getLogger().set_file(log_file)
     debg("debug")

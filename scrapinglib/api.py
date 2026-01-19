@@ -9,12 +9,11 @@ from .parser import Parser
 import config
 import importlib
 import traceback
-from ADC_function import (load_cookies,
-                          file_modification_days)
+from ADC_function import load_cookies, file_modification_days
 
 
 def search(number, sources: str = None, **kwargs):
-    """ 根据`番号/电影`名搜索信息
+    """根据`番号/电影`名搜索信息
 
     :param number: number/name  depends on type
     :param sources: sources string with `,` Eg: `avsox,javbus`
@@ -24,26 +23,47 @@ def search(number, sources: str = None, **kwargs):
     return sc.search(number, sources, **kwargs)
 
 
-def getSupportedSources(tag='adult'):
+def getSupportedSources(tag="adult"):
     """
     :param tag: `adult`, `general`
     """
     sc = Scraping()
-    if tag == 'adult':
-        return ','.join(sc.adult_full_sources)
+    if tag == "adult":
+        return ",".join(sc.adult_full_sources)
     else:
-        return ','.join(sc.general_full_sources)
+        return ",".join(sc.general_full_sources)
 
 
 class Scraping:
-    """
-    """
-    adult_full_sources = ['javlibrary', 'javdb', 'javbus', 'airav', 'fanza', 'xcity', 'jav321',
-                          'mgstage', 'fc2', 'avsox', 'dlsite', 'carib', 'madou', 'msin', 'av123',
-                          'getchu', 'gcolle', 'javday', 'pissplay', 'javmenu', 'pcolle', 'caribpr', 'madouji'
-                          ]
+    """ """
 
-    general_full_sources = ['tmdb', 'imdb']
+    adult_full_sources = [
+        "javlibrary",
+        "javdb",
+        "javbus",
+        "airav",
+        "fanza",
+        "xcity",
+        "jav321",
+        "mgstage",
+        "fc2",
+        "avsox",
+        "dlsite",
+        "carib",
+        "madou",
+        "msin",
+        "av123",
+        "getchu",
+        "gcolle",
+        "javday",
+        "pissplay",
+        "javmenu",
+        "pcolle",
+        "caribpr",
+        "madouji",
+    ]
+
+    general_full_sources = ["tmdb", "imdb"]
 
     debug = False
 
@@ -77,10 +97,19 @@ class Scraping:
 
         return None
 
-    def search(self, number, sources=None, proxies=None, verify=None, type='adult',
-               specifiedSource=None, specifiedUrl=None,
-               dbsite=None, morestoryline=False,
-               debug=False):
+    def search(
+        self,
+        number,
+        sources=None,
+        proxies=None,
+        verify=None,
+        type="adult",
+        specifiedSource=None,
+        specifiedUrl=None,
+        dbsite=None,
+        morestoryline=False,
+        debug=False,
+    ):
         self.debug = debug
         self.proxies = proxies
         self.verify = verify
@@ -98,14 +127,14 @@ class Scraping:
         self.dbcookies = valid_cookies  # 改为字典结构存储多爬虫cookie
 
         print(f"当前爬虫sources: {sources}")
-        if type == 'adult':
+        if type == "adult":
             return self.searchAdult(number, tuple(sources))
         else:
             return self.searchGeneral(number, tuple(sources))
 
     @lru_cache(maxsize=None)
     def searchGeneral(self, name, sources):
-        """ 查询电影电视剧
+        """查询电影电视剧
         imdb,tmdb
         """
         if self.specifiedSource:
@@ -116,10 +145,9 @@ class Scraping:
         for source in sources:
             try:
                 if self.debug:
-                    print('[+]select', source)
+                    print("[+]select", source)
                 try:
-                    module = importlib.import_module(
-                        '.' + source, 'scrapinglib')
+                    module = importlib.import_module("." + source, "scrapinglib")
                     parser_type = getattr(module, source.capitalize())
                     parser: Parser = parser_type()
                     data = parser.scrape(name, self)
@@ -134,23 +162,25 @@ class Scraping:
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):
                     if self.debug:
-                        print(
-                            f"[+]Find movie [{name}] metadata on website '{source}'")
+                        print(f"[+]Find movie [{name}] metadata on website '{source}'")
                     break
             except:
                 continue
 
         # Return if data not found in all sources
-        if not json_data or json_data['title'] == "":
+        if not json_data or json_data["title"] == "":
             return None
 
         # If actor is anonymous, Fill in Anonymous
-        if len(json_data['actor']) == 0:
+        if len(json_data["actor"]) == 0:
             if config.getInstance().anonymous_fill() == True:
-                if "zh_" in config.getInstance().get_target_language() or "ZH" in config.getInstance().get_target_language():
-                    json_data['actor'] = "佚名"
+                if (
+                    "zh_" in config.getInstance().get_target_language()
+                    or "ZH" in config.getInstance().get_target_language()
+                ):
+                    json_data["actor"] = "佚名"
                 else:
-                    json_data['actor'] = "Anonymous"
+                    json_data["actor"] = "Anonymous"
 
         return json_data
 
@@ -166,10 +196,9 @@ class Scraping:
         for source in sources:
             try:
                 if self.debug:
-                    print('[+]select', source)
+                    print("[+]select", source)
                 try:
-                    module = importlib.import_module(
-                        '.' + source, 'scrapinglib')
+                    module = importlib.import_module("." + source, "scrapinglib")
                     parser_type = getattr(module, source.capitalize())
                     parser: Parser = parser_type()
                     data = parser.scrape(number, self)
@@ -186,49 +215,63 @@ class Scraping:
                 if self.get_data_state(json_data):
                     if self.debug:
                         print(
-                            f"[+]Find movie [{number}] metadata on website '{source}'")
+                            f"[+]Find movie [{number}] metadata on website '{source}'"
+                        )
                     break
             except:
                 continue
 
         # javdb的封面有水印，如果可以用其他源的封面来替换javdb的封面
-        if 'source' in json_data and json_data['source'] == 'javdb':
+        if "source" in json_data and json_data["source"] == "javdb":
             # If cover not found in other source, then skip using other sources using javdb cover instead
             try:
                 # search other sources
-                other_sources = sources[sources.index('javdb') + 1:]
+                other_sources = sources[sources.index("javdb") + 1 :]
                 other_json_data = self.searchAdult(number, other_sources)
-                if other_json_data is not None and 'cover' in other_json_data and other_json_data['cover'] != '':
-                    json_data['cover'] = other_json_data['cover']
+                if (
+                    other_json_data is not None
+                    and "cover" in other_json_data
+                    and other_json_data["cover"] != ""
+                ):
+                    json_data["cover"] = other_json_data["cover"]
                     if self.debug:
                         print(
-                            f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
+                            f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'"
+                        )
             except:
                 pass
             # search other sources
             # If cover not found in other source, then skip using other sources using javdb cover instead
             try:
-                other_sources = sources[sources.index('javdb') + 1:]
+                other_sources = sources[sources.index("javdb") + 1 :]
                 other_json_data = self.searchAdult(number, other_sources)
-                if other_json_data is not None and 'cover' in other_json_data and other_json_data['cover'] != '':
-                    json_data['cover'] = other_json_data['cover']
+                if (
+                    other_json_data is not None
+                    and "cover" in other_json_data
+                    and other_json_data["cover"] != ""
+                ):
+                    json_data["cover"] = other_json_data["cover"]
                     if self.debug:
                         print(
-                            f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'")
+                            f"[+]Find movie [{number}] cover on website '{other_json_data['cover']}'"
+                        )
             except:
                 pass
 
         # Return if data not found in all sources
-        if not json_data or json_data['title'] == "":
+        if not json_data or json_data["title"] == "":
             return None
 
         # If actor is anonymous, Fill in Anonymous
-        if len(json_data['actor']) == 0:
+        if len(json_data["actor"]) == 0:
             if config.getInstance().anonymous_fill() == True:
-                if "zh_" in config.getInstance().get_target_language() or "ZH" in config.getInstance().get_target_language():
-                    json_data['actor'] = "佚名"
+                if (
+                    "zh_" in config.getInstance().get_target_language()
+                    or "ZH" in config.getInstance().get_target_language()
+                ):
+                    json_data["actor"] = "佚名"
                 else:
-                    json_data['actor'] = "Anonymous"
+                    json_data["actor"] = "Anonymous"
 
         return json_data
 
@@ -238,10 +281,10 @@ class Scraping:
         todel = []
         for s in sources:
             if s not in self.general_full_sources:
-                print('[!] Source Not Exist : ' + s)
+                print("[!] Source Not Exist : " + s)
                 todel.append(s)
         for d in todel:
-            print('[!] Remove Source : ' + s)
+            print("[!] Remove Source : " + s)
             sources.remove(d)
         return sources
 
@@ -270,16 +313,26 @@ class Scraping:
             elif "pcolle" in sources and "pcolle" in lo_file_number:
                 sources = ["pcolle"]
             elif "fc2" in lo_file_number:
-                sources = ['av123', "javdb", "fc2", "avsox", "msin"]
-            elif (re.search(r"\d+\D+-", file_number) or "siro" in lo_file_number):
+                sources = ["av123", "javdb", "fc2", "avsox", "msin"]
+            elif re.search(r"\d+\D+-", file_number) or "siro" in lo_file_number:
                 if "mgstage" in sources:
                     sources = insert(sources, "mgstage")
             elif "gcolle" in sources and (re.search("\d{6}", file_number)):
                 sources = insert(sources, "gcolle")
-            elif re.search(r"^\d{5,}", file_number) or \
-                    (re.search(r"^\d{6}-\d{3}", file_number)) or "heyzo" in lo_file_number:
-                sources = ["airav","avsox", "carib", "caribpr",
-                           "javbus", "xcity", "javdb"]
+            elif (
+                re.search(r"^\d{5,}", file_number)
+                or (re.search(r"^\d{6}-\d{3}", file_number))
+                or "heyzo" in lo_file_number
+            ):
+                sources = [
+                    "airav",
+                    "avsox",
+                    "carib",
+                    "caribpr",
+                    "javbus",
+                    "xcity",
+                    "javdb",
+                ]
             elif re.search(r"^[a-z0-9]{3,}$", lo_file_number):
                 if "xcity" in sources:
                     sources = insert(sources, "xcity")
@@ -290,11 +343,11 @@ class Scraping:
         todel = []
         for s in sources:
             if s not in self.adult_full_sources and config.getInstance().debug():
-                print('[!] Source Not Exist : ' + s)
+                print("[!] Source Not Exist : " + s)
                 todel.append(s)
         for d in todel:
             if config.getInstance().debug():
-                print('[!] Remove Source : ' + d)
+                print("[!] Remove Source : " + d)
             sources.remove(d)
         return sources
 
@@ -305,8 +358,12 @@ class Scraping:
             return False
         if data["number"] is None or data["number"] == "" or data["number"] == "null":
             return False
-        if (data["cover"] is None or data["cover"] == "" or data["cover"] == "null") \
-                and (data["cover_small"] is None or data["cover_small"] == "" or
-                     data["cover_small"] == "null"):
+        if (
+            data["cover"] is None or data["cover"] == "" or data["cover"] == "null"
+        ) and (
+            data["cover_small"] is None
+            or data["cover_small"] == ""
+            or data["cover_small"] == "null"
+        ):
             return False
         return True

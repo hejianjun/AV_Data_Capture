@@ -7,7 +7,7 @@ from .parser import Parser
 
 
 class Fanza(Parser):
-    source = 'fanza'
+    source = "fanza"
 
     expr_title = '//*[starts-with(@id, "title")]/text()'
     expr_actor = "//td[contains(text(),'出演者')]/following-sibling::td/span/a/text()"
@@ -22,7 +22,9 @@ class Fanza(Parser):
         self.number = number
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
-            durl = "https://www.dmm.co.jp/age_check/=/declared=yes/?"+ urlencode({"rurl": self.detailurl})
+            durl = "https://www.dmm.co.jp/age_check/=/declared=yes/?" + urlencode(
+                {"rurl": self.detailurl}
+            )
             self.htmltree = self.getHtmlTree(durl)
             result = self.dictformat(self.htmltree)
             return result
@@ -47,10 +49,15 @@ class Fanza(Parser):
 
         for url in fanza_urls:
             self.detailurl = url + fanza_search_number
-            url = "https://www.dmm.co.jp/age_check/=/declared=yes/?"+ urlencode({"rurl": self.detailurl})
+            url = "https://www.dmm.co.jp/age_check/=/declared=yes/?" + urlencode(
+                {"rurl": self.detailurl}
+            )
             self.htmlcode = self.getHtml(url)
-            if self.htmlcode != 404 \
-                    and 'Sorry! This content is not available in your region.' not in self.htmlcode:
+            if (
+                self.htmlcode != 404
+                and "Sorry! This content is not available in your region."
+                not in self.htmlcode
+            ):
                 self.htmltree = etree.HTML(self.htmlcode)
                 if self.htmltree is not None:
                     result = self.dictformat(self.htmltree)
@@ -62,70 +69,73 @@ class Fanza(Parser):
         # for example, the url will be cid=test012
         # but the hinban on the page is test00012
         # so get the hinban first, and then pass it to following functions
-        self.fanza_hinban = self.getFanzaString('品番：')
+        self.fanza_hinban = self.getFanzaString("品番：")
         self.number = self.fanza_hinban
         number_lo = self.number.lower()
-        if (re.sub('-|_', '', number_lo) == self.fanza_hinban or
-            number_lo.replace('-', '00') == self.fanza_hinban or
-            number_lo.replace('-', '') + 'so' == self.fanza_hinban
+        if (
+            re.sub("-|_", "", number_lo) == self.fanza_hinban
+            or number_lo.replace("-", "00") == self.fanza_hinban
+            or number_lo.replace("-", "") + "so" == self.fanza_hinban
         ):
             self.number = self.number
         return self.number
 
     def getStudio(self, htmltree):
-        return self.getFanzaString('メーカー')
+        return self.getFanzaString("メーカー")
 
     def getOutline(self, htmltree):
         try:
             result = self.getTreeElement(htmltree, self.expr_outline).replace("\n", "")
-            if result == '':
-                result = self.getTreeElement(htmltree, self.expr_outline2).replace("\n", "")
+            if result == "":
+                result = self.getTreeElement(htmltree, self.expr_outline2).replace(
+                    "\n", ""
+                )
             if "※ 配信方法によって収録内容が異なる場合があります。" == result:
                 result = self.getTreeElement(htmltree, self.expr_outline_og)
             return result
         except:
-            return ''
+            return ""
 
     def getRuntime(self, htmltree):
         runtime = super().getRuntime(htmltree)
         if not runtime:
-            return ''
-        match = re.search(r'\d+', runtime)
+            return ""
+        match = re.search(r"\d+", runtime)
         if match:
             return str(match.group()).strip(" ['']")
-        return ''
+        return ""
 
     def getDirector(self, htmltree):
         if "anime" not in self.detailurl:
-            return self.getFanzaString('監督：')
-        return ''
+            return self.getFanzaString("監督：")
+        return ""
 
     def getActors(self, htmltree):
         if "anime" not in self.detailurl:
             return super().getActors(htmltree)
-        return ''
+        return ""
 
     def getRelease(self, htmltree):
-        result = self.getFanzaString('発売日：')
-        if result == '' or result == '----':
-            result = self.getFanzaString('配信開始日：')
-        return result.replace("/", "-").strip('\\n')
+        result = self.getFanzaString("発売日：")
+        if result == "" or result == "----":
+            result = self.getFanzaString("配信開始日：")
+        return result.replace("/", "-").strip("\\n")
 
     def getTags(self, htmltree):
-        return self.getFanzaStrings('ジャンル：')
+        return self.getFanzaStrings("ジャンル：")
 
     def getLabel(self, htmltree):
-        ret = self.getFanzaString('レーベル')
+        ret = self.getFanzaString("レーベル")
         if ret == "----":
-            return ''
+            return ""
         return ret
 
     def getSeries(self, htmltree):
-        ret = self.getFanzaString('シリーズ：')
+        ret = self.getFanzaString("シリーズ：")
         if ret == "----":
-            return ''
+            return ""
         return ret
-    
+
     def getCover(self, htmltree):
         cover_number = self.number
         try:
@@ -153,37 +163,54 @@ class Fanza(Parser):
         return result
 
     def getExtrafanart(self, htmltree):
-        htmltext = re.search(r'<div id=\"sample-image-block\"[\s\S]*?<br></div>\s*?</div>', self.htmlcode)
+        htmltext = re.search(
+            r"<div id=\"sample-image-block\"[\s\S]*?<br></div>\s*?</div>", self.htmlcode
+        )
         if htmltext:
             htmltext = htmltext.group()
-            extrafanart_images = re.findall(r'<img.*?src=\"(.*?)\"', htmltext)
+            extrafanart_images = re.findall(r"<img.*?src=\"(.*?)\"", htmltext)
             if extrafanart_images:
                 sheet = []
                 for img_url in extrafanart_images:
-                    url_cuts = img_url.rsplit('-', 1)
-                    sheet.append(url_cuts[0] + 'jp-' + url_cuts[1])
+                    url_cuts = img_url.rsplit("-", 1)
+                    sheet.append(url_cuts[0] + "jp-" + url_cuts[1])
                 return sheet
-        return ''
+        return ""
 
     def getTrailer(self, htmltree):
-        htmltext = re.search(r'<script type=\"application/ld\+json\">[\s\S].*}\s*?</script>', self.htmlcode)
+        htmltext = re.search(
+            r"<script type=\"application/ld\+json\">[\s\S].*}\s*?</script>",
+            self.htmlcode,
+        )
         if htmltext:
             htmltext = htmltext.group()
-            url = re.search(r'\"contentUrl\":\"(.*?)\"', htmltext)
+            url = re.search(r"\"contentUrl\":\"(.*?)\"", htmltext)
             if url:
                 url = url.group(1)
-                url = url.rsplit('_', 2)[0] + '_mhb_w.mp4'
+                url = url.rsplit("_", 2)[0] + "_mhb_w.mp4"
                 return url
-        return ''
+        return ""
 
     def getFanzaString(self, expr):
-        result1 = str(self.htmltree.xpath("//td[contains(text(),'"+expr+"')]/following-sibling::td/a/text()")).strip(" ['']")
-        result2 = str(self.htmltree.xpath("//td[contains(text(),'"+expr+"')]/following-sibling::td/text()")).strip(" ['']")
-        return result1+result2
+        result1 = str(
+            self.htmltree.xpath(
+                "//td[contains(text(),'" + expr + "')]/following-sibling::td/a/text()"
+            )
+        ).strip(" ['']")
+        result2 = str(
+            self.htmltree.xpath(
+                "//td[contains(text(),'" + expr + "')]/following-sibling::td/text()"
+            )
+        ).strip(" ['']")
+        return result1 + result2
 
     def getFanzaStrings(self, string):
-        result1 = self.htmltree.xpath("//td[contains(text(),'" + string + "')]/following-sibling::td/a/text()")
+        result1 = self.htmltree.xpath(
+            "//td[contains(text(),'" + string + "')]/following-sibling::td/a/text()"
+        )
         if len(result1) > 0:
             return result1
-        result2 = self.htmltree.xpath("//td[contains(text(),'" + string + "')]/following-sibling::td/text()")
+        result2 = self.htmltree.xpath(
+            "//td[contains(text(),'" + string + "')]/following-sibling::td/text()"
+        )
         return result2

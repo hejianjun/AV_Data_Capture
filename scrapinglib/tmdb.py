@@ -9,7 +9,8 @@ class Tmdb(Parser):
     两种实现,带apikey与不带key
     apikey
     """
-    source = 'tmdb'
+
+    source = "tmdb"
     imagecut = 0
     apikey = None
 
@@ -26,10 +27,11 @@ class Tmdb(Parser):
         """
         TODO 区分 ID 与 名称
         """
-        id  = number
+        id = number
         movieUrl = "https://www.themoviedb.org/movie/" + id + "?language=zh-CN"
         return movieUrl
 
     def getCover(self, htmltree):
-        return "https://www.themoviedb.org" + self.getTreeElement(htmltree, self.expr_cover)
-
+        return "https://www.themoviedb.org" + self.getTreeElement(
+            htmltree, self.expr_cover
+        )

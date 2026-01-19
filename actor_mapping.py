@@ -9,60 +9,66 @@ import typing
 _actor_mapping = None
 _info_mapping = None
 
-def load_mapping(mode,mapping_file: str) -> dict:
+
+def load_mapping(mode, mapping_file: str) -> dict:
     """通用映射加载函数"""
     global_mapping = {}
-    mapping_path = Path(__file__).parent / 'MappingTable' / mapping_file
-    
+    mapping_path = Path(__file__).parent / "MappingTable" / mapping_file
+
     if not mapping_path.exists():
         raise FileNotFoundError(f"映射文件不存在: {mapping_path}")
-    
+
     doc = etree.parse(str(mapping_path))
-    
-    for item in doc.xpath('//a'):
-        if mode==1:
-            lang = item.get('zh_cn')
-        elif mode==2:
-            lang = item.get('zh_tw')
-        elif mode==3:
-            lang = item.get('jp')
+
+    for item in doc.xpath("//a"):
+        if mode == 1:
+            lang = item.get("zh_cn")
+        elif mode == 2:
+            lang = item.get("zh_tw")
+        elif mode == 3:
+            lang = item.get("jp")
         if lang is None:
             continue
-        
+
         # 收集所有可能的别名
         aliases = []
-        if kw := item.get('keyword'):
-            aliases.extend(kw.split(','))
-        if jp := item.get('jp'):
+        if kw := item.get("keyword"):
+            aliases.extend(kw.split(","))
+        if jp := item.get("jp"):
             aliases.append(jp)
-        if zh_tw := item.get('zh_tw'):
+        if zh_tw := item.get("zh_tw"):
             aliases.append(zh_tw)
-        
+
         # 建立映射关系
         for alias in filter(None, aliases):
             normalized_alias = alias.strip().lower()
             global_mapping[normalized_alias] = lang
-        
+
         # 建立中文名到自身的映射
         global_mapping[lang.lower()] = lang
-    
+
     return global_mapping
+
 
 def get_actor_mapping(mode):
     """获取演员映射表"""
     global _actor_mapping
     if _actor_mapping is None:
-        _actor_mapping = load_mapping(mode,'mapping_actor.xml')
+        _actor_mapping = load_mapping(mode, "mapping_actor.xml")
     return _actor_mapping
+
 
 def get_info_mapping(mode):
     """获取信息标签映射表"""
     global _info_mapping
     if _info_mapping is None:
-        _info_mapping = load_mapping(mode,'mapping_info.xml')
+        _info_mapping = load_mapping(mode, "mapping_info.xml")
     return _info_mapping
 
-def process_text_mappings(json_data: typing.Union[str, list, dict], mapping: dict) -> typing.Union[str, list, dict]:
+
+def process_text_mappings(
+    json_data: typing.Union[str, list, dict], mapping: dict
+) -> typing.Union[str, list, dict]:
     """处理文本映射"""
     if isinstance(json_data, list):
         newlists = []
@@ -75,7 +81,8 @@ def process_text_mappings(json_data: typing.Union[str, list, dict], mapping: dic
         normalized, should_delete = process_text_mapping(json_data, mapping)
         return normalized if not should_delete else json_data
     return json_data
-    
+
+
 def process_text_mapping(text: str, mapping: dict) -> tuple:
     """
     处理文本映射
@@ -83,77 +90,88 @@ def process_text_mapping(text: str, mapping: dict) -> tuple:
     """
     original = text.strip()
     normalized = mapping.get(original.lower(), original)
-    
+
     if normalized == "删除":
         return None, True
     return normalized, False
 
+
 def process_special_actor_name(original: str, actor_mapping: dict) -> str:
     """处理带括号的特殊演员名称"""
-    if ('（' not in original or '）' not in original) and ('(' not in original or ')' not in original) :
+    if ("（" not in original or "）" not in original) and (
+        "(" not in original or ")" not in original
+    ):
         return actor_mapping.get(original.lower(), original)
 
     # 处理全角括号
-    match = re.match(r'(.*)[（|\(](.*)[）|\)]', original)
+    match = re.match(r"(.*)[（|\(](.*)[）|\)]", original)
     if not match:
         return actor_mapping.get(original.strip().lower(), original)
 
     outer, inner = match.groups()
     norm_outer = actor_mapping.get(outer.strip().lower(), outer.strip())
-    
+
     # 处理内层多个别名
-    if '、' in inner:
-        inner_parts = [p.strip() for p in inner.split('、')]
+    if "、" in inner:
+        inner_parts = [p.strip() for p in inner.split("、")]
         norm_inner_parts = [actor_mapping.get(p.lower(), p) for p in inner_parts]
-        
+
         if all(p == norm_outer for p in norm_inner_parts):
             return norm_outer
         return f"{norm_outer}({''.join(norm_inner_parts)})"
-    
+
     norm_inner = actor_mapping.get(inner.strip().lower(), inner.strip())
     return f"{norm_outer}({norm_inner})" if norm_inner != norm_outer else norm_outer
+
 
 def modify_nfo_content(nfo_path: Path) -> tuple:
     """修改NFO文件内容并返回新演员列表"""
     try:
         # 读取并解析文件
-        with open(nfo_path, 'r', encoding='utf-8') as f:
+        with open(nfo_path, "r", encoding="utf-8") as f:
             content = f.read()
-        root = etree.fromstring(content.encode('utf-8'))
-        
+        root = etree.fromstring(content.encode("utf-8"))
+
         modified = False
         actor_mapping = get_actor_mapping(1)
         info_mapping = get_info_mapping(1)
         new_actors = []
 
         # 处理演员信息
-        for actor in root.xpath('.//actor'):
-            name_node = actor.find('name')
+        for actor in root.xpath(".//actor"):
+            name_node = actor.find("name")
             # 使用更明确的检查方式
-            if name_node is None or name_node.text is None or name_node.text.strip() == '':
+            if (
+                name_node is None
+                or name_node.text is None
+                or name_node.text.strip() == ""
+            ):
                 continue
 
             original = name_node.text.strip()
             normalized = process_special_actor_name(original, actor_mapping)
-            
+
             # 冲突检测
-            if '(' in normalized or '（' in normalized:
-                print(f"ALERT: 演员名称映射冲突 {original} -> {normalized}", file=sys.stderr)
+            if "(" in normalized or "（" in normalized:
+                print(
+                    f"ALERT: 演员名称映射冲突 {original} -> {normalized}",
+                    file=sys.stderr,
+                )
                 return None, [], False
 
             if normalized != original:
                 name_node.text = normalized
                 modified = True
 
-            clean_name = normalized.split('(')[0].strip()
+            clean_name = normalized.split("(")[0].strip()
             if clean_name not in new_actors:
                 new_actors.append(clean_name)
 
         # 处理标签信息
-        for node in root.xpath('.//tag | .//genre'):
+        for node in root.xpath(".//tag | .//genre"):
             original = node.text.strip() if node.text else ""
             normalized, should_delete = process_text_mapping(original, info_mapping)
-            
+
             if should_delete:
                 node.getparent().remove(node)
                 modified = True
@@ -164,13 +182,10 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         # 生成最终内容
         if modified:
             new_content = etree.tostring(
-                root, 
-                encoding='utf-8', 
-                pretty_print=True, 
-                xml_declaration=True
-            ).decode('utf-8')
+                root, encoding="utf-8", pretty_print=True, xml_declaration=True
+            ).decode("utf-8")
             return new_content, new_actors, True
-        
+
         return content, new_actors, False
 
     except FileNotFoundError as e:
@@ -180,27 +195,30 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
         print(f"ERROR处理文件 {nfo_path}: {str(e)}", file=sys.stderr)
         return None, [], False
 
+
 # 以下函数保持原有实现，仅作示例保留
 # (migrate_files, process_movie_dir, is_movie_dir, find_movie_dirs, safe_iterdir, main)
+
 
 def migrate_files(src_dir: Path, new_actor_dir: str, reason: str):
     """优化后的文件迁移函数（添加了重试逻辑）"""
     base_path = src_dir.parent.parent
     dest_dir = base_path / new_actor_dir / src_dir.name
-    
+
     print(f"\n【移动原因】{reason}")
     print(f"旧路径：{src_dir}\n新路径：{dest_dir}")
-    
+
     # 检查目标路径长度，避免在Windows上出错
     import os
-    if os.name == 'nt':  # Windows系统
+
+    if os.name == "nt":  # Windows系统
         dest_str = str(dest_dir)
         if len(dest_str) >= 250:  # 保守限制，留一些余量给文件名
             print(f"警告：目标路径可能过长 ({len(dest_str)} 字符)，尝试使用长路径支持")
             # 尝试使用Windows长路径前缀
-            dest_str = '\\\\?\\' + dest_str
+            dest_str = "\\\\?\\" + dest_str
             dest_dir = Path(dest_str)
-    
+
     try:
         dest_dir.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(src_dir), str(dest_dir))
@@ -215,26 +233,27 @@ def process_movie_dir(movie_dir: Path):
     """处理单个影片目录（增强版）"""
     # 检查路径长度
     import os
-    if os.name == 'nt':  # Windows系统
+
+    if os.name == "nt":  # Windows系统
         dir_str = str(movie_dir)
         if len(dir_str) >= 250:
             print(f"警告：路径过长 ({len(dir_str)} 字符)，尝试使用长路径支持")
             # 尝试使用Windows长路径前缀
-            long_path = '\\\\?\\' + dir_str
+            long_path = "\\\\?\\" + dir_str
             if Path(long_path).exists():
                 movie_dir = Path(long_path)
-    
-    nfo_files = list(movie_dir.glob('*.nfo'))
+
+    nfo_files = list(movie_dir.glob("*.nfo"))
     if not nfo_files:
         return
-    
+
     main_nfo = nfo_files[0]
     new_content, new_actors, modified = modify_nfo_content(main_nfo)
-    
+
     # 只要NFO内容被修改（包含tag/genre的修改），就写入文件
     if modified and new_content is not None:
         try:
-            with open(main_nfo, 'w', encoding='utf-8') as f:
+            with open(main_nfo, "w", encoding="utf-8") as f:
                 f.write(new_content)
             print(f"√ 已更新NFO文件：{main_nfo.name}")
         except Exception as e:
@@ -243,18 +262,18 @@ def process_movie_dir(movie_dir: Path):
 
     # 仅在演员目录变化时执行迁移
     if len(new_actors) > 0:
-        new_actor_dir = ','.join(new_actors)
+        new_actor_dir = ",".join(new_actors)
         original_actor_dir = movie_dir.parent.name
-        
+
         # 检查新路径长度
-        if os.name == 'nt':  # Windows系统
+        if os.name == "nt":  # Windows系统
             base_path = movie_dir.parent.parent
             dest_dir = base_path / new_actor_dir / movie_dir.name
             dest_str = str(dest_dir)
             if len(dest_str) >= 250:
                 print(f"警告：目标路径过长 ({len(dest_str)} 字符)，将不会执行移动操作")
                 return
-        
+
         if new_actor_dir != original_actor_dir:
             change_reason = (
                 f"演员目录标准化转换：\n"
@@ -268,26 +287,32 @@ def process_movie_dir(movie_dir: Path):
 def is_movie_dir(path: Path) -> bool:
     """判断是否为有效影片目录的标准"""
     return (
-        path.is_dir() and 
-        any(path.glob('*.nfo')) and  # 包含NFO文件
-        not any(child.is_dir() and child.name !='translated' for child in path.iterdir())  # 没有子目录
+        path.is_dir()
+        and any(path.glob("*.nfo"))  # 包含NFO文件
+        and not any(
+            child.is_dir() and child.name != "translated" for child in path.iterdir()
+        )  # 没有子目录
     )
+
+
 def find_movie_dirs(root: Path) -> list[Path]:
     """智能递归查找所有符合条件的影片目录"""
     movie_dirs = []
-    
+
     # 先检查当前目录本身是否符合条件
     if is_movie_dir(root):
         movie_dirs.append(root)
         return movie_dirs
-    
+
     # 递归遍历子目录
     for child in safe_iterdir(root):
-        if child.is_dir() and child.name !='translated':
+        if child.is_dir() and child.name != "translated":
             # 深度优先搜索
             movie_dirs.extend(find_movie_dirs(child))
-    
+
     return movie_dirs
+
+
 def safe_iterdir(path: Path) -> list[Path]:
     """带异常处理的目录遍历"""
     try:
@@ -308,18 +333,19 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
     """增强安全性的主流程"""
     # 在Windows系统上启用长路径支持
     import os
-    if os.name == 'nt':  # Windows系统
+
+    if os.name == "nt":  # Windows系统
         try:
             # 尝试使用Windows长路径前缀
-            if not base_path.startswith('\\\\?\\'):
-                long_path_base = '\\\\?\\' + base_path
+            if not base_path.startswith("\\\\?\\"):
+                long_path_base = "\\\\?\\" + base_path
                 if Path(long_path_base).exists():
                     base_path = long_path_base
         except Exception:
             pass
-    
+
     root = Path(base_path)
-    
+
     # 新增路径存在性检查
     if not root.exists():
         raise FileNotFoundError(f"根目录不存在: {base_path}")
@@ -330,7 +356,7 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
         if not movie_dir.exists():
             print(f"跳过已移动目录：{movie_dir}")
             continue
-            
+
         try:
             process_movie_dir(movie_dir)
         except Exception as e:

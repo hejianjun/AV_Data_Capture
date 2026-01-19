@@ -26,10 +26,17 @@ def get_xpath_single(html_code: str, xpath):
     return result1
 
 
-G_USER_AGENT = r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36'
+G_USER_AGENT = r"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36"
 
 
-def get_html(url, cookies: dict = None, ua: str = None, return_type: str = None, encoding: str = None, json_headers=None):
+def get_html(
+    url,
+    cookies: dict = None,
+    ua: str = None,
+    return_type: str = None,
+    encoding: str = None,
+    json_headers=None,
+):
     """
     网页请求核心函数
     """
@@ -45,11 +52,21 @@ def get_html(url, cookies: dict = None, ua: str = None, return_type: str = None,
         try:
             if config_proxy.enable:
                 proxies = config_proxy.proxies()
-                result = requests.get(str(url), headers=headers, timeout=config_proxy.timeout, proxies=proxies,
-                                      verify=False,
-                                      cookies=cookies)
+                result = requests.get(
+                    str(url),
+                    headers=headers,
+                    timeout=config_proxy.timeout,
+                    proxies=proxies,
+                    verify=False,
+                    cookies=cookies,
+                )
             else:
-                result = requests.get(str(url), headers=headers, timeout=config_proxy.timeout, cookies=cookies)
+                result = requests.get(
+                    str(url),
+                    headers=headers,
+                    timeout=config_proxy.timeout,
+                    cookies=cookies,
+                )
 
             if return_type == "object":
                 return result
@@ -68,8 +85,8 @@ def get_html(url, cookies: dict = None, ua: str = None, return_type: str = None,
             print("[-]" + errors)
     else:
         print("[-]" + errors)
-        print('[-]Connect Failed! Please check your Proxy or Network!')
-    raise Exception('Connect Failed')
+        print("[-]Connect Failed! Please check your Proxy or Network!")
+    raise Exception("Connect Failed")
 
 
 def post_html(url: str, query: dict, headers: dict = None) -> requests.Response:
@@ -85,9 +102,17 @@ def post_html(url: str, query: dict, headers: dict = None) -> requests.Response:
         try:
             if config_proxy.enable:
                 proxies = config_proxy.proxies()
-                result = requests.post(url, data=query, proxies=proxies, headers=headers, timeout=config_proxy.timeout)
+                result = requests.post(
+                    url,
+                    data=query,
+                    proxies=proxies,
+                    headers=headers,
+                    timeout=config_proxy.timeout,
+                )
             else:
-                result = requests.post(url, data=query, headers=headers, timeout=config_proxy.timeout)
+                result = requests.post(
+                    url, data=query, headers=headers, timeout=config_proxy.timeout
+                )
             return result
         except Exception as e:
             print("[-]Connect retry {}/{}".format(i + 1, config_proxy.retry))
@@ -115,16 +140,30 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
 
 #  with keep-alive feature
-def get_html_session(url: str = None, cookies: dict = None, ua: str = None, return_type: str = None,
-                     encoding: str = None):
+def get_html_session(
+    url: str = None,
+    cookies: dict = None,
+    ua: str = None,
+    return_type: str = None,
+    encoding: str = None,
+):
     config_proxy = config.getInstance().proxy()
     session = requests.Session()
     if isinstance(cookies, dict) and len(cookies):
         requests.utils.add_dict_to_cookiejar(session.cookies, cookies)
-    retries = Retry(total=config_proxy.retry, connect=config_proxy.retry, backoff_factor=1,
-                    status_forcelist=[429, 500, 502, 503, 504])
-    session.mount("https://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
-    session.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
+    retries = Retry(
+        total=config_proxy.retry,
+        connect=config_proxy.retry,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    session.mount(
+        "https://",
+        TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
+    )
+    session.mount(
+        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
+    )
     if config_proxy.enable:
         session.verify = config.getInstance().cacert_file()
         session.proxies = config_proxy.proxies()
@@ -155,21 +194,46 @@ def get_html_session(url: str = None, cookies: dict = None, ua: str = None, retu
     return None
 
 
-def get_html_by_browser(url: str = None, cookies: dict = None, ua: str = None, return_type: str = None,
-                        encoding: str = None, use_scraper: bool = False):
+def get_html_by_browser(
+    url: str = None,
+    cookies: dict = None,
+    ua: str = None,
+    return_type: str = None,
+    encoding: str = None,
+    use_scraper: bool = False,
+):
     config_proxy = config.getInstance().proxy()
-    s = create_scraper(browser={'custom': ua or G_USER_AGENT, }) if use_scraper else requests.Session()
+    s = (
+        create_scraper(
+            browser={
+                "custom": ua or G_USER_AGENT,
+            }
+        )
+        if use_scraper
+        else requests.Session()
+    )
     if isinstance(cookies, dict) and len(cookies):
         requests.utils.add_dict_to_cookiejar(s.cookies, cookies)
-    retries = Retry(total=config_proxy.retry, connect=config_proxy.retry, backoff_factor=1,
-                    status_forcelist=[429, 500, 502, 503, 504])
-    s.mount("https://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
-    s.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
+    retries = Retry(
+        total=config_proxy.retry,
+        connect=config_proxy.retry,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    s.mount(
+        "https://",
+        TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
+    )
+    s.mount(
+        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
+    )
     if config_proxy.enable:
         s.verify = config.getInstance().cacert_file()
         s.proxies = config_proxy.proxies()
     try:
-        browser = mechanicalsoup.StatefulBrowser(user_agent=ua or G_USER_AGENT, session=s)
+        browser = mechanicalsoup.StatefulBrowser(
+            user_agent=ua or G_USER_AGENT, session=s
+        )
         if isinstance(url, str) and len(url):
             result = browser.open(url)
         else:
@@ -189,29 +253,51 @@ def get_html_by_browser(url: str = None, cookies: dict = None, ua: str = None, r
     except requests.exceptions.ProxyError:
         print("[-]get_html_by_browser() Proxy error! Please check your Proxy")
     except Exception as e:
-        print(f'[-]get_html_by_browser() Failed! {e}')
+        print(f"[-]get_html_by_browser() Failed! {e}")
     return None
 
 
-def get_html_by_form(url, form_select: str = None, fields: dict = None, cookies: dict = None, ua: str = None,
-                     return_type: str = None, encoding: str = None):
+def get_html_by_form(
+    url,
+    form_select: str = None,
+    fields: dict = None,
+    cookies: dict = None,
+    ua: str = None,
+    return_type: str = None,
+    encoding: str = None,
+):
     config_proxy = config.getInstance().proxy()
     s = requests.Session()
     if isinstance(cookies, dict) and len(cookies):
         requests.utils.add_dict_to_cookiejar(s.cookies, cookies)
-    retries = Retry(total=config_proxy.retry, connect=config_proxy.retry, backoff_factor=1,
-                    status_forcelist=[429, 500, 502, 503, 504])
-    s.mount("https://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
-    s.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
+    retries = Retry(
+        total=config_proxy.retry,
+        connect=config_proxy.retry,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    s.mount(
+        "https://",
+        TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
+    )
+    s.mount(
+        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
+    )
     if config_proxy.enable:
         s.verify = config.getInstance().cacert_file()
         s.proxies = config_proxy.proxies()
     try:
-        browser = mechanicalsoup.StatefulBrowser(user_agent=ua or G_USER_AGENT, session=s)
+        browser = mechanicalsoup.StatefulBrowser(
+            user_agent=ua or G_USER_AGENT, session=s
+        )
         result = browser.open(url)
         if not result.ok:
             return None
-        form = browser.select_form() if form_select is None else browser.select_form(form_select)
+        form = (
+            browser.select_form()
+            if form_select is None
+            else browser.select_form(form_select)
+        )
         if isinstance(fields, dict):
             for k, v in fields.items():
                 browser[k] = v
@@ -229,20 +315,38 @@ def get_html_by_form(url, form_select: str = None, fields: dict = None, cookies:
     except requests.exceptions.ProxyError:
         print("[-]get_html_by_form() Proxy error! Please check your Proxy")
     except Exception as e:
-        print(f'[-]get_html_by_form() Failed! {e}')
+        print(f"[-]get_html_by_form() Failed! {e}")
     return None
 
 
-def get_html_by_scraper(url: str = None, cookies: dict = None, ua: str = None, return_type: str = None,
-                        encoding: str = None):
+def get_html_by_scraper(
+    url: str = None,
+    cookies: dict = None,
+    ua: str = None,
+    return_type: str = None,
+    encoding: str = None,
+):
     config_proxy = config.getInstance().proxy()
-    session = create_scraper(browser={'custom': ua or G_USER_AGENT, })
+    session = create_scraper(
+        browser={
+            "custom": ua or G_USER_AGENT,
+        }
+    )
     if isinstance(cookies, dict) and len(cookies):
         requests.utils.add_dict_to_cookiejar(session.cookies, cookies)
-    retries = Retry(total=config_proxy.retry, connect=config_proxy.retry, backoff_factor=1,
-                    status_forcelist=[429, 500, 502, 503, 504])
-    session.mount("https://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
-    session.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
+    retries = Retry(
+        total=config_proxy.retry,
+        connect=config_proxy.retry,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    session.mount(
+        "https://",
+        TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
+    )
+    session.mount(
+        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
+    )
     if config_proxy.enable:
         session.verify = config.getInstance().cacert_file()
         session.proxies = config_proxy.proxies()
@@ -297,10 +401,9 @@ def get_html_by_scraper(url: str = None, cookies: dict = None, ua: str = None, r
 #     return raw_cookie, user_agent
 
 
- 
-
-
-def load_cookies(cookie_json_filename: str) -> typing.Tuple[typing.Optional[dict], typing.Optional[str]]:
+def load_cookies(
+    cookie_json_filename: str,
+) -> typing.Tuple[typing.Optional[dict], typing.Optional[str]]:
     """
     加载cookie,用于以会员方式访问非游客内容
 
@@ -327,7 +430,7 @@ def load_cookies(cookie_json_filename: str) -> typing.Tuple[typing.Optional[dict
         Path.cwd() / filename,
         Path.home() / filename,
         Path.home() / f".mdc/{filename}",
-        Path.home() / f".local/share/mdc/{filename}"
+        Path.home() / f".local/share/mdc/{filename}",
     )
     cookies_filename = None
     try:
@@ -337,7 +440,9 @@ def load_cookies(cookie_json_filename: str) -> typing.Tuple[typing.Optional[dict
                 break
         if not cookies_filename:
             return None, None
-        return json.loads(Path(cookies_filename).read_text(encoding='utf-8')), cookies_filename
+        return json.loads(
+            Path(cookies_filename).read_text(encoding="utf-8")
+        ), cookies_filename
     except:
         return None, None
 
@@ -361,9 +466,6 @@ def file_not_exist_or_empty(filepath) -> bool:
     return not os.path.isfile(filepath) or os.path.getsize(filepath) == 0
 
 
-
-
-
 def download_file_with_filename(url: str, filename: str, path: str) -> None:
     """
     download file save to give path with given name from given url
@@ -380,9 +482,9 @@ def download_file_with_filename(url: str, filename: str, path: str) -> None:
                     except:
                         print(f"[-]Fatal error! Can not make folder '{path}'")
                         os._exit(0)
-                r = get_html(url=url, return_type='content')
-                if r == '':
-                    print('[-]Movie Download Data not found!')
+                r = get_html(url=url, return_type="content")
+                if r == "":
+                    print("[-]Movie Download Data not found!")
                     return
                 with open(os.path.join(path, filename), "wb") as code:
                     code.write(r)
@@ -394,30 +496,38 @@ def download_file_with_filename(url: str, filename: str, path: str) -> None:
                     except:
                         print(f"[-]Fatal error! Can not make folder '{path}'")
                         os._exit(0)
-                r = get_html(url=url, return_type='content')
-                if r == '':
-                    print('[-]Movie Download Data not found!')
+                r = get_html(url=url, return_type="content")
+                if r == "":
+                    print("[-]Movie Download Data not found!")
                     return
                 with open(os.path.join(path, filename), "wb") as code:
                     code.write(r)
                 return
         except requests.exceptions.ProxyError:
             i += 1
-            print('[-]Download :  Connect retry ' + str(i) + '/' + str(config_proxy.retry))
+            print(
+                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
+            )
         except requests.exceptions.ConnectTimeout:
             i += 1
-            print('[-]Download :  Connect retry ' + str(i) + '/' + str(config_proxy.retry))
+            print(
+                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
+            )
         except requests.exceptions.ConnectionError:
             i += 1
-            print('[-]Download :  Connect retry ' + str(i) + '/' + str(config_proxy.retry))
+            print(
+                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
+            )
         except requests.exceptions.RequestException:
             i += 1
-            print('[-]Download :  Connect retry ' + str(i) + '/' + str(config_proxy.retry))
+            print(
+                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
+            )
         except IOError:
             raise ValueError(f"[-]Create Directory '{path}' failed!")
             return
-    print('[-]Connect Failed! Please check your Proxy or Network!')
-    raise ValueError('[-]Connect Failed! Please check your Proxy or Network!')
+    print("[-]Connect Failed! Please check your Proxy or Network!")
+    raise ValueError("[-]Connect Failed! Please check your Proxy or Network!")
     return
 
 
@@ -429,16 +539,20 @@ def download_one_file(args) -> str:
 
     (url, save_path, json_headers) = args
     if json_headers is not None:
-        filebytes = get_html(url, return_type='content', json_headers=json_headers['headers'])
+        filebytes = get_html(
+            url, return_type="content", json_headers=json_headers["headers"]
+        )
     else:
-        filebytes = get_html(url, return_type='content')
+        filebytes = get_html(url, return_type="content")
     if isinstance(filebytes, bytes) and len(filebytes):
-        with save_path.open('wb') as fpbyte:
+        with save_path.open("wb") as fpbyte:
             if len(filebytes) == fpbyte.write(filebytes):
                 return str(save_path)
 
 
-def parallel_download_files(dn_list: typing.Iterable[typing.Sequence], parallel: int = 0, json_headers=None):
+def parallel_download_files(
+    dn_list: typing.Iterable[typing.Sequence], parallel: int = 0, json_headers=None
+):
     """
     download files in parallel 多线程下载文件
 
@@ -453,8 +567,14 @@ def parallel_download_files(dn_list: typing.Iterable[typing.Sequence], parallel:
     """
     mp_args = []
     for url, fullpath in dn_list:
-        if url and isinstance(url, str) and url.startswith('http') \
-                and fullpath and isinstance(fullpath, (str, Path)) and len(str(fullpath)):
+        if (
+            url
+            and isinstance(url, str)
+            and url.startswith("http")
+            and fullpath
+            and isinstance(fullpath, (str, Path))
+            and len(str(fullpath))
+        ):
             fullpath = Path(fullpath)
             fullpath.parent.mkdir(parents=True, exist_ok=True)
             mp_args.append((url, fullpath, json_headers))
@@ -467,10 +587,9 @@ def parallel_download_files(dn_list: typing.Iterable[typing.Sequence], parallel:
     return results
 
 
-
 # print format空格填充对齐内容包含中文时的空格计算
 def cn_space(v: str, n: int) -> int:
-    return n - [category(c) for c in v].count('Lo')
+    return n - [category(c) for c in v].count("Lo")
 
 
 """
@@ -486,26 +605,30 @@ if __name__ == "__main__":
     import timeit
     from http.client import HTTPConnection
 
-
     def benchmark(times: int, url):
         print(f"HTTP GET Benchmark times:{times} url:{url}")
-        tm = timeit.timeit(f"_ = session1.get('{url}')",
-                           "from __main__ import get_html_session;session1=get_html_session()",
-                           number=times)
-        print(f' *{tm:>10.5f}s get_html_session() Keep-Alive enable')
-        tm = timeit.timeit(f"_ = scraper1.get('{url}')",
-                           "from __main__ import get_html_by_scraper;scraper1=get_html_by_scraper()",
-                           number=times)
-        print(f' *{tm:>10.5f}s get_html_by_scraper() Keep-Alive enable')
-        tm = timeit.timeit(f"_ = browser1.open('{url}')",
-                           "from __main__ import get_html_by_browser;browser1=get_html_by_browser()",
-                           number=times)
-        print(f' *{tm:>10.5f}s get_html_by_browser() Keep-Alive enable')
-        tm = timeit.timeit(f"_ = get_html('{url}')",
-                           "from __main__ import get_html",
-                           number=times)
-        print(f' *{tm:>10.5f}s get_html()')
-
+        tm = timeit.timeit(
+            f"_ = session1.get('{url}')",
+            "from __main__ import get_html_session;session1=get_html_session()",
+            number=times,
+        )
+        print(f" *{tm:>10.5f}s get_html_session() Keep-Alive enable")
+        tm = timeit.timeit(
+            f"_ = scraper1.get('{url}')",
+            "from __main__ import get_html_by_scraper;scraper1=get_html_by_scraper()",
+            number=times,
+        )
+        print(f" *{tm:>10.5f}s get_html_by_scraper() Keep-Alive enable")
+        tm = timeit.timeit(
+            f"_ = browser1.open('{url}')",
+            "from __main__ import get_html_by_browser;browser1=get_html_by_browser()",
+            number=times,
+        )
+        print(f" *{tm:>10.5f}s get_html_by_browser() Keep-Alive enable")
+        tm = timeit.timeit(
+            f"_ = get_html('{url}')", "from __main__ import get_html", number=times
+        )
+        print(f" *{tm:>10.5f}s get_html()")
 
     # target_url = "https://www.189.cn/"
     target_url = "http://www.chinaunicom.com"

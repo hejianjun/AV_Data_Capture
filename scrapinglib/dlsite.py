@@ -5,9 +5,9 @@ from .parser import Parser
 
 
 class Dlsite(Parser):
-    source = 'dlsite'
+    source = "dlsite"
 
-    expr_title = '/html/head/title/text()'
+    expr_title = "/html/head/title/text()"
     expr_actor = '//th[contains(text(),"声优")]/../td/a/text()'
     expr_studio = '//th[contains(text(),"商标名")]/../td/span[1]/a/text()'
     expr_studio2 = '//th[contains(text(),"社团名")]/../td/span[1]/a/text()'
@@ -29,7 +29,7 @@ class Dlsite(Parser):
         self.allow_number_change = True
 
     def search(self, number):
-        self.cookies = {'locale': 'zh-cn'}
+        self.cookies = {"locale": "zh-cn"}
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
             # TODO 应该从页面内获取 number
@@ -37,27 +37,59 @@ class Dlsite(Parser):
             htmltree = self.getHtmlTree(self.detailurl)
         elif "RJ" in number or "VJ" in number:
             self.number = number.upper()
-            self.detailurl = 'https://www.dlsite.com/maniax/work/=/product_id/' + self.number + '.html/?locale=zh_CN'
+            self.detailurl = (
+                "https://www.dlsite.com/maniax/work/=/product_id/"
+                + self.number
+                + ".html/?locale=zh_CN"
+            )
             htmltree = self.getHtmlTree(self.detailurl)
         else:
-            self.detailurl = f'https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie'
+            self.detailurl = f"https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie"
             htmltree = self.getHtmlTree(self.detailurl)
-            search_result = self.getTreeAll(htmltree, '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href')
+            search_result = self.getTreeAll(
+                htmltree,
+                '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href',
+            )
             if len(search_result) == 0:
-                number = number.replace("THE ANIMATION", "").replace("he Animation", "").replace("t", "").replace("T","")
-                htmltree = self.getHtmlTree(f'https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie')
-                search_result = self.getTreeAll(htmltree, '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href')
+                number = (
+                    number.replace("THE ANIMATION", "")
+                    .replace("he Animation", "")
+                    .replace("t", "")
+                    .replace("T", "")
+                )
+                htmltree = self.getHtmlTree(
+                    f"https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie"
+                )
+                search_result = self.getTreeAll(
+                    htmltree,
+                    '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href',
+                )
                 if len(search_result) == 0:
                     if "～" in number:
-                        number = number.replace("～","〜")
+                        number = number.replace("～", "〜")
                     elif "〜" in number:
-                        number = number.replace("〜","～")
-                    htmltree = self.getHtmlTree(f'https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie')
-                    search_result = self.getTreeAll(htmltree, '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href')
+                        number = number.replace("〜", "～")
+                    htmltree = self.getHtmlTree(
+                        f"https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie"
+                    )
+                    search_result = self.getTreeAll(
+                        htmltree,
+                        '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href',
+                    )
                     if len(search_result) == 0:
-                        number = number.replace('上巻', '').replace('下巻', '').replace('前編', '').replace('後編', '')
-                        htmltree = self.getHtmlTree(f'https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie')
-                        search_result = self.getTreeAll(htmltree, '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href')
+                        number = (
+                            number.replace("上巻", "")
+                            .replace("下巻", "")
+                            .replace("前編", "")
+                            .replace("後編", "")
+                        )
+                        htmltree = self.getHtmlTree(
+                            f"https://www.dlsite.com/maniax/fsr/=/language/jp/sex_category/male/keyword/{number}/order/trend/work_type_category/movie"
+                        )
+                        search_result = self.getTreeAll(
+                            htmltree,
+                            '//*[@id="search_result_img_box"]/li[1]/dl/dd[2]/div[2]/a/@href',
+                        )
             self.detailurl = search_result[0]
             htmltree = self.getHtmlTree(self.detailurl)
             self.number = str(re.findall("\wJ\w+", self.detailurl)).strip(" [']")
@@ -70,24 +102,30 @@ class Dlsite(Parser):
 
     def getTitle(self, htmltree):
         result = super().getTitle(htmltree)
-        result = result[:result.rfind(' | DLsite')]
-        result = result[:result.rfind(' [')]
-        if 'OFF】' in result:
-            result = result[result.find('】')+1:]
-        result = result.replace('【HD版】', '')
+        result = result[: result.rfind(" | DLsite")]
+        result = result[: result.rfind(" [")]
+        if "OFF】" in result:
+            result = result[result.find("】") + 1 :]
+        result = result.replace("【HD版】", "")
         return result
 
     def getOutline(self, htmltree):
         total = []
         result = self.getTreeAll(htmltree, self.expr_outline)
-        total = [ x.strip() for x in result if x.strip()]
-        return '\n'.join(total)
+        total = [x.strip() for x in result if x.strip()]
+        return "\n".join(total)
 
     def getRelease(self, htmltree):
-        return super().getRelease(htmltree).replace('年','-').replace('月','-').replace('日','')
+        return (
+            super()
+            .getRelease(htmltree)
+            .replace("年", "-")
+            .replace("月", "-")
+            .replace("日", "")
+        )
 
     def getCover(self, htmltree):
-        return 'https:' + super().getCover(htmltree).replace('.webp', '.jpg')
+        return "https:" + super().getCover(htmltree).replace(".webp", ".jpg")
 
     def getExtrafanart(self, htmltree):
         try:
@@ -95,7 +133,7 @@ class Dlsite(Parser):
             for i in self.getTreeAll(self.expr_extrafanart):
                 result.append("https:" + i)
         except:
-            result = ''
+            result = ""
         return result
 
     def getTags(self, htmltree):

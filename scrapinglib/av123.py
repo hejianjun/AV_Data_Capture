@@ -4,7 +4,7 @@ from .parser import Parser
 
 
 class Av123(Parser):
-    source = 'av123'
+    source = "av123"
     # 标题
     expr_title = "/html/head/title/text()"
     # 封面
@@ -31,14 +31,16 @@ class Av123(Parser):
         Returns the URL to query the number.
         """
         self.number = number.lower()
-        if not self.number.startswith('fc2-ppv-'):
-            self.number = self.number.replace('fc2-', 'fc2-ppv-').replace('fc2ppv-', 'fc2-ppv-')
-        return f'https://123av.ws/ja/v/{self.number}'
-    
+        if not self.number.startswith("fc2-ppv-"):
+            self.number = self.number.replace("fc2-", "fc2-ppv-").replace(
+                "fc2ppv-", "fc2-ppv-"
+            )
+        return f"https://123av.ws/ja/v/{self.number}"
+
     def getTitle(self, htmltree):
         title = self.getTreeElement(htmltree, self.expr_title).strip()
-        if title.endswith(' - 123AV'):
-            title = title[:-len(' - 123AV')].strip()
+        if title.endswith(" - 123AV"):
+            title = title[: -len(" - 123AV")].strip()
         if title.startswith(self.number.upper()):
-            title = title[len(self.number):].strip()
+            title = title[len(self.number) :].strip()
         return title

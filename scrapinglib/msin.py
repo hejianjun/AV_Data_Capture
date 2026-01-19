@@ -6,7 +6,7 @@ from .parser import Parser
 
 
 class Msin(Parser):
-    source = 'msin'
+    source = "msin"
 
     expr_number = '//div[@class="mv_fileName"]/text()'
     expr_title = '//div[@class="mv_title"]/text()'
@@ -29,10 +29,12 @@ class Msin(Parser):
         self.imagecut = 4
 
     def search(self, number: str):
-        self.number = number.lower().replace('fc2-ppv-', '').replace('fc2-', '')
+        self.number = number.lower().replace("fc2-ppv-", "").replace("fc2-", "")
         self.cookies = {"age": "off"}
-        self.detailurl = 'https://db.msin.jp/search/movie?str=fc2-ppv-' + self.number
-        session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
+        self.detailurl = "https://db.msin.jp/search/movie?str=fc2-ppv-" + self.number
+        session = request_session(
+            cookies=self.cookies, proxies=self.proxies, verify=self.verify
+        )
         htmlcode = session.get(self.detailurl).text
         htmltree = etree.HTML(htmlcode)
         # if title are null, use unsubscribe title
@@ -58,12 +60,21 @@ class Msin(Parser):
         return super().getTags(htmltree)
 
     def getRelease(self, htmltree):
-        return super().getRelease(htmltree).replace('年', '-').replace('月', '-').replace('日', '')
+        return (
+            super()
+            .getRelease(htmltree)
+            .replace("年", "-")
+            .replace("月", "-")
+            .replace("日", "")
+        )
 
     def getCover(self, htmltree):
-        if ".gif" in super().getCover(htmltree) and len(super().getExtrafanart(htmltree)) != 0:
+        if (
+            ".gif" in super().getCover(htmltree)
+            and len(super().getExtrafanart(htmltree)) != 0
+        ):
             return super().getExtrafanart(htmltree)[0]
         return super().getCover(htmltree)
 
     def getNum(self, htmltree):
-        return 'FC2-' + self.number
+        return "FC2-" + self.number

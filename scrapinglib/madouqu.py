@@ -5,7 +5,7 @@ from .parser import Parser
 
 
 class Madouqu(Parser):
-    source = 'madouqu'
+    source = "madouqu"
 
     expr_url = '/html/head/meta[@property="og:url"]/@content'
     expr_cover = '/html/head/meta[@property="og:image"]/@content'
@@ -22,16 +22,16 @@ class Madouqu(Parser):
     def getNum(self, htmltree):
         title = self.getTreeElement(htmltree, self.expr_title)
         if title:
-            num = re.search(r'^([A-Z]+-\d+)', title)
+            num = re.search(r"^([A-Z]+-\d+)", title)
             if num:
                 return num.group(1)
-        return ''
+        return ""
 
     def getActors(self, htmltree) -> list:
         actor_text = self.getTreeElement(htmltree, self.expr_actor)
         if actor_text:
             # 从"麻豆女郎：苡若"中提取演员名
-            actor = re.sub(r'：', '', actor_text)
+            actor = re.sub(r"：", "", actor_text)
             if actor:
                 return [actor]
         return []
@@ -40,30 +40,30 @@ class Madouqu(Parser):
         title = self.getTreeElement(htmltree, self.expr_title)
         if title:
             # 删除番号部分
-            title = re.sub(r'^[A-Z]+-\d+\s+', '', title)
+            title = re.sub(r"^[A-Z]+-\d+\s+", "", title)
             return title.strip()
-        return ''
+        return ""
 
     def getOutline(self, htmltree):
         outline = self.getTreeElement(htmltree, self.expr_outline)
         if outline:
             # 清理描述文本
-            outline = re.sub(r'.{2}番號：.*?.{2}片名：', '', outline)
-            outline = re.sub(r'.{2}女郎：.*?下載地址：.*$', '', outline)
+            outline = re.sub(r".{2}番號：.*?.{2}片名：", "", outline)
+            outline = re.sub(r".{2}女郎：.*?下載地址：.*$", "", outline)
             return outline.strip()
-        return ''
+        return ""
 
     def search(self, number):
         self.number = number.strip().upper()
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = f'https://madouqu.com/video/{number.lower()}/'
-        
+            self.detailurl = f"https://madouqu.com/video/{number.lower()}/"
+
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404 or self.htmlcode == 403:
             return 404
-            
+
         htmltree = etree.fromstring(self.htmlcode, etree.HTMLParser())
         result = self.dictformat(htmltree)
-        return result 
+        return result

@@ -1,5 +1,6 @@
 import sys
-sys.path.append('../')
+
+sys.path.append("../")
 
 from ImageProcessing.hog import face_center as hog_face_center
 
