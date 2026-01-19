@@ -578,8 +578,8 @@ def print_files(path, leak_word, c_word, naming_rule, part, cn_sub, json_data, f
                             xur = old_nfo.xpath(f'//{rtag}/text()')[0]
                             if isinstance(xur, str) and re.match('\d+\.\d+|\d+', xur.strip()):
                                 print(f"  <{rtag}>{xur.strip()}</{rtag}>", file=code)
-                        f_rating = old_nfo.xpath(f"//ratings/rating[@name='javdb']/value/text()")[0]
-                        uc = old_nfo.xpath(f"//ratings/rating[@name='javdb']/votes/text()")[0]
+                        f_rating = old_nfo.xpath("//ratings/rating[@name='javdb']/value/text()")[0]
+                        uc = old_nfo.xpath("//ratings/rating[@name='javdb']/votes/text()")[0]
                         print(f"""  <ratings>
     <rating name="javdb" max="5" default="true">
       <value>{f_rating}</value>

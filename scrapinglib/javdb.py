@@ -106,7 +106,7 @@ class Javdb(Parser):
         except BaseException as e:
             raise QueryError(number,f'[!] {self.number}: 访问JavDB时出错 - {str(e)}')
         if '由於版權限制' in resp.text:
-            raise QueryError(number, f"JavDB: 该影片由于版权限制无法访问")
+            raise QueryError(number, "JavDB: 该影片由于版权限制无法访问")
         print(f"搜索的URL: {javdb_url}")
         print(f"搜索的番号: {number}")
         self.querytree = etree.fromstring(resp.text, etree.HTMLParser())
@@ -217,7 +217,7 @@ class Javdb(Parser):
         video = super().getTrailer(htmltree)
         # 加上数组判空
         if video:
-            if not 'https:' in video:
+            if 'https:' not in video:
                 video_url = 'https:' + video
             else:
                 video_url = video

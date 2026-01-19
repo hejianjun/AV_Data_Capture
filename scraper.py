@@ -6,9 +6,8 @@ from pathlib import Path
 
 # third party lib
 import opencc
-from lxml import etree
 # project wide definitions
-from actor_mapping import get_actor_mapping, get_info_mapping, process_special_actor_name, process_text_mapping, process_text_mappings
+from actor_mapping import get_actor_mapping, get_info_mapping, process_special_actor_name, process_text_mappings
 import config
 from translation import translate
 from scrapinglib.api import search
@@ -173,7 +172,7 @@ def get_data_from_json(
                         if number in title_dict:
                             json_data[translate_value] = title_dict[number]
                             continue
-                    except Exception as e:
+                    except Exception:
                         pass
             
             if conf.get_translate_engine() == "azure":

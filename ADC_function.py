@@ -1,8 +1,6 @@
 # build-in lib
 import os.path
 import os
-import re
-import uuid
 import json
 import time
 import typing
@@ -484,7 +482,8 @@ Purpose: benchmark get_html_session
 TODO: may be this should move to unittest directory
 """
 if __name__ == "__main__":
-    import sys, timeit
+    import sys
+    import timeit
     from http.client import HTTPConnection
 
 

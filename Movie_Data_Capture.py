@@ -13,12 +13,11 @@ import platform
 import config
 
 from datetime import datetime, timedelta
-from lxml import etree
 from pathlib import Path
 from opencc import OpenCC
 
 from scraper import get_data_from_json
-from ADC_function import file_modification_days, get_html, parallel_download_files
+from ADC_function import file_modification_days, get_html
 from number_parser import get_number
 from core import core_main, core_main_no_net_op, moveFailedFolder, debug_print
 
@@ -353,7 +352,7 @@ def movie_lists(source_folder, regexstr: str) -> typing.List[str]:
             continue
         if not full_name.is_file():
             continue
-        if not full_name.suffix.lower() in file_type:
+        if full_name.suffix.lower() not in file_type:
             continue
         absf = str(full_name)
         if absf in failed_set:

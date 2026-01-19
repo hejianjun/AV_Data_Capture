@@ -102,7 +102,10 @@ def test_download_subtitles():
     assert os.path.exists(expected_file_path), "字幕文件未找到"
 
 def test_download_subtitles2():
-    import os,re,sys,glob
+    import os
+    import re
+    import sys
+    import glob
     # 获取当前目录
     current_dir = os.getcwd()
     print(current_dir)

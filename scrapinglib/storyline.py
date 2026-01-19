@@ -210,7 +210,7 @@ def getStoryline_avno1(number, debug, proxies, verify):  #获取剧情介绍 从
         descs = lx.xpath('//div[@class="type_movie"]/div/ul/li/div/@data-description')
         titles = lx.xpath('//div[@class="type_movie"]/div/ul/li/div/a/h3/text()')
         if not descs or not len(descs):
-            raise ValueError(f"number not found")
+            raise ValueError("number not found")
         partial_num = bool(re.match(r'\d{6}[\-_]\d{2,3}', number))
         for title, desc in zip(titles, descs):
             page_number = title[title.rfind(' ')+1:].strip()

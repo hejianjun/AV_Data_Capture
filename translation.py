@@ -55,7 +55,7 @@ def translate(
             json_data = result.json()
             translate_list = [i["trans"] for i in json_data["sentences"]]
             trans_result = trans_result.join(translate_list)
-        except Exception as e:
+        except Exception:
             return ''
     elif engine == "azure":
         url = "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=" + target_language
@@ -71,7 +71,7 @@ def translate(
             json_data = result.json()
             translate_list = [i["text"] for i in json_data[0]["translations"]]
             trans_result = trans_result.join(translate_list)
-        except Exception as e:
+        except Exception:
             return ''
     elif engine == "deeplx":
         url = config.getInstance().get_translate_service_site()
@@ -84,7 +84,7 @@ def translate(
             try:
                 json_data = res.json()
                 trans_result = json_data.get('data')
-            except Exception as e:
+            except Exception:
                 return ''
     else:
         raise ValueError("Non-existent translation engine")

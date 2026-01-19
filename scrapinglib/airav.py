@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import json
-import re
 from .parser import Parser
-from .javbus import Javbus
-from lxml import etree
 
 class Airav(Parser):
     source = 'airav'

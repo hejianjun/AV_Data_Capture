@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import re
-from lxml import etree
-from . import httprequest
 from .parser import Parser
 
 

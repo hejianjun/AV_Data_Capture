@@ -1,5 +1,6 @@
 from aip import AipFace
-import config,base64
+import config
+import base64
 
 
 def face_center(filename, model):

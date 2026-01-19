@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from functools import lru_cache
-import os
 import re
 import json
 
@@ -10,7 +9,6 @@ from .parser import Parser
 import config
 import importlib
 import traceback
-import secrets
 from ADC_function import (load_cookies,
                           file_modification_days)
 
@@ -239,7 +237,7 @@ class Scraping:
         # check sources in func_mapping
         todel = []
         for s in sources:
-            if not s in self.general_full_sources:
+            if s not in self.general_full_sources:
                 print('[!] Source Not Exist : ' + s)
                 todel.append(s)
         for d in todel:
@@ -291,7 +289,7 @@ class Scraping:
         # check sources in func_mapping
         todel = []
         for s in sources:
-            if not s in self.adult_full_sources and config.getInstance().debug():
+            if s not in self.adult_full_sources and config.getInstance().debug():
                 print('[!] Source Not Exist : ' + s)
                 todel.append(s)
         for d in todel:
