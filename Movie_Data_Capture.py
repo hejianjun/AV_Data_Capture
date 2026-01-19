@@ -9,6 +9,7 @@ import urllib3
 import signal
 import platform
 import config
+import logging
 
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -19,9 +20,110 @@ from ADC_function import file_modification_days, get_html
 from number_parser import get_number
 from core import core_main, core_main_no_net_op, debug_print
 from cli import argparse_function
-from logging_utils import dupe_stdout_to_logfile, close_logfile
 from movie_list import movie_lists
 from file_utils import moveFailedFolder, create_failed_folder, rm_empty_folder
+
+
+# 日志配置
+LOGGER = None
+LOG_FILE_PATH = None
+
+
+class StreamToLogger:
+    """
+    将流重定向到logger的类
+    """
+    def __init__(self, logger, level):
+        self.logger = logger
+        self.level = level
+        self.linebuf = ''
+    
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            self.logger.log(self.level, line.rstrip())
+    
+    def flush(self):
+        pass
+
+
+def setup_logging(logdir):
+    """
+    配置logging系统
+    """
+    global LOGGER, LOG_FILE_PATH
+    
+    if not logdir or not isinstance(logdir, str):
+        return
+    
+    log_dir = Path(logdir)
+    if not log_dir.exists():
+        try:
+            log_dir.mkdir(parents=True, exist_ok=True)
+        except:
+            return
+            
+    if not log_dir.is_dir():
+        return  # 通过将目录设为同名空文件来禁用日志
+    
+    # 创建日志文件路径
+    log_tmstr = datetime.now().strftime("%Y%m%dT%H%M%S")
+    LOG_FILE_PATH = log_dir / f"mdc_{log_tmstr}.txt"
+    
+    # 配置根日志
+    LOGGER = logging.getLogger('MDC')
+    LOGGER.setLevel(logging.INFO)
+    
+    # 清除已有的handler
+    for handler in LOGGER.handlers[:]:
+        LOGGER.removeHandler(handler)
+    
+    # 创建文件handler
+    file_handler = logging.FileHandler(LOG_FILE_PATH, encoding='utf-8')
+    file_handler.setLevel(logging.INFO)
+    
+    # 创建控制台handler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    
+    # 设置日志格式
+    formatter = logging.Formatter('%(message)s')
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    
+    # 添加handler
+    LOGGER.addHandler(file_handler)
+    LOGGER.addHandler(console_handler)
+    
+    # 重定向标准输出和标准错误
+    sys.stdout = StreamToLogger(LOGGER, logging.INFO)
+    sys.stderr = StreamToLogger(LOGGER, logging.ERROR)
+
+
+def cleanup_logging(logdir):
+    """
+    清理日志系统
+    """
+    global LOGGER, LOG_FILE_PATH
+    
+    if not logdir or not isinstance(logdir, str) or not os.path.isdir(logdir):
+        return None
+    
+    # 恢复标准输出和标准错误
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    
+    # 清除handler
+    if LOGGER:
+        for handler in LOGGER.handlers[:]:
+            handler.close()
+            LOGGER.removeHandler(handler)
+    
+    filepath = LOG_FILE_PATH
+    
+    if filepath:
+        print(f"Log file '{filepath}' saved.")
+    
+    return filepath
 
 
 
@@ -152,7 +254,7 @@ def main(args: tuple) -> typing.Optional[Path]:
         signal.signal(signal.SIGBREAK, sigdebug_handler)
     else:
         signal.signal(signal.SIGWINCH, sigdebug_handler)
-    dupe_stdout_to_logfile(logdir)
+    setup_logging(logdir)
 
     platform_total = str(
         " - "
@@ -282,7 +384,7 @@ def main(args: tuple) -> typing.Optional[Path]:
         except KeyboardInterrupt:
             pass
 
-    logfile_path = close_logfile(logdir)
+    logfile_path = cleanup_logging(logdir)
     return logfile_path
 
 
