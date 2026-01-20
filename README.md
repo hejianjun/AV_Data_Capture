@@ -271,7 +271,6 @@ mdc/
 │   └── cli.py            # 命令行参数处理
 ├── utils/         # 工具模块
 │   ├── http/            # HTTP请求相关功能
-│   ├── download/        # 下载功能
 │   ├── cookie/          # Cookie管理
 │   ├── string/          # 字符串处理
 │   ├── html/            # HTML解析
@@ -306,7 +305,7 @@ mdc/
 - **movie_list.py**: 扫描源文件夹，过滤媒体文件，应用正则表达式过滤，跳过失败列表和最近更新的 NFO 文件
 
 #### mdc/download/ 资源下载模块
-- **downloader.py**: 下载图片资源，批量下载剧照，下载演员照片，支持并行下载和代理处理
+- **downloader.py**: 统一的资源下载模块，包含文件下载、并行下载、图片下载、剧照下载、演员照片下载等功能，支持代理处理
 - **subtitles/**: 下载字幕文件
 
 #### mdc/image/ 图片处理模块
@@ -320,7 +319,6 @@ mdc/
 
 #### mdc/utils/ 工具模块
 - **http/**: HTTP请求封装、代理支持、会话管理
-- **download/**: 文件下载和并行下载功能
 - **cookie/**: Cookie管理功能
 - **string/**: 字符串处理工具
 - **html/**: HTML解析功能
