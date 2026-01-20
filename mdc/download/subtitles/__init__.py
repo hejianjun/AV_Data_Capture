@@ -2,6 +2,7 @@ import requests
 from lxml import html
 from pathlib import Path
 from mdc.config import config
+import os
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
@@ -135,7 +136,7 @@ def test_download_subtitles2():
     print(current_dir)
     # 将当前目录添加到系统路径
     sys.path.append(current_dir)
-    from number_parser import get_number
+    from mdc.utils.number_parser import get_number
 
     # 遍历目录
     for root, dirs, files in os.walk("Z:\\R-18\\"):
