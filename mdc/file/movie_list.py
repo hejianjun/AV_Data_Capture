@@ -3,7 +3,7 @@ import re
 import typing
 from pathlib import Path
 from mdc.config import config
-from mdc.utils.ADC_function import file_modification_days
+from mdc.file.file_utils import file_modification_days
 from mdc.utils.number_parser import get_number
 
 

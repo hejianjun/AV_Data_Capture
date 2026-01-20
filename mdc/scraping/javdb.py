@@ -110,7 +110,8 @@ class Javdb(Parser):
             resp = self.session.get(
                 javdb_url,
                 cookies=self.cookies,
-                verify=False,  # 忽略证书验证
+                proxies=False,
+                verify=False,
                 timeout=(3.05, 10),  # 连接超时3.05秒，读取超时10秒
             )
             print(f"访问JavDB: {javdb_url}, 状态码: {resp.status_code}")
@@ -281,7 +282,7 @@ class Javdb(Parser):
             return ""
 
     def getaphoto(self, url, session):
-        html_page = session.get(url).text
+        html_page = session.get(url, proxies=self.proxies, verify=self.verify).text
         img_url = re.findall(
             r"<span class\=\"avatar\" style\=\"background\-image\: url\((.*?)\)",
             html_page,

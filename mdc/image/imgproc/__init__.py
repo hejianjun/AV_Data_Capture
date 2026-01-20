@@ -5,7 +5,7 @@ import importlib
 from pathlib import Path
 from PIL import Image
 import shutil
-from mdc.utils.ADC_function import file_not_exist_or_empty
+from mdc.file.file_utils import file_not_exist_or_empty
 
 
 def face_crop_width(filename, width, height):

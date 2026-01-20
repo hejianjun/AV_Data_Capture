@@ -269,11 +269,15 @@ mdc/
 │   └── config.py         # 配置管理
 ├── cli/           # 命令行模块
 │   └── cli.py            # 命令行参数处理
-└── utils/         # 工具模块
-    ├── ADC_function.py   # HTTP请求和辅助功能
-    ├── actor_mapping.py  # 演员和信息映射
-    ├── number_parser.py  # 番号识别
-    └── translation.py    # 翻译功能
+├── utils/         # 工具模块
+│   ├── http/            # HTTP请求相关功能
+│   ├── download/        # 下载功能
+│   ├── cookie/          # Cookie管理
+│   ├── string/          # 字符串处理
+│   ├── html/            # HTML解析
+│   ├── actor_mapping.py  # 演员和信息映射
+│   ├── number_parser.py  # 番号识别
+│   └── translation.py    # 翻译功能
 ```
 
 ### 主要模块说明
@@ -315,7 +319,11 @@ mdc/
 - **各数据源文件**: 实现 javbus, javdb, fanza 等 30+ 数据源的具体调用和解析
 
 #### mdc/utils/ 工具模块
-- **ADC_function.py**: 提供 HTTP 请求封装、代理支持、Cookie 管理、文件下载和并行下载功能
+- **http/**: HTTP请求封装、代理支持、会话管理
+- **download/**: 文件下载和并行下载功能
+- **cookie/**: Cookie管理功能
+- **string/**: 字符串处理工具
+- **html/**: HTML解析功能
 - **actor_mapping.py**: 处理演员和信息映射，支持自定义映射规则
 - **number_parser.py**: 从文件名中提取番号，支持多种番号格式和自定义正则规则
 - **translation.py**: 实现多语言翻译功能，支持多种翻译引擎

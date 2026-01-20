@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 from pathlib import Path
 from mdc.config import config
 from datetime import datetime
@@ -119,6 +120,21 @@ def file_not_exist_or_empty(filepath):
     if os.path.isfile(filepath):
         return os.path.getsize(filepath) == 0
     return False
+
+
+def file_modification_days(filename: str) -> int:
+    """
+    文件修改时间距此时的天数
+    """
+    mfile = Path(filename)
+    if not mfile.is_file():
+        return 9999
+    mtime = int(mfile.stat().st_mtime)
+    now = int(time.time())
+    days = int((now - mtime) / (24 * 60 * 60))
+    if days < 0:
+        return 9999
+    return days
 
 # 由于get_info函数被多个模块使用，暂时保留在file_utils.py中
 def get_info(json_data):  # 返回json里的数据

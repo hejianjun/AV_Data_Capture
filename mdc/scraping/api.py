@@ -9,7 +9,8 @@ from .parser import Parser
 from mdc.config import config
 import importlib
 import traceback
-from mdc.utils.ADC_function import load_cookies, file_modification_days
+from mdc.utils.cookie import load_cookies
+from mdc.file.file_utils import file_modification_days
 
 
 def search(number, sources: str = None, **kwargs):

@@ -7,7 +7,7 @@ import requests
 import sys
 from lxml import etree
 from mdc.config import config
-from mdc.utils.ADC_function import get_html, post_html
+from mdc.utils.http import get_html, post_html
 
 
 def is_japanese(raw: str) -> bool:

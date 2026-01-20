@@ -1,32 +1,33 @@
 # build-in lib
-import os.path
-import os
-import json
-import time
 import typing
-from unicodedata import category
-from concurrent.futures import ThreadPoolExecutor
 
 # third party lib
 import requests
 from requests.adapters import HTTPAdapter
 import mechanicalsoup
-from pathlib import Path
 from urllib3.util.retry import Retry
-from lxml import etree
 from cloudscraper import create_scraper
 
 # project wide
 from mdc.config import config
 
 
-def get_xpath_single(html_code: str, xpath):
-    html = etree.fromstring(html_code, etree.HTMLParser())
-    result1 = str(html.xpath(xpath)).strip(" ['']")
-    return result1
-
-
 G_USER_AGENT = r"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36"
+
+
+class TimeoutHTTPAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        self.timeout = 10  # seconds
+        if "timeout" in kwargs:
+            self.timeout = kwargs["timeout"]
+            del kwargs["timeout"]
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        timeout = kwargs.get("timeout")
+        if timeout is None:
+            kwargs["timeout"] = self.timeout
+        return super().send(request, **kwargs)
 
 
 def get_html(
@@ -119,27 +120,9 @@ def post_html(url: str, query: dict, headers: dict = None) -> requests.Response:
             errors = str(e)
     print("[-]Connect Failed! Please check your Proxy or Network!")
     print("[-]" + errors)
+    raise Exception("Connect Failed")
 
 
-G_DEFAULT_TIMEOUT = 10  # seconds
-
-
-class TimeoutHTTPAdapter(HTTPAdapter):
-    def __init__(self, *args, **kwargs):
-        self.timeout = G_DEFAULT_TIMEOUT
-        if "timeout" in kwargs:
-            self.timeout = kwargs["timeout"]
-            del kwargs["timeout"]
-        super().__init__(*args, **kwargs)
-
-    def send(self, request, **kwargs):
-        timeout = kwargs.get("timeout")
-        if timeout is None:
-            kwargs["timeout"] = self.timeout
-        return super().send(request, **kwargs)
-
-
-#  with keep-alive feature
 def get_html_session(
     url: str = None,
     cookies: dict = None,
@@ -371,246 +354,3 @@ def get_html_by_scraper(
     except Exception as e:
         print(f"[-]get_html_by_scraper() failed. {e}")
     return None
-
-
-def load_cookies(
-    cookie_json_filename: str,
-) -> typing.Tuple[typing.Optional[dict], typing.Optional[str]]:
-    """
-    加载cookie,用于以会员方式访问非游客内容
-
-    :filename: cookie文件名。获取cookie方式：从网站登录后，通过浏览器插件(CookieBro或EdittThisCookie)或者直接在地址栏网站链接信息处都可以复制或者导出cookie内容，以JSON方式保存
-
-    # 示例: FC2-755670 url https://javdb9.com/v/vO8Mn
-    # json 文件格式
-    # 文件名: 站点名.json，示例 javdb9.json
-    # 内容(文件编码:UTF-8)：
-    {
-        "over18":"1",
-        "redirect_to":"%2Fv%2FvO8Mn",
-        "remember_me_token":"***********",
-        "_jdb_session":"************",
-        "locale":"zh",
-        "__cfduid":"*********",
-        "theme":"auto"
-    }
-    """
-    filename = os.path.basename(cookie_json_filename)
-    if not len(filename):
-        return None, None
-    path_search_order = (
-        Path.cwd() / filename,
-        Path.home() / filename,
-        Path.home() / f".mdc/{filename}",
-        Path.home() / f".local/share/mdc/{filename}",
-    )
-    cookies_filename = None
-    try:
-        for p in path_search_order:
-            if p.is_file():
-                cookies_filename = str(p.resolve())
-                break
-        if not cookies_filename:
-            return None, None
-        return json.loads(
-            Path(cookies_filename).read_text(encoding="utf-8")
-        ), cookies_filename
-    except:
-        return None, None
-
-
-def file_modification_days(filename: str) -> int:
-    """
-    文件修改时间距此时的天数
-    """
-    mfile = Path(filename)
-    if not mfile.is_file():
-        return 9999
-    mtime = int(mfile.stat().st_mtime)
-    now = int(time.time())
-    days = int((now - mtime) / (24 * 60 * 60))
-    if days < 0:
-        return 9999
-    return days
-
-
-def file_not_exist_or_empty(filepath) -> bool:
-    return not os.path.isfile(filepath) or os.path.getsize(filepath) == 0
-
-
-def download_file_with_filename(url: str, filename: str, path: str) -> None:
-    """
-    download file save to give path with given name from given url
-    """
-    conf = config.getInstance()
-    config_proxy = conf.proxy()
-
-    for i in range(config_proxy.retry):
-        try:
-            if config_proxy.enable:
-                if not os.path.exists(path):
-                    try:
-                        os.makedirs(path)
-                    except:
-                        print(f"[-]Fatal error! Can not make folder '{path}'")
-                        os._exit(0)
-                r = get_html(url=url, return_type="content")
-                if r == "":
-                    print("[-]Movie Download Data not found!")
-                    return
-                with open(os.path.join(path, filename), "wb") as code:
-                    code.write(r)
-                return
-            else:
-                if not os.path.exists(path):
-                    try:
-                        os.makedirs(path)
-                    except:
-                        print(f"[-]Fatal error! Can not make folder '{path}'")
-                        os._exit(0)
-                r = get_html(url=url, return_type="content")
-                if r == "":
-                    print("[-]Movie Download Data not found!")
-                    return
-                with open(os.path.join(path, filename), "wb") as code:
-                    code.write(r)
-                return
-        except requests.exceptions.ProxyError:
-            i += 1
-            print(
-                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
-            )
-        except requests.exceptions.ConnectTimeout:
-            i += 1
-            print(
-                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
-            )
-        except requests.exceptions.ConnectionError:
-            i += 1
-            print(
-                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
-            )
-        except requests.exceptions.RequestException:
-            i += 1
-            print(
-                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
-            )
-        except IOError:
-            raise ValueError(f"[-]Create Directory '{path}' failed!")
-            return
-    print("[-]Connect Failed! Please check your Proxy or Network!")
-    raise ValueError("[-]Connect Failed! Please check your Proxy or Network!")
-    return
-
-
-def download_one_file(args) -> str:
-    """
-    download file save to given path from given url
-    wrapped for map function
-    """
-
-    (url, save_path, json_headers) = args
-    if json_headers is not None:
-        filebytes = get_html(
-            url, return_type="content", json_headers=json_headers["headers"]
-        )
-    else:
-        filebytes = get_html(url, return_type="content")
-    if isinstance(filebytes, bytes) and len(filebytes):
-        with save_path.open("wb") as fpbyte:
-            if len(filebytes) == fpbyte.write(filebytes):
-                return str(save_path)
-
-
-def parallel_download_files(
-    dn_list: typing.Iterable[typing.Sequence], parallel: int = 0, json_headers=None
-):
-    """
-    download files in parallel 多线程下载文件
-
-    用法示例: 2线程同时下载两个不同文件，并保存到不同路径，路径目录可未创建，但需要具备对目标目录和文件的写权限
-    parallel_download_files([
-    ('https://site1/img/p1.jpg', 'C:/temp/img/p1.jpg'),
-    ('https://site2/cover/n1.xml', 'C:/tmp/cover/n1.xml')
-    ])
-
-    :dn_list: 可以是 tuple或者list: ((url1, save_fullpath1),(url2, save_fullpath2),) fullpath可以是str或Path
-    :parallel: 并行下载的线程池线程数，为0则由函数自己决定
-    """
-    mp_args = []
-    for url, fullpath in dn_list:
-        if (
-            url
-            and isinstance(url, str)
-            and url.startswith("http")
-            and fullpath
-            and isinstance(fullpath, (str, Path))
-            and len(str(fullpath))
-        ):
-            fullpath = Path(fullpath)
-            fullpath.parent.mkdir(parents=True, exist_ok=True)
-            mp_args.append((url, fullpath, json_headers))
-    if not len(mp_args):
-        return []
-    if not isinstance(parallel, int) or parallel not in range(1, 200):
-        parallel = min(5, len(mp_args))
-    with ThreadPoolExecutor(parallel) as pool:
-        results = list(pool.map(download_one_file, mp_args))
-    return results
-
-
-# print format空格填充对齐内容包含中文时的空格计算
-def cn_space(v: str, n: int) -> int:
-    return n - [category(c) for c in v].count("Lo")
-
-
-"""
-Usage: python ./ADC_function.py https://cn.bing.com/
-Purpose: benchmark get_html_session
-         benchmark get_html_by_scraper
-         benchmark get_html_by_browser
-         benchmark get_html
-TODO: may be this should move to unittest directory
-"""
-if __name__ == "__main__":
-    import sys
-    import timeit
-    from http.client import HTTPConnection
-
-    def benchmark(times: int, url):
-        print(f"HTTP GET Benchmark times:{times} url:{url}")
-        tm = timeit.timeit(
-            f"_ = session1.get('{url}')",
-            "from __main__ import get_html_session;session1=get_html_session()",
-            number=times,
-        )
-        print(f" *{tm:>10.5f}s get_html_session() Keep-Alive enable")
-        tm = timeit.timeit(
-            f"_ = scraper1.get('{url}')",
-            "from __main__ import get_html_by_scraper;scraper1=get_html_by_scraper()",
-            number=times,
-        )
-        print(f" *{tm:>10.5f}s get_html_by_scraper() Keep-Alive enable")
-        tm = timeit.timeit(
-            f"_ = browser1.open('{url}')",
-            "from __main__ import get_html_by_browser;browser1=get_html_by_browser()",
-            number=times,
-        )
-        print(f" *{tm:>10.5f}s get_html_by_browser() Keep-Alive enable")
-        tm = timeit.timeit(
-            f"_ = get_html('{url}')", "from __main__ import get_html", number=times
-        )
-        print(f" *{tm:>10.5f}s get_html()")
-
-    # target_url = "https://www.189.cn/"
-    target_url = "http://www.chinaunicom.com"
-    HTTPConnection.debuglevel = 1
-    html_session = get_html_session()
-    _ = html_session.get(target_url)
-    HTTPConnection.debuglevel = 0
-
-    # times
-    t = 100
-    if len(sys.argv) > 1:
-        target_url = sys.argv[1]
-    benchmark(t, target_url)

@@ -5,7 +5,8 @@ import shutil
 import requests
 from pathlib import Path
 from mdc.config import config
-from mdc.utils.ADC_function import get_html, parallel_download_files
+from mdc.utils.http import get_html
+from mdc.utils.download import parallel_download_files
 from mdc.file.file_utils import moveFailedFolder, file_not_exist_or_empty
 
 

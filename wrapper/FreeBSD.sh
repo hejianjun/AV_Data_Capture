@@ -1,6 +1,6 @@
 pkg install python39 py39-requests py39-pip py39-lxml py39-pillow py39-cloudscraper py39-pysocks git zip py39-beautifulsoup448 py39-mechanicalsoup
 pip install pyinstaller
-pyinstaller --onefile Movie_Data_Capture.py  --hidden-import ADC_function.py --hidden-import core.py \
+pyinstaller --onefile Movie_Data_Capture.py  --hidden-import mdc.utils --hidden-import core.py \
     --hidden-import "mdc.image.imgproc.cnn" \
     --python-option u \
     --add-data "$(python3.9 -c 'import cloudscraper as _; print(_.__path__[0])' | tail -n 1):cloudscraper" \

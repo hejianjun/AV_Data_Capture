@@ -5,13 +5,14 @@ import sys
 import requests
 import time
 import re
+import json
 
 from PIL import Image
 from io import BytesIO
 from datetime import datetime
 # from videoprops import get_video_properties
 
-from mdc.utils.ADC_function import *
+from mdc.utils import *
 from mdc.core.scraper import get_data_from_json
 from mdc.utils.number_parser import is_uncensored
 from mdc.image.imgproc import cutImage

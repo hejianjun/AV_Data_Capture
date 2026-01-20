@@ -16,7 +16,8 @@ from pathlib import Path
 from opencc import OpenCC
 
 from mdc.core.scraper import get_data_from_json
-from mdc.utils.ADC_function import file_modification_days, get_html
+from mdc.file.file_utils import file_modification_days
+from mdc.utils.http import get_html
 from mdc.utils.number_parser import get_number
 from mdc.core.core import core_main, core_main_no_net_op, debug_print
 from mdc.cli.cli import argparse_function
