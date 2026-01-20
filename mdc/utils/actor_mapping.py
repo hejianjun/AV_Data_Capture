@@ -363,5 +363,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
             print(f"处理失败：{movie_dir} | {str(e)}")
 
 
-if __name__ == "__main__":
-    main("Z:\\日本\\JAV_output\\佚名")
+

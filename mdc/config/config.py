@@ -672,33 +672,4 @@ class IniProxy:
         return proxies
 
 
-if __name__ == "__main__":
 
-    def evprint(evstr):
-        code = compile(evstr, "<string>", "eval")
-        print('{}: "{}"'.format(evstr, eval(code)))
-
-    config = Config()
-    mfilter = {"conf", "proxy", "_exit", "_default_config", "ini_path", "set_override"}
-    for _m in [m for m in dir(config) if not m.startswith("__") and m not in mfilter]:
-        evprint(f"config.{_m}()")
-    pfilter = {"proxies", "SUPPORT_PROXY_TYPE"}
-    # test getInstance()
-    assert getInstance() == config
-    for _p in [
-        p
-        for p in dir(getInstance().proxy())
-        if not p.startswith("__") and p not in pfilter
-    ]:
-        evprint(f"getInstance().proxy().{_p}")
-
-    # Create new instance
-    conf2 = Config()
-    assert getInstance() != conf2
-    assert getInstance() == config
-
-    conf2.set_override("d:s=1;face:asp=2;f:aw=0;pri:w=javdb;f:l=")
-    assert conf2.face_aspect_ratio() == 2
-    assert conf2.face_aways_imagecut() == False
-    assert conf2.sources() == "javdb"
-    print(f"Load Config file '{conf2.ini_path}'.")

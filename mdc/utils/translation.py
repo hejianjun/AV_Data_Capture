@@ -12,12 +12,12 @@ from mdc.utils.http import get_html, post_html
 
 def is_japanese(raw: str) -> bool:
     """
-    日语简单检测，包括假名和常用日语汉字
+    日语简单检测，仅检测日语特有的假名字符
     """
-    # 检测日语假名（平假名、片假名、半宽假名）或日语汉字
+    # 仅检测日语假名（平假名、片假名、半宽假名）
     return bool(
         re.search(
-            r"[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F\u4E00-\u9FFF]", raw, re.UNICODE
+            r"[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F]", raw, re.UNICODE
         )
     )
 
@@ -218,5 +218,4 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
             print(f"处理失败：{movie_dir} | {str(e)}")
 
 
-if __name__ == "__main__":
-    main("Z:\\破解\\JAV_output")
+
