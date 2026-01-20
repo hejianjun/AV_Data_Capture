@@ -24,39 +24,17 @@ from mdc.download.downloader import *
 from mdc.core.metadata import *
 from mdc.file.file_utils import escape_path, moveFailedFolder, create_folder, get_info
 from mdc.download.downloader import (
-    download_file_with_filename, trailer_download, actor_photo_download,
-    extrafanart_download, image_download, image_ext
+    download_file_with_filename,
+    trailer_download,
+    actor_photo_download,
+    extrafanart_download,
+    image_download,
+    image_ext,
 )
 from mdc.core.metadata import small_cover_check, print_files
 
 
 # from WebCrawler import get_data_from_json
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def add_mark(poster_path, thumb_path, cn_sub, leak, uncensored, hack, _4k, iso) -> None:

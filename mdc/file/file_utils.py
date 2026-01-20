@@ -43,8 +43,22 @@ def moveFailedFolder(filepath):
 
 
 def create_folder(json_data):  # 创建文件夹
-    (title, studio, year, outline, runtime, director, actor_photo, release, number, 
-     cover, trailer, website, series, label) = get_info(json_data)
+    (
+        title,
+        studio,
+        year,
+        outline,
+        runtime,
+        director,
+        actor_photo,
+        release,
+        number,
+        cover,
+        trailer,
+        website,
+        series,
+        label,
+    ) = get_info(json_data)
     conf = config.getInstance()
     success_folder = conf.success_folder()
     actor = json_data.get("actor")
@@ -135,6 +149,7 @@ def file_modification_days(filename: str) -> int:
     if days < 0:
         return 9999
     return days
+
 
 # 由于get_info函数被多个模块使用，暂时保留在file_utils.py中
 def get_info(json_data):  # 返回json里的数据

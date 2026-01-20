@@ -34,15 +34,16 @@ class StreamToLogger:
     """
     将流重定向到logger的类
     """
+
     def __init__(self, logger, level):
         self.logger = logger
         self.level = level
-        self.linebuf = ''
-    
+        self.linebuf = ""
+
     def write(self, buf):
         for line in buf.rstrip().splitlines():
             self.logger.log(self.level, line.rstrip())
-    
+
     def flush(self):
         pass
 
@@ -52,49 +53,49 @@ def setup_logging(logdir):
     配置logging系统
     """
     global LOGGER, LOG_FILE_PATH
-    
+
     if not logdir or not isinstance(logdir, str):
         return
-    
+
     log_dir = Path(logdir)
     if not log_dir.exists():
         try:
             log_dir.mkdir(parents=True, exist_ok=True)
         except:
             return
-            
+
     if not log_dir.is_dir():
         return  # 通过将目录设为同名空文件来禁用日志
-    
+
     # 创建日志文件路径
     log_tmstr = datetime.now().strftime("%Y%m%dT%H%M%S")
     LOG_FILE_PATH = log_dir / f"mdc_{log_tmstr}.txt"
-    
+
     # 配置根日志
-    LOGGER = logging.getLogger('MDC')
+    LOGGER = logging.getLogger("MDC")
     LOGGER.setLevel(logging.INFO)
-    
+
     # 清除已有的handler
     for handler in LOGGER.handlers[:]:
         LOGGER.removeHandler(handler)
-    
+
     # 创建文件handler
-    file_handler = logging.FileHandler(LOG_FILE_PATH, encoding='utf-8')
+    file_handler = logging.FileHandler(LOG_FILE_PATH, encoding="utf-8")
     file_handler.setLevel(logging.INFO)
-    
+
     # 创建控制台handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
-    
+
     # 设置日志格式
-    formatter = logging.Formatter('%(message)s')
+    formatter = logging.Formatter("%(message)s")
     file_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)
-    
+
     # 添加handler
     LOGGER.addHandler(file_handler)
     LOGGER.addHandler(console_handler)
-    
+
     # 重定向标准输出和标准错误
     sys.stdout = StreamToLogger(LOGGER, logging.INFO)
     sys.stderr = StreamToLogger(LOGGER, logging.ERROR)
@@ -105,27 +106,26 @@ def cleanup_logging(logdir):
     清理日志系统
     """
     global LOGGER, LOG_FILE_PATH
-    
+
     if not logdir or not isinstance(logdir, str) or not os.path.isdir(logdir):
         return None
-    
+
     # 恢复标准输出和标准错误
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
-    
+
     # 清除handler
     if LOGGER:
         for handler in LOGGER.handlers[:]:
             handler.close()
             LOGGER.removeHandler(handler)
-    
+
     filepath = LOG_FILE_PATH
-    
+
     if filepath:
         print(f"Log file '{filepath}' saved.")
-    
-    return filepath
 
+    return filepath
 
 
 def check_update(local_version: str) -> None:
@@ -142,11 +142,9 @@ def check_update(local_version: str) -> None:
         print("[*]======================================================")
 
 
-
 def signal_handler(*args) -> None:
     print("[!]Ctrl+C detected, Exit.")
     os._exit(9)
-
 
 
 def sigdebug_handler(*args) -> None:
@@ -155,8 +153,9 @@ def sigdebug_handler(*args) -> None:
     print(f"[!]Debug {('oFF', 'On')[int(conf.debug())]}")
 
 
-
-def create_data_and_move(movie_path: str, zero_op: bool, no_net_op: bool, oCC: typing.Optional[OpenCC]) -> None:
+def create_data_and_move(
+    movie_path: str, zero_op: bool, no_net_op: bool, oCC: typing.Optional[OpenCC]
+) -> None:
     # Normalized number, eg: 111xxx-222.mp4 -> xxx-222.mp4
     debug = config.getInstance().debug()
     n_number = get_number(debug, os.path.basename(movie_path))
@@ -198,9 +197,12 @@ def create_data_and_move(movie_path: str, zero_op: bool, no_net_op: bool, oCC: t
                 print("[!]", err)
 
 
-
 def create_data_and_move_with_custom_number(
-    file_path: str, custom_number: str, oCC: typing.Optional[OpenCC], specified_source: str, specified_url: str
+    file_path: str,
+    custom_number: str,
+    oCC: typing.Optional[OpenCC],
+    specified_source: str,
+    specified_url: str,
 ) -> None:
     conf = config.getInstance()
     file_name = os.path.basename(file_path)
@@ -226,7 +228,6 @@ def create_data_and_move_with_custom_number(
                 shutil.move(file_path, os.path.join(conf.failed_folder(), file_name))
             except Exception as err:
                 print("[!]", err)
-
 
 
 def main(args: tuple) -> typing.Optional[Path]:
@@ -288,8 +289,7 @@ def main(args: tuple) -> typing.Optional[Path]:
         "[+]Main Working mode ## {}: {} ## {}{}{}".format(
             *(
                 main_mode,
-                ["Scraping", "Organizing", "Scraping in analysis folder"]
-                [
+                ["Scraping", "Organizing", "Scraping in analysis folder"][
                     main_mode - 1
                 ],
                 "" if not conf.multi_threading() else ", multi_threading on",

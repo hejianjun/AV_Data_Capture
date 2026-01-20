@@ -32,29 +32,24 @@ from mdc.file.file_utils import file_not_exist_or_empty
 # Re-export all functions to maintain backward compatibility
 __all__ = [
     # HTTP functions
-    'G_USER_AGENT',
-    'TimeoutHTTPAdapter',
-    'get_html',
-    'post_html',
-    'get_html_session',
-    'get_html_by_browser',
-    'get_html_by_form',
-    'get_html_by_scraper',
-    
+    "G_USER_AGENT",
+    "TimeoutHTTPAdapter",
+    "get_html",
+    "post_html",
+    "get_html_session",
+    "get_html_by_browser",
+    "get_html_by_form",
+    "get_html_by_scraper",
     # Download functions
-    'download_file_with_filename',
-    'download_one_file',
-    'parallel_download_files',
-    
+    "download_file_with_filename",
+    "download_one_file",
+    "parallel_download_files",
     # Cookie functions
-    'load_cookies',
-    
+    "load_cookies",
     # String functions
-    'cn_space',
-    
+    "cn_space",
     # HTML functions
-    'get_xpath_single',
-    
+    "get_xpath_single",
     # File functions
-    'file_not_exist_or_empty',
+    "file_not_exist_or_empty",
 ]

@@ -60,9 +60,7 @@ def print_files(
         label,
     ) = get_info(json_data)
     main_mode = config.getInstance().main_mode()
-    if (
-        main_mode == 3
-    ):
+    if main_mode == 3:
         nfo_path = str(Path(filepath).with_suffix(".nfo"))
     else:
         nfo_path = os.path.join(
@@ -175,8 +173,8 @@ def print_files(
                 if not config.getInstance().jellyfin():
                     print("  <title><![CDATA[" + naming_rule + "]]></title>", file=code)
                     print(
-                        "  <originaltitle><![CDATA[" \
-                        + json_data["original_naming_rule"] \
+                        "  <originaltitle><![CDATA["
+                        + json_data["original_naming_rule"]
                         + "]]></originaltitle>",
                         file=code,
                     )
@@ -187,8 +185,8 @@ def print_files(
                 else:
                     print("  <title>" + naming_rule + "</title>", file=code)
                     print(
-                        "  <originaltitle>" \
-                        + json_data["original_naming_rule"] \
+                        "  <originaltitle>"
+                        + json_data["original_naming_rule"]
                         + "</originaltitle>",
                         file=code,
                     )
