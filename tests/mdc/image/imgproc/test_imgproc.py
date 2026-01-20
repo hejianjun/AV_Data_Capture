@@ -84,6 +84,49 @@ class TestImgProc(unittest.TestCase):
         
         result = face_center("test.jpg", "hog")
         self.assertEqual(result, (0, 0))  # 失败时返回默认值
+    
+    @patch('mdc.image.imgproc.config')
+    @patch('mdc.image.imgproc.os')
+    @patch('mdc.image.imgproc.Image')
+    @patch('mdc.image.imgproc.cv2')
+    @patch('mdc.image.imgproc.face_crop_width')
+    @patch('mdc.image.imgproc.face_crop_height')
+    def test_cutImage(self, mock_face_crop_height, mock_face_crop_width, mock_cv2, mock_Image, mock_os, mock_config):
+        """测试图片裁剪功能"""
+        from mdc.image.imgproc import cutImage
+        
+        # 设置模拟配置
+        mock_instance = MagicMock()
+        mock_instance.image_naming_with_number.return_value = False
+        mock_instance.face_uncensored_only.return_value = False
+        mock_instance.face_aways_imagecut.return_value = False
+        mock_instance.face_locations_model.return_value = "hog"
+        mock_config.getInstance.return_value = mock_instance
+        
+        # 设置模拟路径
+        mock_path = "test.jpg"
+        mock_thumb_path = "thumb.jpg"
+        mock_poster_path = "poster.jpg"
+        
+        # 设置模拟返回值
+        mock_cv2.imread.return_value = MagicMock()
+        mock_cv2.resize.return_value = MagicMock()
+        mock_cv2.cvtColor.return_value = MagicMock()
+        mock_Image.open.return_value = MagicMock()
+        mock_face_crop_width.return_value = (0, 0, 100, 100)
+        mock_face_crop_height.return_value = (0, 0, 100, 100)
+        
+        # 测试正常情况
+        result = cutImage(True, mock_path, mock_thumb_path, mock_poster_path)
+        self.assertTrue(mock_cv2.imread.called)
+        self.assertTrue(mock_cv2.resize.called)
+        self.assertTrue(mock_Image.open.called)
+        self.assertTrue(mock_face_crop_width.called)
+        self.assertTrue(mock_face_crop_height.called)
+        
+        # 测试跳过人脸检测的情况
+        result = cutImage(True, mock_path, mock_thumb_path, mock_poster_path, skip_facerec=True)
+        self.assertTrue(mock_cv2.imread.called)
 
 
 if __name__ == "__main__":

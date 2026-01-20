@@ -154,6 +154,119 @@ class TestActorMapping(unittest.TestCase):
         # 测试不存在的名称
         result = process_special_actor_name('unknown', mapping)
         self.assertEqual(result, 'unknown')
+    
+    @patch('mdc.utils.actor_mapping.process_special_actor_name')
+    @patch('mdc.utils.actor_mapping.process_text_mappings')
+    @patch('mdc.utils.actor_mapping.get_actor_mapping')
+    @patch('mdc.utils.actor_mapping.get_info_mapping')
+    def test_modify_nfo_content(self, mock_get_info_mapping, mock_get_actor_mapping, mock_process_text_mappings, mock_process_special_actor_name):
+        """测试修改NFO文件内容功能"""
+        from mdc.utils.actor_mapping import modify_nfo_content
+        
+        # 创建模拟路径和文件内容
+        mock_path = MagicMock(spec=Path)
+        mock_path.read_text.return_value = "<actor>actor1</actor><tag>tag1</tag>"
+        mock_path.write_text = MagicMock()
+        
+        # 设置模拟返回值
+        mock_get_actor_mapping.return_value = {'actor1': '演员A'}
+        mock_get_info_mapping.return_value = {'tag1': '标签1'}
+        mock_process_text_mappings.return_value = '标签1'
+        mock_process_special_actor_name.return_value = '演员A'
+        
+        # 测试修改NFO内容
+        result = modify_nfo_content(mock_path)
+        self.assertTrue(mock_path.read_text.called)
+        self.assertTrue(mock_path.write_text.called)
+        self.assertTrue(mock_process_text_mappings.called)
+        self.assertTrue(mock_process_special_actor_name.called)
+    
+    @patch('mdc.utils.actor_mapping.process_movie_dir')
+    def test_migrate_files(self, mock_process_movie_dir):
+        """测试迁移文件功能"""
+        from mdc.utils.actor_mapping import migrate_files
+        
+        # 创建模拟路径
+        mock_src_dir = MagicMock(spec=Path)
+        mock_new_actor_dir = "新演员目录"
+        mock_reason = "迁移原因"
+        
+        # 测试迁移文件
+        migrate_files(mock_src_dir, mock_new_actor_dir, mock_reason)
+        self.assertTrue(mock_process_movie_dir.called)
+    
+    @patch('mdc.utils.actor_mapping.safe_iterdir')
+    @patch('mdc.utils.actor_mapping.modify_nfo_content')
+    def test_process_movie_dir(self, mock_modify_nfo_content, mock_safe_iterdir):
+        """测试处理电影目录功能"""
+        from mdc.utils.actor_mapping import process_movie_dir
+        
+        # 创建模拟路径
+        mock_dir = MagicMock(spec=Path)
+        mock_nfo_file = MagicMock(spec=Path)
+        mock_nfo_file.exists.return_value = True
+        mock_nfo_file.suffix.return_value = '.nfo'
+        mock_safe_iterdir.return_value = [mock_nfo_file]
+        
+        # 测试处理电影目录
+        process_movie_dir(mock_dir)
+        self.assertTrue(mock_safe_iterdir.called)
+        self.assertTrue(mock_modify_nfo_content.called)
+    
+    def test_is_movie_dir(self):
+        """测试电影目录检测功能"""
+        from mdc.utils.actor_mapping import is_movie_dir
+        
+        # 创建模拟路径
+        mock_path = MagicMock(spec=Path)
+        mock_path.is_dir.return_value = True
+        mock_file = MagicMock(spec=Path)
+        mock_file.suffix = '.nfo'
+        mock_path.glob.return_value = [mock_file]
+        
+        # 测试目录检测
+        result = is_movie_dir(mock_path)
+        self.assertTrue(mock_path.is_dir.called)
+        self.assertTrue(mock_path.glob.called)
+        self.assertTrue(result)
+    
+    @patch('mdc.utils.actor_mapping.is_movie_dir')
+    def test_find_movie_dirs(self, mock_is_movie_dir):
+        """测试查找电影目录功能"""
+        from mdc.utils.actor_mapping import find_movie_dirs
+        
+        # 创建模拟路径
+        mock_root = MagicMock(spec=Path)
+        mock_dir1 = MagicMock(spec=Path)
+        mock_dir2 = MagicMock(spec=Path)
+        mock_root.iterdir.return_value = [mock_dir1, mock_dir2]
+        
+        # 设置模拟返回值
+        mock_is_movie_dir.side_effect = [True, False]
+        
+        # 测试查找电影目录
+        result = find_movie_dirs(mock_root)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], mock_dir1)
+    
+    def test_safe_iterdir(self):
+        """测试安全遍历目录功能"""
+        from mdc.utils.actor_mapping import safe_iterdir
+        
+        # 创建模拟路径
+        mock_path = MagicMock(spec=Path)
+        mock_file = MagicMock(spec=Path)
+        mock_dir = MagicMock(spec=Path)
+        mock_path.iterdir.return_value = [mock_file, mock_dir]
+        
+        # 测试正常情况
+        result = safe_iterdir(mock_path)
+        self.assertEqual(result, [mock_file, mock_dir])
+        
+        # 测试异常情况
+        mock_path.iterdir.side_effect = PermissionError
+        result = safe_iterdir(mock_path)
+        self.assertEqual(result, [])
 
 
 if __name__ == "__main__":
