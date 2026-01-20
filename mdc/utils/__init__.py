@@ -11,7 +11,7 @@ from mdc.utils.http.request import (
 )
 
 # Download functions
-from mdc.utils.download.download import (
+from mdc.download import (
     download_file_with_filename,
     download_one_file,
     parallel_download_files,
