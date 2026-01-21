@@ -1,4 +1,3 @@
-import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock, mock_open
 from mdc.utils.actor_mapping import (
@@ -7,7 +6,7 @@ from mdc.utils.actor_mapping import (
 )
 
 
-class TestActorMapping(unittest.TestCase):
+class TestActorMapping:
     """测试演员映射功能"""
     
     @patch('mdc.utils.actor_mapping.etree')
@@ -44,14 +43,14 @@ class TestActorMapping(unittest.TestCase):
         mapping = load_mapping(1, "test_mapping.xml")
         
         # 验证映射是否正确建立
-        self.assertEqual(mapping['actor1'], '演员A')
-        self.assertEqual(mapping['act1'], '演员A')
-        self.assertEqual(mapping['アクターa'], '演员A')
-        self.assertEqual(mapping['演員a'], '演员A')
-        self.assertEqual(mapping['演员a'], '演员A')
-        self.assertEqual(mapping['アクターb'], '演员B')
-        self.assertEqual(mapping['演員b'], '演员B')
-        self.assertEqual(mapping['演员b'], '演员B')
+        assert mapping['actor1'] == '演员A'
+        assert mapping['act1'] == '演员A'
+        assert mapping['アクターa'] == '演员A'
+        assert mapping['演員a'] == '演员A'
+        assert mapping['演员a'] == '演员A'
+        assert mapping['アクターb'] == '演员B'
+        assert mapping['演員b'] == '演员B'
+        assert mapping['演员b'] == '演员B'
     
     @patch('mdc.utils.actor_mapping.load_mapping')
     def test_get_actor_mapping(self, mock_load_mapping):
@@ -62,12 +61,12 @@ class TestActorMapping(unittest.TestCase):
         # 第一次调用应该加载映射
         mapping1 = get_actor_mapping(1)
         mock_load_mapping.assert_called_once()
-        self.assertEqual(mapping1, mock_mapping)
+        assert mapping1 == mock_mapping
         
         # 第二次调用应该使用缓存
         mapping2 = get_actor_mapping(1)
-        self.assertEqual(mapping2, mock_mapping)
-        self.assertEqual(mock_load_mapping.call_count, 1)  # 确保只调用了一次
+        assert mapping2 == mock_mapping
+        assert mock_load_mapping.call_count == 1  # 确保只调用了一次
     
     @patch('mdc.utils.actor_mapping.load_mapping')
     def test_get_info_mapping(self, mock_load_mapping):
@@ -78,12 +77,12 @@ class TestActorMapping(unittest.TestCase):
         # 第一次调用应该加载映射
         mapping1 = get_info_mapping(1)
         mock_load_mapping.assert_called_once()
-        self.assertEqual(mapping1, mock_mapping)
+        assert mapping1 == mock_mapping
         
         # 第二次调用应该使用缓存
         mapping2 = get_info_mapping(1)
-        self.assertEqual(mapping2, mock_mapping)
-        self.assertEqual(mock_load_mapping.call_count, 1)  # 确保只调用了一次
+        assert mapping2 == mock_mapping
+        assert mock_load_mapping.call_count == 1  # 确保只调用了一次
     
     def test_process_text_mapping(self):
         """测试文本映射处理"""
@@ -94,18 +93,18 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试正常映射
         result, should_delete = process_text_mapping('test', mapping)
-        self.assertEqual(result, '测试')
-        self.assertFalse(should_delete)
+        assert result == '测试'
+        assert not should_delete
         
         # 测试删除映射
         result, should_delete = process_text_mapping('delete', mapping)
-        self.assertIsNone(result)
-        self.assertTrue(should_delete)
+        assert result is None
+        assert should_delete
         
         # 测试不存在的映射
         result, should_delete = process_text_mapping('not_found', mapping)
-        self.assertEqual(result, 'not_found')
-        self.assertFalse(should_delete)
+        assert result == 'not_found'
+        assert not should_delete
     
     def test_process_text_mappings(self):
         """测试文本映射批量处理"""
@@ -117,15 +116,15 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试字符串处理
         result = process_text_mappings('test1', mapping)
-        self.assertEqual(result, '测试1')
+        assert result == '测试1'
         
         # 测试列表处理
         result = process_text_mappings(['test1', 'test2', 'delete', 'not_found'], mapping)
-        self.assertEqual(result, ['测试1', '测试2', 'not_found'])
+        assert result == ['测试1', '测试2', 'not_found']
         
         # 测试其他类型（应原样返回）
         result = process_text_mappings(123, mapping)
-        self.assertEqual(result, 123)
+        assert result == 123
     
     def test_process_special_actor_name(self):
         """测试特殊演员名称处理"""
@@ -137,23 +136,23 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试普通名称
         result = process_special_actor_name('actor1', mapping)
-        self.assertEqual(result, '演员A')
+        assert result == '演员A'
         
         # 测试带括号的名称（全角）
         result = process_special_actor_name('actor1（别名）', mapping)
-        self.assertEqual(result, '演员A（别名）')
+        assert result == '演员A（别名）'
         
         # 测试带括号的名称（半角）
         result = process_special_actor_name('actor1(alias)', mapping)
-        self.assertEqual(result, '演员A(alias)')
+        assert result == '演员A(alias)'
         
         # 测试带多个别名的名称
         result = process_special_actor_name('actor1（alias1、alias2）', mapping)
-        self.assertEqual(result, '演员A（alias1、alias2）')
+        assert result == '演员A（alias1、alias2）'
         
         # 测试不存在的名称
         result = process_special_actor_name('unknown', mapping)
-        self.assertEqual(result, 'unknown')
+        assert result == 'unknown'
     
     @patch('mdc.utils.actor_mapping.process_special_actor_name')
     @patch('mdc.utils.actor_mapping.process_text_mappings')
@@ -176,10 +175,10 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试修改NFO内容
         result = modify_nfo_content(mock_path)
-        self.assertTrue(mock_path.read_text.called)
-        self.assertTrue(mock_path.write_text.called)
-        self.assertTrue(mock_process_text_mappings.called)
-        self.assertTrue(mock_process_special_actor_name.called)
+        assert mock_path.read_text.called
+        assert mock_path.write_text.called
+        assert mock_process_text_mappings.called
+        assert mock_process_special_actor_name.called
     
     @patch('mdc.utils.actor_mapping.process_movie_dir')
     def test_migrate_files(self, mock_process_movie_dir):
@@ -193,7 +192,7 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试迁移文件
         migrate_files(mock_src_dir, mock_new_actor_dir, mock_reason)
-        self.assertTrue(mock_process_movie_dir.called)
+        assert mock_process_movie_dir.called
     
     @patch('mdc.utils.actor_mapping.safe_iterdir')
     @patch('mdc.utils.actor_mapping.modify_nfo_content')
@@ -210,8 +209,8 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试处理电影目录
         process_movie_dir(mock_dir)
-        self.assertTrue(mock_safe_iterdir.called)
-        self.assertTrue(mock_modify_nfo_content.called)
+        assert mock_safe_iterdir.called
+        assert mock_modify_nfo_content.called
     
     def test_is_movie_dir(self):
         """测试电影目录检测功能"""
@@ -226,9 +225,9 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试目录检测
         result = is_movie_dir(mock_path)
-        self.assertTrue(mock_path.is_dir.called)
-        self.assertTrue(mock_path.glob.called)
-        self.assertTrue(result)
+        assert mock_path.is_dir.called
+        assert mock_path.glob.called
+        assert result
     
     @patch('mdc.utils.actor_mapping.is_movie_dir')
     def test_find_movie_dirs(self, mock_is_movie_dir):
@@ -246,8 +245,8 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试查找电影目录
         result = find_movie_dirs(mock_root)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], mock_dir1)
+        assert len(result) == 1
+        assert result[0] == mock_dir1
     
     def test_safe_iterdir(self):
         """测试安全遍历目录功能"""
@@ -261,13 +260,9 @@ class TestActorMapping(unittest.TestCase):
         
         # 测试正常情况
         result = safe_iterdir(mock_path)
-        self.assertEqual(result, [mock_file, mock_dir])
+        assert result == [mock_file, mock_dir]
         
         # 测试异常情况
         mock_path.iterdir.side_effect = PermissionError
         result = safe_iterdir(mock_path)
-        self.assertEqual(result, [])
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert result == []

@@ -1,10 +1,9 @@
-import unittest
 from unittest.mock import patch, MagicMock, mock_open
 from pathlib import Path
 from mdc.download.subtitles import download_subtitles, open_download
 
 
-class TestSubtitles(unittest.TestCase):
+class TestSubtitles:
     """测试字幕下载功能"""
     
     @patch('mdc.download.subtitles.config')
@@ -43,7 +42,7 @@ class TestSubtitles(unittest.TestCase):
         )
         
         # 验证结果
-        self.assertTrue(result)
+        assert result
         mock_get.assert_called_once()
         mock_fromstring.assert_called_once()
         mock_open_download.assert_called_once()
@@ -71,7 +70,7 @@ class TestSubtitles(unittest.TestCase):
         )
         
         # 验证结果
-        self.assertFalse(result)
+        assert not result
     
     @patch('mdc.download.subtitles.config')
     @patch('mdc.download.subtitles.requests.get')
@@ -113,9 +112,9 @@ class TestSubtitles(unittest.TestCase):
         )
         
         # 验证结果
-        self.assertTrue(result)
+        assert result
         mock_get.assert_called()
-        self.assertEqual(mock_get.call_count, 2)
+        assert mock_get.call_count == 2
         mock_file.assert_called_once_with("./SSNI-813.srt", "wb")
     
     @patch('mdc.download.subtitles.config')
@@ -141,8 +140,4 @@ class TestSubtitles(unittest.TestCase):
         )
         
         # 验证结果
-        self.assertFalse(result)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert not result

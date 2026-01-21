@@ -1,11 +1,10 @@
-import unittest
 from mdc.config.config import Config, getInstance
 
 
-class TestConfig(unittest.TestCase):
+class TestConfig:
     """测试Config类的功能"""
     
-    def setUp(self):
+    def setup_method(self):
         """每个测试前的设置"""
         self.config = Config()
     
@@ -13,7 +12,7 @@ class TestConfig(unittest.TestCase):
         """测试单例模式是否正常工作"""
         instance1 = getInstance()
         instance2 = getInstance()
-        self.assertEqual(instance1, instance2)
+        assert instance1 == instance2
     
     def test_config_methods(self):
         """测试Config类的主要方法"""
@@ -27,7 +26,7 @@ class TestConfig(unittest.TestCase):
                 try:
                     method()
                 except Exception as e:
-                    self.fail(f"Config.{_m}() 调用失败: {e}")
+                    assert False, f"Config.{_m}() 调用失败: {e}"
     
     def test_proxy_methods(self):
         """测试Proxy类的主要方法"""
@@ -50,17 +49,13 @@ class TestConfig(unittest.TestCase):
         conf2.set_override("face:aspect_ratio=2;face:aways_imagecut=0;priority:website=javdb")
         
         # 验证覆盖是否生效
-        self.assertEqual(conf2.face_aspect_ratio(), 2)
-        self.assertEqual(conf2.face_aways_imagecut(), False)
-        self.assertEqual(conf2.sources(), "javdb")
+        assert conf2.face_aspect_ratio() == 2
+        assert conf2.face_aways_imagecut() == False
+        assert conf2.sources() == "javdb"
     
     def test_new_instance(self):
         """测试创建新实例的功能"""
         # 创建新实例应该与单例不同
         conf2 = Config()
         instance = getInstance()
-        self.assertNotEqual(instance, conf2)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert instance != conf2

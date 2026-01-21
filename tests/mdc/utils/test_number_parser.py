@@ -1,8 +1,7 @@
-import unittest
 from mdc.utils.number_parser import get_number, get_number_by_dict, is_uncensored, G_TAKE_NUM_RULES
 
 
-class TestNumberParser(unittest.TestCase):
+class TestNumberParser:
     """测试番号解析功能"""
     
     def test_get_number(self):
@@ -23,27 +22,26 @@ class TestNumberParser(unittest.TestCase):
         ]
         
         for input_file, expected in test_cases:
-            with self.subTest(input_file=input_file):
-                result = get_number(False, input_file)
-                self.assertEqual(result, expected)
+            result = get_number(False, input_file)
+            assert result == expected, f"测试失败: 输入={input_file}, 预期={expected}, 实际={result}"
     
     def test_get_number_special_cases(self):
         """测试特殊情况的番号提取"""
         # 测试空字符串
         result = get_number(False, "")
-        self.assertIsNone(result)
+        assert result is None
         
         # 测试没有扩展名的文件名
         result = get_number(False, "SSNI-829")
-        self.assertEqual(result, "SSNI-829")
+        assert result == "SSNI-829"
         
         # 测试带路径的文件名
         result = get_number(False, "/path/to/SSNI-829.mp4")
-        self.assertEqual(result, "SSNI-829")
+        assert result == "SSNI-829"
         
         # 测试Windows路径
-        result = get_number(False, "C:\\path\\to\\SSNI-829.mp4")
-        self.assertEqual(result, "SSNI-829")
+        result = get_number(False, "C:\path\to\SSNI-829.mp4")
+        assert result == "SSNI-829"
     
     def test_get_number_by_dict(self):
         """测试按数据源规则提取番号"""
@@ -58,9 +56,8 @@ class TestNumberParser(unittest.TestCase):
         ]
         
         for input_file, expected in test_cases:
-            with self.subTest(input_file=input_file):
-                result = get_number_by_dict(input_file)
-                self.assertEqual(result, expected)
+            result = get_number_by_dict(input_file)
+            assert result == expected, f"测试失败: 输入={input_file}, 预期={expected}, 实际={result}"
     
     def test_is_uncensored(self):
         """测试判断是否为无码功能"""
@@ -80,8 +77,7 @@ class TestNumberParser(unittest.TestCase):
         ]
         
         for number in uncensored_cases:
-            with self.subTest(number=number):
-                self.assertTrue(is_uncensored(number), f"{number} 应被识别为无码")
+            assert is_uncensored(number), f"{number} 应被识别为无码"
         
         # 测试有码情况
         censored_cases = [
@@ -91,20 +87,15 @@ class TestNumberParser(unittest.TestCase):
         ]
         
         for number in censored_cases:
-            with self.subTest(number=number):
-                self.assertFalse(is_uncensored(number), f"{number} 应被识别为有码")
+            assert not is_uncensored(number), f"{number} 应被识别为有码"
     
     def test_take_number_rules(self):
         """测试提取番号的规则集"""
-        self.assertIn("tokyo.*hot", G_TAKE_NUM_RULES)
-        self.assertIn("carib", G_TAKE_NUM_RULES)
-        self.assertIn("1pon|mura|paco", G_TAKE_NUM_RULES)
-        self.assertIn("10mu", G_TAKE_NUM_RULES)
-        self.assertIn("x-art", G_TAKE_NUM_RULES)
-        self.assertIn("xxx-av", G_TAKE_NUM_RULES)
-        self.assertIn("heydouga", G_TAKE_NUM_RULES)
-        self.assertIn("heyzo", G_TAKE_NUM_RULES)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert "tokyo.*hot" in G_TAKE_NUM_RULES
+        assert "carib" in G_TAKE_NUM_RULES
+        assert "1pon|mura|paco" in G_TAKE_NUM_RULES
+        assert "10mu" in G_TAKE_NUM_RULES
+        assert "x-art" in G_TAKE_NUM_RULES
+        assert "xxx-av" in G_TAKE_NUM_RULES
+        assert "heydouga" in G_TAKE_NUM_RULES
+        assert "heyzo" in G_TAKE_NUM_RULES

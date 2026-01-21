@@ -1,28 +1,27 @@
-import unittest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 from mdc.utils.translation import is_japanese, translate
 
 
-class TestTranslation(unittest.TestCase):
+class TestTranslation:
     """测试翻译相关功能"""
     
     def test_is_japanese(self):
         """测试日语检测功能"""
         # 测试日语文本（仅包含假名的文本）
-        self.assertTrue(is_japanese("こんにちは"))  # 平假名
-        self.assertTrue(is_japanese("カンニチワ"))  # 片假名
-        self.assertTrue(is_japanese("Helloこんにちは"))  # 混合日语（包含假名）
+        assert is_japanese("こんにちは")  # 平假名
+        assert is_japanese("カンニチワ")  # 片假名
+        assert is_japanese("Helloこんにちは")  # 混合日语（包含假名）
         
         # 注意：纯汉字文本（如"日本語"）不会被检测为日语，因为汉字在中日韩文本中都存在
-        # self.assertTrue(is_japanese("日本語"))      # 这个测试会失败，因为没有假名
+        # assert is_japanese("日本語")      # 这个测试会失败，因为没有假名
         
         # 测试非日语文本
-        self.assertFalse(is_japanese("Hello"))
-        self.assertFalse(is_japanese("你好"))
-        self.assertFalse(is_japanese("안녕하세요"))
-        self.assertFalse(is_japanese("12345"))
-        self.assertFalse(is_japanese(""))
+        assert not is_japanese("Hello")
+        assert not is_japanese("你好")
+        assert not is_japanese("안녕하세요")
+        assert not is_japanese("12345")
+        assert not is_japanese("")
     
     @patch('mdc.utils.translation.config')
     @patch('mdc.utils.translation.get_html')
@@ -45,15 +44,15 @@ class TestTranslation(unittest.TestCase):
         
         # 测试翻译
         result = translate("こんにちは")
-        self.assertEqual(result, "你好")
+        assert result == "你好"
         
         # 测试空字符串
         result = translate("")
-        self.assertEqual(result, "")
+        assert result == ""
         
         # 测试非日语中文文本（不应翻译）
         result = translate("你好")
-        self.assertEqual(result, "你好")
+        assert result == "你好"
     
     @patch('mdc.utils.translation.is_movie_dir')
     def test_is_movie_dir(self, mock_is_movie_dir):
@@ -67,8 +66,8 @@ class TestTranslation(unittest.TestCase):
         
         # 测试目录检测
         result = is_movie_dir(mock_path)
-        self.assertTrue(mock_path.is_dir.called)
-        self.assertTrue(mock_path.glob.called)
+        assert mock_path.is_dir.called
+        assert mock_path.glob.called
     
     @patch('mdc.utils.translation.is_movie_dir')
     def test_find_movie_dirs(self, mock_is_movie_dir):
@@ -86,8 +85,8 @@ class TestTranslation(unittest.TestCase):
         
         # 测试查找电影目录
         result = find_movie_dirs(mock_root)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], mock_dir1)
+        assert len(result) == 1
+        assert result[0] == mock_dir1
     
     def test_safe_iterdir(self):
         """测试安全遍历目录功能"""
@@ -100,12 +99,12 @@ class TestTranslation(unittest.TestCase):
         
         # 测试正常情况
         result = safe_iterdir(mock_path)
-        self.assertEqual(result, [mock_dir])
+        assert result == [mock_dir]
         
         # 测试异常情况
         mock_path.iterdir.side_effect = PermissionError
         result = safe_iterdir(mock_path)
-        self.assertEqual(result, [])
+        assert result == []
     
     @patch('mdc.utils.translation.safe_iterdir')
     @patch('mdc.utils.translation.process_movie_dir')
@@ -119,8 +118,8 @@ class TestTranslation(unittest.TestCase):
         
         # 测试处理电影目录
         process_movie_dir(mock_dir)
-        self.assertTrue(mock_safe_iterdir.called)
-        self.assertTrue(mock_process_movie_dir.called)
+        assert mock_safe_iterdir.called
+        assert mock_process_movie_dir.called
     
     @patch('mdc.utils.translation.is_japanese')
     @patch('mdc.utils.translation.translate')
@@ -139,9 +138,5 @@ class TestTranslation(unittest.TestCase):
         
         # 测试修改NFO内容
         result = modify_nfo_content(mock_path)
-        self.assertTrue(mock_path.read_text.called)
-        self.assertTrue(mock_path.write_text.called)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert mock_path.read_text.called
+        assert mock_path.write_text.called
