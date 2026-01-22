@@ -10,13 +10,6 @@ from mdc.utils.http.request import (
     get_html_by_scraper,
 )
 
-# Download functions
-from mdc.download import (
-    download_file_with_filename,
-    download_one_file,
-    parallel_download_files,
-)
-
 # Cookie functions
 from mdc.utils.cookie.cookie import load_cookies
 
@@ -40,10 +33,6 @@ __all__ = [
     "get_html_by_browser",
     "get_html_by_form",
     "get_html_by_scraper",
-    # Download functions
-    "download_file_with_filename",
-    "download_one_file",
-    "parallel_download_files",
     # Cookie functions
     "load_cookies",
     # String functions

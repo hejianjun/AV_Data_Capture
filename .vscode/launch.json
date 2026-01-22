@@ -62,16 +62,6 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
-        },
-        {
-            "name": "Python: 当前文件",
-            "type": "debugpy",
-            "request": "launch",
-            "console": "integratedTerminal",
-            "env": {
-                "PYTHONIOENCODING": "utf-8"
-            },
-            "program": "${workspaceFolder}/Movie_Data_capture.py",
         }
     ]
 }
