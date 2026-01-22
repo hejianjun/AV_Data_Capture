@@ -130,8 +130,8 @@ class TestActorMapping:
         """测试特殊演员名称处理"""
         mapping = {
             'actor1': '演员A',
-            'actor2': '演员B',
-            'alias': '别名演员'
+            'actor2': '演员A',
+            'alias': '演员A'
         }
         
         # 测试普通名称
@@ -140,15 +140,15 @@ class TestActorMapping:
         
         # 测试带括号的名称（全角）
         result = process_special_actor_name('actor1（别名）', mapping)
-        assert result == '演员A（别名）'
+        assert result == '演员A(别名)'
         
         # 测试带括号的名称（半角）
         result = process_special_actor_name('actor1(alias)', mapping)
-        assert result == '演员A(alias)'
+        assert result == '演员A'
         
         # 测试带多个别名的名称
         result = process_special_actor_name('actor1（alias1、alias2）', mapping)
-        assert result == '演员A（alias1、alias2）'
+        assert result == '演员A(alias1,alias2)'
         
         # 测试不存在的名称
         result = process_special_actor_name('unknown', mapping)

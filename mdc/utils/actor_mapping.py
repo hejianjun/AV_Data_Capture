@@ -118,7 +118,7 @@ def process_special_actor_name(original: str, actor_mapping: dict) -> str:
 
         if all(p == norm_outer for p in norm_inner_parts):
             return norm_outer
-        return f"{norm_outer}({''.join(norm_inner_parts)})"
+        return f"{norm_outer}({','.join(norm_inner_parts)})"
 
     norm_inner = actor_mapping.get(inner.strip().lower(), inner.strip())
     return f"{norm_outer}({norm_inner})" if norm_inner != norm_outer else norm_outer
@@ -243,7 +243,7 @@ def process_movie_dir(movie_dir: Path):
             if Path(long_path).exists():
                 movie_dir = Path(long_path)
 
-    nfo_files = list(movie_dir.glob("*.nfo"))
+    nfo_files = list[Path](movie_dir.glob("*.nfo"))
     if not nfo_files:
         return
 
