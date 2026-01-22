@@ -23,6 +23,7 @@ class Airav(Parser):
         # for javbus
         self.specifiedSource = None
         self.addtion_Javbus = False
+        self.allow_number_change = False
 
     def queryNumberUrl(self, number):
         queryUrl = "https://airav.io/search_result?kw=" + number
@@ -65,3 +66,9 @@ class Airav(Parser):
             if isinstance(result, str) and len(result):
                 return result
         return ""
+
+    def getNum(self, htmltree):
+        number = self.getTreeElement(htmltree, self.expr_number)
+        if number is None:
+            return ""
+        return number

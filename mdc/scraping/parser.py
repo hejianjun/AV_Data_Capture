@@ -191,6 +191,7 @@ class Parser:
                 "website": self.detailurl,
                 "source": self.source,
                 "imagecut": self.getImagecut(htmltree),
+                "allow_number_change": self.allow_number_change,
             }
             dic = self.extradict(dic)
         except Exception as e:

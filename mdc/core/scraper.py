@@ -74,8 +74,13 @@ def get_data_from_json(
     # 如果将来javdb.com命名规则下不同Studio出现同名碰撞导致无法区分，可考虑更换规则，更新相应的number分析和抓取代码。
     if str(json_data.get("number")).upper() != file_number.upper():
         try:
-            if json_data.get("allow_number_change"):
-                pass
+            if not json_data.get("allow_number_change"):
+                print(
+                    "[-]Movie number has changed! [{}]->[{}]".format(
+                        file_number, str(json_data.get("number"))
+                    )
+                )
+                return None
         except:
             print(
                 "[-]Movie number has changed! [{}]->[{}]".format(

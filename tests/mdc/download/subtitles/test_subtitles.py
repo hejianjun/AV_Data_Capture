@@ -115,7 +115,15 @@ class TestSubtitles:
         assert result
         mock_get.assert_called()
         assert mock_get.call_count == 2
-        mock_file.assert_called_once_with("./SSNI-813.srt", "wb")
+        
+        # 方案1：验证保存的文件名（不验证路径格式）
+        from pathlib import Path
+        expected_path = Path("SSNI-813.zh-CN.srt")
+        mock_file.assert_called_once_with(expected_path, "wb")
+        
+        # 方案2：验证写入的内容
+        mock_file_handle = mock_file()
+        mock_file_handle.write.assert_called_once_with(b'Subtitle content')
     
     @patch('mdc.download.subtitles.config')
     @patch('mdc.download.subtitles.requests.get')
