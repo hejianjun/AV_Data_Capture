@@ -49,6 +49,39 @@ class StreamToLogger:
         pass
 
 
+class ColorFormatter(logging.Formatter):
+    def __init__(self, fmt="%(message)s", use_color=True):
+        super().__init__(fmt)
+        self.use_color = use_color
+
+    def format(self, record):
+        msg = super().format(record)
+        if not self.use_color:
+            return msg
+
+        if record.levelno >= logging.ERROR:
+            return f"\x1b[31;1m{msg}\x1b[0m"
+        if record.levelno <= logging.DEBUG:
+            return f"\x1b[36m{msg}\x1b[0m"
+        return msg
+
+
+def _enable_windows_vt_mode():
+    if os.name != "nt":
+        return
+    try:
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        for handle_id in (-11, -12):
+            handle = kernel32.GetStdHandle(handle_id)
+            mode = ctypes.c_uint32()
+            if kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+                kernel32.SetConsoleMode(handle, mode.value | 0x0004)
+    except Exception:
+        return
+
+
 def setup_logging(logdir):
     """
     配置logging系统
@@ -72,9 +105,12 @@ def setup_logging(logdir):
     log_tmstr = datetime.now().strftime("%Y%m%dT%H%M%S")
     LOG_FILE_PATH = log_dir / f"mdc_{log_tmstr}.txt"
 
+    _enable_windows_vt_mode()
+    debug_on = bool(config.getInstance().debug())
+
     # 配置根日志
     LOGGER = logging.getLogger("MDC")
-    LOGGER.setLevel(logging.INFO)
+    LOGGER.setLevel(logging.DEBUG if debug_on else logging.INFO)
 
     # 清除已有的handler
     for handler in LOGGER.handlers[:]:
@@ -82,16 +118,19 @@ def setup_logging(logdir):
 
     # 创建文件handler
     file_handler = logging.FileHandler(LOG_FILE_PATH, encoding="utf-8")
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging.DEBUG if debug_on else logging.INFO)
 
     # 创建控制台handler
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG if debug_on else logging.INFO)
 
     # 设置日志格式
-    formatter = logging.Formatter("%(message)s")
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
+    file_handler.setFormatter(logging.Formatter("%(message)s"))
+    use_color = bool(
+        getattr(console_handler.stream, "isatty", lambda: False)()
+        and os.getenv("NO_COLOR") is None
+    )
+    console_handler.setFormatter(ColorFormatter("%(message)s", use_color=use_color))
 
     # 添加handler
     LOGGER.addHandler(file_handler)
