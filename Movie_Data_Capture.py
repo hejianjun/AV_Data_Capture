@@ -59,11 +59,31 @@ class ColorFormatter(logging.Formatter):
         if not self.use_color:
             return msg
 
-        if record.levelno >= logging.ERROR:
-            return f"\x1b[31;1m{msg}\x1b[0m"
-        if record.levelno <= logging.DEBUG:
-            return f"\x1b[36m{msg}\x1b[0m"
-        return msg
+        def _rgb(msg, r, g, b):
+            return f"\x1b[38;2;{r};{g};{b}m{msg}\x1b[0m"
+
+        prefix_color_map = {
+            "[-]": (255, 107, 107),
+            "[!]": (214, 214, 90),
+            "[+]": (111, 211, 78),
+            "[D]": (77, 163, 230),
+            "[*]": (111, 211, 78),
+        }
+
+        msg_strip = msg.lstrip()
+        for prefix, (r, g, b) in prefix_color_map.items():
+            if msg_strip.startswith(prefix):
+                return _rgb(msg, r, g, b)
+
+        level_color_map = {
+            logging.DEBUG: (77, 163, 230),
+            logging.INFO: (111, 211, 78),
+            logging.WARNING: (214, 214, 90),
+            logging.ERROR: (255, 107, 107),
+            logging.CRITICAL: (255, 107, 107),
+        }
+        rgb = level_color_map.get(record.levelno)
+        return _rgb(msg, *rgb) if rgb else msg
 
 
 def _enable_windows_vt_mode():
