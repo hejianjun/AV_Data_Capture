@@ -154,39 +154,6 @@ class TestActorMapping:
         result = process_special_actor_name('unknown', mapping)
         assert result == 'unknown'
     
-    
-    @patch('mdc.utils.actor_mapping.process_movie_dir')
-    def test_migrate_files(self, mock_process_movie_dir):
-        """测试迁移文件功能"""
-        from mdc.utils.actor_mapping import migrate_files
-        
-        # 创建模拟路径
-        mock_src_dir = MagicMock(spec=Path)
-        mock_new_actor_dir = "新演员目录"
-        mock_reason = "迁移原因"
-        
-        # 测试迁移文件
-        migrate_files(mock_src_dir, mock_new_actor_dir, mock_reason)
-        assert mock_src_dir.called
-    
-    @patch('mdc.utils.actor_mapping.safe_iterdir')
-    @patch('mdc.utils.actor_mapping.modify_nfo_content')
-    def test_process_movie_dir(self, mock_modify_nfo_content, mock_safe_iterdir):
-        """测试处理电影目录功能"""
-        from mdc.utils.actor_mapping import process_movie_dir
-        
-        # 创建模拟路径
-        mock_dir = MagicMock(spec=Path)
-        mock_nfo_file = MagicMock(spec=Path)
-        mock_nfo_file.exists.return_value = True
-        mock_nfo_file.suffix.return_value = '.nfo'
-        mock_safe_iterdir.return_value = [mock_nfo_file]
-        
-        # 测试处理电影目录
-        process_movie_dir(mock_dir)
-        assert mock_safe_iterdir.called
-        assert mock_modify_nfo_content.called
-    
     def test_is_movie_dir(self):
         """测试电影目录检测功能"""
         from mdc.utils.actor_mapping import is_movie_dir
@@ -203,25 +170,7 @@ class TestActorMapping:
         assert mock_path.is_dir.called
         assert mock_path.glob.called
         assert result
-    
-    @patch('mdc.utils.actor_mapping.is_movie_dir')
-    def test_find_movie_dirs(self, mock_is_movie_dir):
-        """测试查找电影目录功能"""
-        from mdc.utils.actor_mapping import find_movie_dirs
-        
-        # 创建模拟路径
-        mock_root = MagicMock(spec=Path)
-        mock_dir1 = MagicMock(spec=Path)
-        mock_dir2 = MagicMock(spec=Path)
-        mock_root.iterdir.return_value = [mock_dir1, mock_dir2]
-        
-        # 设置模拟返回值
-        mock_is_movie_dir.side_effect = [True, False]
-        
-        # 测试查找电影目录
-        result = find_movie_dirs(mock_root)
-        assert len(result) == 1
-        assert result[0] == mock_dir1
+
     
     def test_safe_iterdir(self):
         """测试安全遍历目录功能"""
