@@ -4,6 +4,7 @@ import shutil
 import sys
 import re
 import typing
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 # 全局映射缓存
 _actor_mapping = None

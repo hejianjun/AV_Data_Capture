@@ -2,6 +2,7 @@ import os
 import re
 import sys
 from mdc.config import config
+from mdc.utils.logger import info as print, success, warn, error, debug
 import typing
 
 G_spat = re.compile(
@@ -88,15 +89,15 @@ def get_number(debug: bool, file_path: str) -> str:
                 file_number = file_number[0]
 
             new_file_number = file_number
-            if re.search("-c", file_number, flags=re.IGNORECASE):
+            if re.search("(-|_)c$", file_number, flags=re.IGNORECASE):
                 new_file_number = re.sub(
                     "(-|_)c$", "", file_number, flags=re.IGNORECASE
                 )
-            elif re.search("-u$", file_number, flags=re.IGNORECASE):
+            elif re.search("(-|_)u$", file_number, flags=re.IGNORECASE):
                 new_file_number = re.sub(
                     "(-|_)u$", "", file_number, flags=re.IGNORECASE
                 )
-            elif re.search("-uc$", file_number, flags=re.IGNORECASE):
+            elif re.search("(-|_)uc$", file_number, flags=re.IGNORECASE):
                 new_file_number = re.sub(
                     "(-|_)uc$", "", file_number, flags=re.IGNORECASE
                 )

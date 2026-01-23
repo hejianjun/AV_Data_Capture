@@ -5,6 +5,7 @@ import configparser
 import time
 import typing
 from pathlib import Path
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 G_conf_override = {
     # index 0 save Config() first instance for quick access by using getInstance()
@@ -670,6 +671,5 @@ class IniProxy:
             proxies = {}
 
         return proxies
-
 
 

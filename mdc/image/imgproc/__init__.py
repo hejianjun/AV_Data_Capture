@@ -6,6 +6,7 @@ from pathlib import Path
 from PIL import Image
 import shutil
 from mdc.file.file_utils import file_not_exist_or_empty
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 
 def face_crop_width(filename, width, height):
@@ -109,6 +110,5 @@ def face_center(filename, model):
         if config.getInstance().debug() == 1:
             logging.error(e)
         return (0, 0)
-
 
 

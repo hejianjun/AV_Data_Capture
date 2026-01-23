@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from mdc.config import config
 from mdc.utils.http.request import get_html
 from mdc.file.file_utils import moveFailedFolder, file_not_exist_or_empty
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 
 # ------------------------------

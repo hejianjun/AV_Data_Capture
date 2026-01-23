@@ -8,6 +8,7 @@ from lxml import etree
 from .custom_exceptions import QueryError
 from .httprequest import request_session
 from .parser import Parser
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 
 class Javdb(Parser):

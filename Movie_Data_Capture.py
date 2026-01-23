@@ -10,6 +10,7 @@ import signal
 import platform
 from mdc.config import config
 import logging
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 from datetime import datetime, timedelta
 from pathlib import Path

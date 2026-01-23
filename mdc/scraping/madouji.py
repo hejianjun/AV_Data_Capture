@@ -3,6 +3,7 @@ import re
 from lxml import etree
 from .parser import Parser
 from .madou import change_number
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 
 class Madouji(Parser):

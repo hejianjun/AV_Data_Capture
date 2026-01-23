@@ -4,6 +4,7 @@ import re
 from lxml import etree
 from urllib.parse import urlparse, unquote
 from .parser import Parser
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 NUM_RULES3 = [
     r"(?P<eng>(mm|tz|mmz|msd|mdm|yk|pm|pme|pmd|pmc|pmx|qdog|qqog|fsog|rs|xkg|xsj|91cm|91kcm|91ycm|tmw|tmq|misav|ps|gx|EMTC|KCM|DAD|JDXYX|EMX|xkyp|xkvp|NFDM|jdyl)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*",

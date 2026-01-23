@@ -11,6 +11,7 @@ import importlib
 import traceback
 from mdc.utils.cookie import load_cookies
 from mdc.file.file_utils import file_modification_days
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 
 def search(number, sources: str = None, **kwargs):

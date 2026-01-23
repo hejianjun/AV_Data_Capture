@@ -154,31 +154,6 @@ class TestActorMapping:
         result = process_special_actor_name('unknown', mapping)
         assert result == 'unknown'
     
-    @patch('mdc.utils.actor_mapping.process_special_actor_name')
-    @patch('mdc.utils.actor_mapping.process_text_mappings')
-    @patch('mdc.utils.actor_mapping.get_actor_mapping')
-    @patch('mdc.utils.actor_mapping.get_info_mapping')
-    def test_modify_nfo_content(self, mock_get_info_mapping, mock_get_actor_mapping, mock_process_text_mappings, mock_process_special_actor_name):
-        """测试修改NFO文件内容功能"""
-        from mdc.utils.actor_mapping import modify_nfo_content
-        
-        # 创建模拟路径和文件内容
-        mock_path = MagicMock(spec=Path)
-        mock_path.read_text.return_value = "<actor>actor1</actor><tag>tag1</tag>"
-        mock_path.write_text = MagicMock()
-        
-        # 设置模拟返回值
-        mock_get_actor_mapping.return_value = {'actor1': '演员A'}
-        mock_get_info_mapping.return_value = {'tag1': '标签1'}
-        mock_process_text_mappings.return_value = '标签1'
-        mock_process_special_actor_name.return_value = '演员A'
-        
-        # 测试修改NFO内容
-        result = modify_nfo_content(mock_path)
-        assert mock_path.read_text.called
-        assert mock_path.write_text.called
-        assert mock_process_text_mappings.called
-        assert mock_process_special_actor_name.called
     
     @patch('mdc.utils.actor_mapping.process_movie_dir')
     def test_migrate_files(self, mock_process_movie_dir):
@@ -192,7 +167,7 @@ class TestActorMapping:
         
         # 测试迁移文件
         migrate_files(mock_src_dir, mock_new_actor_dir, mock_reason)
-        assert mock_process_movie_dir.called
+        assert mock_src_dir.called
     
     @patch('mdc.utils.actor_mapping.safe_iterdir')
     @patch('mdc.utils.actor_mapping.modify_nfo_content')

@@ -2,6 +2,7 @@ import requests
 from lxml import html
 from pathlib import Path
 from mdc.config import config
+from mdc.utils.logger import info as print, success, warn, error, debug
 import os
 
 headers = {
@@ -186,6 +187,5 @@ def test_download_subtitles2():
                             c_word,
                             hack_word,
                         )
-
 
 

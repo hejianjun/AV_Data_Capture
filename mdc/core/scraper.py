@@ -17,6 +17,7 @@ from mdc.utils.actor_mapping import (
 from mdc.config import config
 from mdc.utils.translation import translate
 from mdc.scraping.api import search
+from mdc.utils.logger import info as print, success, warn, error, debug
 
 
 def get_data_from_json(
