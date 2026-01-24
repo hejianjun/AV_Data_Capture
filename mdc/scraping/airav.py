@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import re
+from difflib import SequenceMatcher
+
 from .parser import Parser
 
 
@@ -26,11 +29,65 @@ class Airav(Parser):
         self.allow_number_change = False
 
     def queryNumberUrl(self, number):
+        def _norm(s: str) -> str:
+            if not isinstance(s, str):
+                return ""
+            return re.sub(r"[^A-Za-z0-9]+", "", s).upper()
+
+        def _extract_number(text: str) -> str:
+            if not isinstance(text, str) or not text.strip():
+                return ""
+            t = text.upper()
+            m = re.search(r"([A-Z0-9]{2,12}(?:-[A-Z0-9]{1,12})*-\d{2,8})", t)
+            return m.group(1) if m else ""
+
         queryUrl = "https://airav.io/search_result?kw=" + number
         queryTree = self.getHtmlTree(queryUrl)
-        results = self.getTreeAll(queryTree, '//div[contains(@class,"oneVideo-top")]/a')
-        for i in results:
-            return "https://airav.io" + i.attrib["href"]
+        if queryTree == 404:
+            return ""
+        results = self.getTreeAll(
+            queryTree, '//div[contains(@class,"oneVideo") and contains(@class,"col")]'
+        )
+
+        target_norm = _norm(number)
+        candidates = []
+        for node in results:
+            href = self.getTreeElement(
+                node, './/div[contains(@class,"oneVideo-top")]//a/@href'
+            )
+            if not href:
+                continue
+            title = " ".join(
+                t.strip()
+                for t in node.xpath(
+                    './/div[contains(@class,"oneVideo-body")]//h5//text()'
+                )
+                if isinstance(t, str) and t.strip()
+            )
+            cand_num = _extract_number(title)
+            cand_norm = _norm(cand_num) if cand_num else ""
+            if cand_norm and cand_norm == target_norm:
+                return "https://airav.io" + href
+            candidates.append((href, cand_norm, cand_num))
+
+        best_href = ""
+        best_score = -1.0
+        for href, cand_norm, cand_num in candidates:
+            score = 0.0
+            if cand_norm:
+                score = SequenceMatcher(None, target_norm, cand_norm).ratio()
+            if score > best_score:
+                best_score = score
+                best_href = href
+
+        if best_href:
+            return "https://airav.io" + best_href
+        for node in results:
+            href = self.getTreeElement(
+                node, './/div[contains(@class,"oneVideo-top")]//a/@href'
+            )
+            if href:
+                return "https://airav.io" + href
         return ""
 
     def getTitle(self, htmltree):
