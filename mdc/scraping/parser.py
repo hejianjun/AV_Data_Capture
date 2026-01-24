@@ -198,10 +198,21 @@ class Parser:
         except Exception as e:
             if config.getInstance().debug():
                 print(self.detailurl)
-                traceback.print_exception(e)
+                if self._is_known_no_trace_exception(e):
+                    warn(f"[{self.source}] {e.__class__.__name__}: {e}")
+                else:
+                    traceback.print_exception(e)
             dic = {"title": ""}
         js = json.dumps(dic, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         return js
+
+    def _is_known_no_trace_exception(self, e: Exception) -> bool:
+        msg = str(e)
+        if isinstance(e, ValueError) and msg == "can not find image":
+            return True
+        if isinstance(e, IndexError) and msg == "No results found":
+            return True
+        return False
 
     def extradict(self, dic: dict):
         """额外修改dict"""
