@@ -36,12 +36,12 @@ def download_file_with_filename(url: str, filename: str, path: str, filepath=Non
                 except:
                     print(f"[-]Fatal error! Can not make folder '{path}'")
                     os._exit(0)
-            r = get_html(url=url, return_type="content", json_headers=json_headers)
-            if r == "" or "404 Not Found" in r.decode("utf-8"):
+            r = get_html(url=url, return_type="object", json_headers=json_headers)
+            if r.status_code != 200 or r.content == "":
                 print("[-]Movie Download Data not found!")
                 return
             with open(os.path.join(path, filename), "wb") as code:
-                code.write(r)
+                code.write(r.content)
             return
         except requests.exceptions.ProxyError:
             i += 1
