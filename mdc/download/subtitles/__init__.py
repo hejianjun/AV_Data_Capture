@@ -3,6 +3,7 @@ from lxml import html
 from pathlib import Path
 from mdc.config import config
 from mdc.utils.logger import info as print, success, warn, error, debug
+from mdc.utils.http.ssl_warnings import disable_insecure_request_warning
 import os
 
 headers = {
@@ -50,6 +51,7 @@ def open_download(subtitle_link, path, number, leak_word, c_word, hack_word):
     print(f"找到字幕链接: {subtitle_link}")
     subtitle_page_url = f"https://subtitlecat.com/{subtitle_link}"
     config_proxy = config.getInstance().proxy()
+    disable_insecure_request_warning()
     if config_proxy.enable:
         proxies = config_proxy.proxies()
 
@@ -187,5 +189,4 @@ def test_download_subtitles2():
                             c_word,
                             hack_word,
                         )
-
 

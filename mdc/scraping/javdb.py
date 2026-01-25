@@ -9,6 +9,7 @@ from .custom_exceptions import QueryError
 from .httprequest import request_session
 from .parser import Parser
 from mdc.utils.logger import info as print, success, warn, error, debug
+from mdc.utils.http.ssl_warnings import disable_insecure_request_warning
 
 
 class Javdb(Parser):
@@ -108,6 +109,7 @@ class Javdb(Parser):
         javdb_url = f"https://{self.dbsite}.com/search?q={number}&f=all"
         try:
             print(f"搜索的URL: {javdb_url}")
+            disable_insecure_request_warning()
             resp = self.session.get(
                 javdb_url,
                 cookies=self.cookies,
