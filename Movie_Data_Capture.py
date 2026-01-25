@@ -23,7 +23,12 @@ from mdc.utils.number_parser import get_number
 from mdc.core.core import core_main, core_main_no_net_op, debug_print
 from mdc.cli.cli import argparse_function
 from mdc.file.movie_list import movie_lists
-from mdc.file.file_utils import moveFailedFolder, create_failed_folder, rm_empty_folder
+from mdc.file.file_utils import (
+    moveFailedFolder,
+    create_failed_folder,
+    rm_empty_folder,
+    mode3_should_execute_by_nfo,
+)
 
 
 # 日志配置
@@ -225,6 +230,11 @@ def create_data_and_move(
         print(f"[!] [{n_number}] As Number Processing for '{movie_path}'")
         if zero_op:
             return
+        if config.getInstance().main_mode() == 3 and not no_net_op:
+            nfo_path = str(Path(movie_path).with_suffix(".nfo"))
+            if not mode3_should_execute_by_nfo(nfo_path):
+                print(f"[!]Skip by existing NFO: '{movie_path}'")
+                return
         if n_number:
             if no_net_op:
                 core_main_no_net_op(movie_path, n_number)
@@ -239,6 +249,11 @@ def create_data_and_move(
             print(f"[!] [{n_number}] As Number Processing for '{movie_path}'")
             if zero_op:
                 return
+            if config.getInstance().main_mode() == 3 and not no_net_op:
+                nfo_path = str(Path(movie_path).with_suffix(".nfo"))
+                if not mode3_should_execute_by_nfo(nfo_path):
+                    print(f"[!]Skip by existing NFO: '{movie_path}'")
+                    return
             if n_number:
                 if no_net_op:
                     core_main_no_net_op(movie_path, n_number)

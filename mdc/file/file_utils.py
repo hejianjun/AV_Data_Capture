@@ -1,7 +1,9 @@
 import os
+import re
 import shutil
 import time
 from pathlib import Path
+from xml.etree import ElementTree as ET
 from mdc.config import config
 from mdc.utils.logger import info as print, success, warn, error, debug
 from datetime import datetime
@@ -184,3 +186,40 @@ def get_info(json_data):  # 返回json里的数据
         series,
         label,
     )
+
+
+_JP_TEXT_RE = re.compile(r"[\u3040-\u30ff\u31f0-\u31ff\uff66-\uff9d]")
+
+
+def is_japanese_text(text: str) -> bool:
+    if not isinstance(text, str) or not text:
+        return False
+    return bool(_JP_TEXT_RE.search(text))
+
+
+def read_nfo_title_and_outline(nfo_path: str):
+    try:
+        nfo = Path(nfo_path)
+        if not nfo.is_file():
+            return None, None
+        root = ET.parse(str(nfo)).getroot()
+        title = root.findtext("title")
+        outline = root.findtext("outline")
+        plot = root.findtext("plot")
+        outline_value = outline if isinstance(outline, str) and outline.strip() else plot
+        outline_value = outline_value.strip() if isinstance(outline_value, str) else None
+        title = title.strip() if isinstance(title, str) else None
+        return title, outline_value
+    except Exception:
+        return None, None
+
+
+def mode3_should_execute_by_nfo(nfo_path: str) -> bool:
+    title, outline = read_nfo_title_and_outline(nfo_path)
+    if title is None and outline is None:
+        return True
+    if is_japanese_text(title or ""):
+        return True
+    if not isinstance(outline, str) or not outline.strip():
+        return True
+    return False
