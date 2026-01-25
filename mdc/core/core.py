@@ -172,12 +172,15 @@ def paste_file_to_folder(
         # 如果link_mode 1: 建立软链接 2: 硬链接优先、无法建立硬链接再尝试软链接。
         # 移除原先soft_link=2的功能代码，因默认记录日志，已经可追溯文件来源
         create_softlink = False
+        action = None
         if link_mode not in (1, 2):
             shutil.move(filepath, targetpath)
+            action = "Move"
         elif link_mode == 2:
             # 跨卷或跨盘符无法建立硬链接导致异常，回落到建立软链接
             try:
                 os.link(filepath, targetpath, follow_symlinks=False)
+                action = "Link"
             except:
                 create_softlink = True
         if link_mode == 1 or create_softlink:
@@ -188,6 +191,9 @@ def paste_file_to_folder(
                 os.symlink(filerelpath, targetpath)
             except:
                 os.symlink(str(filepath_obj.resolve()), targetpath)
+            action = "Link"
+        if action:
+            print(f"[!]{action} =>          {path}")
         return
 
     except FileExistsError as fee:
