@@ -71,28 +71,39 @@ def add_mark(poster_path, thumb_path, cn_sub, leak, uncensored, hack, _4k, iso) 
 
 def add_mark_thread(pic_path, cn_sub, leak, uncensored, hack, _4k, iso):
     size = 9
-    img_pic = Image.open(pic_path)
-    # 获取自定义位置，取余配合pos达到顺时针添加的效果
-    # 左上 0, 右上 1, 右下 2， 左下 3
-    count = config.getInstance().watermark_type()
-    if cn_sub:
-        add_to_pic(pic_path, img_pic, size, count, 1)  # 添加
-        count = (count + 1) % 4
-    if leak:
-        add_to_pic(pic_path, img_pic, size, count, 2)
-        count = (count + 1) % 4
-    if uncensored:
-        add_to_pic(pic_path, img_pic, size, count, 3)
-        count = (count + 1) % 4
-    if hack:
-        add_to_pic(pic_path, img_pic, size, count, 4)
-        count = (count + 1) % 4
-    if _4k:
-        add_to_pic(pic_path, img_pic, size, count, 5)
-        count = (count + 1) % 4
-    if iso:
-        add_to_pic(pic_path, img_pic, size, count, 6)
-    img_pic.close()
+    if not pic_path or not os.path.isfile(pic_path):
+        return
+    img_pic = None
+    try:
+        img_pic = Image.open(pic_path)
+        # 获取自定义位置，取余配合pos达到顺时针添加的效果
+        # 左上 0, 右上 1, 右下 2， 左下 3
+        count = config.getInstance().watermark_type()
+        if cn_sub:
+            add_to_pic(pic_path, img_pic, size, count, 1)  # 添加
+            count = (count + 1) % 4
+        if leak:
+            add_to_pic(pic_path, img_pic, size, count, 2)
+            count = (count + 1) % 4
+        if uncensored:
+            add_to_pic(pic_path, img_pic, size, count, 3)
+            count = (count + 1) % 4
+        if hack:
+            add_to_pic(pic_path, img_pic, size, count, 4)
+            count = (count + 1) % 4
+        if _4k:
+            add_to_pic(pic_path, img_pic, size, count, 5)
+            count = (count + 1) % 4
+        if iso:
+            add_to_pic(pic_path, img_pic, size, count, 6)
+    except Exception as e:
+        warn(f"[-]Skip add mark: {pic_path} ({type(e).__name__})")
+    finally:
+        if img_pic:
+            try:
+                img_pic.close()
+            except Exception:
+                pass
 
 
 def add_to_pic(pic_path, img_pic, size, count, mode):
