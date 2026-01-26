@@ -1,19 +1,36 @@
 import os
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence
 from mdc.config import config
 from lxml import etree
 from mdc.file.file_utils import get_info
 from mdc.utils.logger import info as print, success, warn, error, debug
 
 
-def small_cover_check(path, filename, cover_small, movie_path, json_headers=None):
+def small_cover_check(
+    path: str,
+    filename: str,
+    cover_small: str,
+    movie_path: str,
+    json_headers: Optional[Dict[str, Any]] = None,
+) -> None:
+    """
+    下载小封面（按配置可选择只补齐缺失图片）。
+
+    Args:
+        path: 目标目录
+        filename: 图片文件名
+        cover_small: 图片 URL
+        movie_path: 影片路径（用于下载器日志/上下文）
+        json_headers: 可选请求头字典，形如 {"headers": {...}}
+    """
     full_filepath = Path(path) / filename
     if (
         config.getInstance().download_only_missing_images()
         and not file_not_exist_or_empty(str(full_filepath))
     ):
         return
-    if json_headers != None:
+    if json_headers is not None:
         download_file_with_filename(
             cover_small, filename, path, movie_path, json_headers["headers"]
         )
@@ -23,26 +40,52 @@ def small_cover_check(path, filename, cover_small, movie_path, json_headers=None
 
 
 def print_files(
-    path,
-    leak_word,
-    c_word,
-    naming_rule,
-    part,
-    cn_sub,
-    json_data,
-    filepath,
-    tag,
-    actor_list,
-    liuchu,
-    uncensored,
-    hack,
-    hack_word,
-    _4k,
-    fanart_path,
-    poster_path,
-    thumb_path,
-    iso,
-):
+    path: str,
+    leak_word: str,
+    c_word: str,
+    naming_rule: str,
+    part: str,
+    cn_sub: bool,
+    json_data: Dict[str, Any],
+    filepath: str,
+    tag: Sequence[str],
+    actor_list: Sequence[str],
+    liuchu: bool,
+    uncensored: bool,
+    hack: bool,
+    hack_word: str,
+    _4k: bool,
+    fanart_path: str,
+    poster_path: str,
+    thumb_path: str,
+    iso: bool,
+) -> None:
+    """
+    写入影片元数据文件（主要是 NFO），并按配置下载/生成相关资源。
+
+    模式3（不移动文件）下会尽量保留已有 NFO 中的部分字段，仅当新值非空时覆盖。
+
+    Args:
+        path: 输出目录（非模式3下用于拼接 NFO 路径）
+        leak_word: 流出标记文本
+        c_word: 中文字幕标记文本
+        naming_rule: 用于写入 title/sorttitle 的命名结果
+        part: 多文件分段后缀
+        cn_sub: 是否为中文字幕
+        json_data: 抓取到的结构化元数据
+        filepath: 影片文件路径（模式3下 NFO 与其同名）
+        tag: 需要写入的标签列表
+        actor_list: 演员列表
+        liuchu: 是否流出
+        uncensored: 是否无码
+        hack: 是否破解
+        hack_word: 破解标记文本
+        _4k: 是否 4K
+        fanart_path: fanart 路径或 URL
+        poster_path: poster 路径或 URL
+        thumb_path: thumb 路径或 URL
+        iso: 是否原盘
+    """
     conf = config.getInstance()
     (
         title,
@@ -76,7 +119,8 @@ def print_files(
                 os._exit(0)
 
         old_nfo = None
-        old_nfo_dict = {}
+        old_nfo_dict: Dict[str, str] = {}
+        old_actor_list: List[str] = []
         try:
             if os.path.isfile(nfo_path):
                 old_nfo = etree.parse(nfo_path)
@@ -117,8 +161,37 @@ def print_files(
                             old_nfo_dict[elem] = old_value
                     except:
                         pass
+                try:
+                    old_actor_list = [
+                        v.strip()
+                        for v in old_nfo.xpath("//actor/name/text()")
+                        if isinstance(v, str) and v.strip()
+                    ]
+                except:
+                    old_actor_list = []
         except:
             pass
+
+        if main_mode == 3:
+            try:
+                new_actor_list: List[str] = [
+                    v.strip()
+                    for v in (actor_list or [])
+                    if isinstance(v, str) and v.strip()
+                ]
+                anonymous_names = {"佚名", "Anonymous"}
+                new_is_anonymous_only = bool(new_actor_list) and all(
+                    v in anonymous_names for v in new_actor_list
+                )
+                old_has_real_actor = bool(old_actor_list) and any(
+                    v not in anonymous_names for v in old_actor_list
+                )
+                if new_is_anonymous_only and old_has_real_actor:
+                    actor_list = old_actor_list
+                else:
+                    actor_list = new_actor_list
+            except:
+                pass
 
         # 模式3下，保留原有值，仅当新值非空时覆盖
         if main_mode == 3:
