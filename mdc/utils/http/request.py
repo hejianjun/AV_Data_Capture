@@ -1,5 +1,6 @@
 # build-in lib
 import typing
+from typing import Optional, Union, Tuple, Any
 
 # third party lib
 import requests
@@ -19,13 +20,24 @@ G_USER_AGENT = r"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (K
 
 class TimeoutHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
+        """
+        初始化 TimeoutHTTPAdapter
+        :param args: 位置参数
+        :param kwargs: 关键字参数, 支持 timeout 参数
+        """
         self.timeout = 10  # seconds
         if "timeout" in kwargs:
             self.timeout = kwargs["timeout"]
             del kwargs["timeout"]
         super().__init__(*args, **kwargs)
 
-    def send(self, request, **kwargs):
+    def send(self, request, **kwargs) -> requests.Response:
+        """
+        发送请求
+        :param request: PreparedRequest 对象
+        :param kwargs: 关键字参数
+        :return: Response 对象
+        """
         timeout = kwargs.get("timeout")
         if timeout is None:
             kwargs["timeout"] = self.timeout
@@ -33,15 +45,23 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
 
 def get_html(
-    url,
-    cookies: dict = None,
-    ua: str = None,
-    return_type: str = None,
-    encoding: str = None,
-    json_headers=None,
-):
+    url: str,
+    cookies: Optional[dict] = None,
+    ua: Optional[str] = None,
+    return_type: Optional[str] = None,
+    encoding: Optional[str] = None,
+    json_headers: Optional[dict] = None,
+) -> Union[requests.Response, bytes, str]:
     """
     网页请求核心函数
+
+    :param url: 请求链接
+    :param cookies: 请求cookies
+    :param ua: 用户代理
+    :param return_type: 返回类型 'object' | 'content' | None
+    :param encoding: 编码格式
+    :param json_headers: json头部信息
+    :return: 响应对象 | 二进制内容 | 文本内容
     """
     verify = config.getInstance().cacert_file()
     config_proxy = config.getInstance().proxy()
@@ -93,7 +113,15 @@ def get_html(
     raise Exception("Connect Failed")
 
 
-def post_html(url: str, query: dict, headers: dict = None) -> requests.Response:
+def post_html(url: str, query: dict, headers: Optional[dict] = None) -> requests.Response:
+    """
+    POST 请求提交数据
+
+    :param url: 请求的 URL
+    :param query: 提交的数据字典
+    :param headers: 请求头
+    :return: Response 对象
+    """
     config_proxy = config.getInstance().proxy()
     errors = ""
     headers_ua = {"User-Agent": G_USER_AGENT}
@@ -127,12 +155,22 @@ def post_html(url: str, query: dict, headers: dict = None) -> requests.Response:
 
 
 def get_html_session(
-    url: str = None,
-    cookies: dict = None,
-    ua: str = None,
-    return_type: str = None,
-    encoding: str = None,
-):
+    url: Optional[str] = None,
+    cookies: Optional[dict] = None,
+    ua: Optional[str] = None,
+    return_type: Optional[str] = None,
+    encoding: Optional[str] = None,
+) -> Union[requests.Session, requests.Response, bytes, str, Tuple[requests.Response, requests.Session], None]:
+    """
+    使用 Session 发送 GET 请求
+
+    :param url: 请求的 URL. 如果为空, 返回 Session 对象
+    :param cookies: Cookies 字典
+    :param ua: User-Agent
+    :param return_type: 返回类型 'object' | 'content' | 'session' | None
+    :param encoding: 指定编码
+    :return: Session | Response | 二进制内容 | 文本内容 | (Response, Session) | None
+    """
     config_proxy = config.getInstance().proxy()
     session = requests.Session()
     if isinstance(cookies, dict) and len(cookies):
@@ -244,14 +282,26 @@ def get_html_by_browser(
 
 
 def get_html_by_form(
-    url,
-    form_select: str = None,
-    fields: dict = None,
-    cookies: dict = None,
-    ua: str = None,
-    return_type: str = None,
-    encoding: str = None,
-):
+    url: str,
+    form_select: Optional[str] = None,
+    fields: Optional[dict] = None,
+    cookies: Optional[dict] = None,
+    ua: Optional[str] = None,
+    return_type: Optional[str] = None,
+    encoding: Optional[str] = None,
+) -> Union[requests.Response, bytes, str, Tuple[requests.Response, mechanicalsoup.StatefulBrowser], None]:
+    """
+    提交表单
+
+    :param url: URL
+    :param form_select: 表单选择器
+    :param fields: 表单字段
+    :param cookies: Cookies
+    :param ua: User-Agent
+    :param return_type: 返回类型 'object' | 'content' | 'browser' | None
+    :param encoding: 编码
+    :return: Response | 二进制内容 | 文本内容 | (Response, Browser) | None
+    """
     config_proxy = config.getInstance().proxy()
     s = requests.Session()
     if isinstance(cookies, dict) and len(cookies):
@@ -306,12 +356,22 @@ def get_html_by_form(
 
 
 def get_html_by_scraper(
-    url: str = None,
-    cookies: dict = None,
-    ua: str = None,
-    return_type: str = None,
-    encoding: str = None,
-):
+    url: Optional[str] = None,
+    cookies: Optional[dict] = None,
+    ua: Optional[str] = None,
+    return_type: Optional[str] = None,
+    encoding: Optional[str] = None,
+) -> Union[requests.Session, requests.Response, bytes, str, Tuple[requests.Response, requests.Session], None]:
+    """
+    使用 CloudScraper 发送请求
+
+    :param url: URL
+    :param cookies: Cookies
+    :param ua: User-Agent
+    :param return_type: 返回类型 'object' | 'content' | 'scraper' | None
+    :param encoding: 编码
+    :return: Scraper Session | Response | 二进制内容 | 文本内容 | (Response, Session) | None
+    """
     config_proxy = config.getInstance().proxy()
     session = create_scraper(
         browser={
