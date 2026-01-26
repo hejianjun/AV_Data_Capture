@@ -439,6 +439,32 @@ def move_subtitles(
     return result
 
 
+def has_subtitles(filepath, path, multi_part, number, part, leak_word, c_word, hack_word):
+    filepath_obj = pathlib.Path(filepath)
+    sub_res = config.getInstance().sub_rule()
+    prefix = f"{number}{leak_word}{c_word}{hack_word}".lower()
+    for subfile in Path(path).glob("*"):
+        if not subfile.is_file():
+            continue
+        if subfile.suffix.lower() not in sub_res:
+            continue
+        if multi_part and part and part.lower() not in subfile.name.lower():
+            continue
+        if subfile.name.lower().startswith(prefix):
+            return True
+    for subfile in filepath_obj.parent.glob("**/*"):
+        if subfile.is_file() and subfile.suffix.lower() in sub_res:
+            if multi_part and part.lower() not in subfile.name.lower():
+                continue
+            if (
+                filepath_obj.stem.split(".")[0].lower()
+                != subfile.stem.split(".")[0].lower()
+            ):
+                continue
+            return True
+    return False
+
+
 def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=None):
     conf = config.getInstance()
     # =======================================================================初始化所需变量
@@ -764,6 +790,15 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
             poster_path,
             bool(conf.face_uncensored_only() and not uncensored),
         )
+
+        if not cn_sub and has_subtitles(
+            movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
+        ):
+            cn_sub = True
+        if not cn_sub:
+            cn_sub = cn_sub or download_subtitles(
+                movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
+            )
 
         # 添加水印
         if conf.is_watermark():
