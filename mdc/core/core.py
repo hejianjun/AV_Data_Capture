@@ -136,6 +136,20 @@ def add_to_pic(pic_path, img_pic, size, count, mode):
         mark_pic_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), pngpath
         )
+    elif os.path.isfile(
+        os.path.join(
+            pathlib.Path(__file__).resolve().parents[1],
+            "image",
+            "Img",
+            os.path.basename(pngpath),
+        )
+    ):
+        mark_pic_path = os.path.join(
+            pathlib.Path(__file__).resolve().parents[1],
+            "image",
+            "Img",
+            os.path.basename(pngpath),
+        )
     # 如果没有本地图片才通过网络下载
     else:
         mark_pic_path = BytesIO(

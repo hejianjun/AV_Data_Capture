@@ -17,13 +17,13 @@ pyinstaller --collect-submodules "scrapinglib" `
     --collect-data "face_recognition_models" `
     --collect-data "cloudscraper" `
     --collect-data "opencc" `
-    --add-data "Img;Img" `
+    --add-data "mdc/image/Img;Img" `
     --add-data "config.ini;." `
     --onefile Movie_Data_Capture.py
 
 rmdir -Recurse -Force build
 rmdir -Recurse -Force __pycache__
-rmdir -Recurse -Force Movie_Data_Capture.spec
+Remove-Item -Force Movie_Data_Capture.spec
 
 echo "[Make]Finish"
 pause
