@@ -8,6 +8,7 @@ from mdc.config import config
 from mdc.utils.logger import info as print, success, warn, error, debug
 from datetime import datetime
 from mdc.utils.translation import is_japanese
+from mdc.file.common_utils import file_not_exist_or_empty
 
 
 def escape_path(path, escape_literals: str):  # Remove escape literals
@@ -132,14 +133,6 @@ def rm_empty_folder(path: str) -> None:
             pass
 
 
-def file_not_exist_or_empty(filepath):
-    if not os.path.exists(filepath):
-        return True
-    if os.path.isfile(filepath):
-        return os.path.getsize(filepath) == 0
-    return False
-
-
 def file_modification_days(filename: str) -> int:
     """
     文件修改时间距此时的天数
@@ -193,11 +186,12 @@ def read_nfo_title_and_outline(nfo_path: str):
     try:
         nfo = Path(nfo_path)
         if not nfo.is_file():
-            return None, None
+            return None, None, None
         root = ET.parse(str(nfo)).getroot()
         title = root.findtext("title")
         outline = root.findtext("outline")
         plot = root.findtext("plot")
+        year = root.findtext("year")
         outline_value = (
             outline if isinstance(outline, str) and outline.strip() else plot
         )
@@ -205,17 +199,20 @@ def read_nfo_title_and_outline(nfo_path: str):
             outline_value.strip() if isinstance(outline_value, str) else None
         )
         title = title.strip() if isinstance(title, str) else None
-        return title, outline_value
+        year = year.strip() if isinstance(year, str) else None
+        return title, outline_value, year
     except Exception:
-        return None, None
+        return None, None, None
 
 
 def mode3_should_execute_by_nfo(nfo_path: str) -> bool:
-    title, outline = read_nfo_title_and_outline(nfo_path)
+    title, outline, year = read_nfo_title_and_outline(nfo_path)
     if title is None and outline is None:
         return True
     if is_japanese(title or ""):
         return True
     if not isinstance(outline, str) or not outline.strip():
+        return True
+    if not isinstance(year, str) or not year.strip():
         return True
     return False

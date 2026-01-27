@@ -20,7 +20,7 @@ from mdc.utils.string.string import cn_space
 from mdc.utils.html.xpath import get_xpath_single
 
 # File functions
-from mdc.file.file_utils import file_not_exist_or_empty
+from mdc.file.common_utils import file_not_exist_or_empty
 
 # Re-export all functions to maintain backward compatibility
 __all__ = [
