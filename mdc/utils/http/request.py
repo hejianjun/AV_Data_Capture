@@ -113,7 +113,9 @@ def get_html(
     raise Exception("Connect Failed")
 
 
-def post_html(url: str, query: dict, headers: Optional[dict] = None) -> requests.Response:
+def post_html(
+    url: str, query: dict, headers: Optional[dict] = None
+) -> requests.Response:
     """
     POST 请求提交数据
 
@@ -160,7 +162,14 @@ def get_html_session(
     ua: Optional[str] = None,
     return_type: Optional[str] = None,
     encoding: Optional[str] = None,
-) -> Union[requests.Session, requests.Response, bytes, str, Tuple[requests.Response, requests.Session], None]:
+) -> Union[
+    requests.Session,
+    requests.Response,
+    bytes,
+    str,
+    Tuple[requests.Response, requests.Session],
+    None,
+]:
     """
     使用 Session 发送 GET 请求
 
@@ -289,7 +298,13 @@ def get_html_by_form(
     ua: Optional[str] = None,
     return_type: Optional[str] = None,
     encoding: Optional[str] = None,
-) -> Union[requests.Response, bytes, str, Tuple[requests.Response, mechanicalsoup.StatefulBrowser], None]:
+) -> Union[
+    requests.Response,
+    bytes,
+    str,
+    Tuple[requests.Response, mechanicalsoup.StatefulBrowser],
+    None,
+]:
     """
     提交表单
 
@@ -361,7 +376,14 @@ def get_html_by_scraper(
     ua: Optional[str] = None,
     return_type: Optional[str] = None,
     encoding: Optional[str] = None,
-) -> Union[requests.Session, requests.Response, bytes, str, Tuple[requests.Response, requests.Session], None]:
+) -> Union[
+    requests.Session,
+    requests.Response,
+    bytes,
+    str,
+    Tuple[requests.Response, requests.Session],
+    None,
+]:
     """
     使用 CloudScraper 发送请求
 

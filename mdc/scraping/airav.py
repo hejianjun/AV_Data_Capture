@@ -13,7 +13,9 @@ class Airav(Parser):
     expr_number = (
         "//div[@class='info-list my-2']/ul/li[contains(text(),'番號')]/span/text()"
     )
-    expr_studio = "//div[@class='info-list my-2']/ul/li[contains(text(),'廠商')]/a/text()"
+    expr_studio = (
+        "//div[@class='info-list my-2']/ul/li[contains(text(),'廠商')]/a/text()"
+    )
     expr_release = "//div[@class='video-item']/div[contains(@class,'me-4')]/text()"
     expr_outline = "/html/head/meta[@property='og:description']/@content"
     expr_actor = (

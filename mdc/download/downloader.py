@@ -21,7 +21,10 @@ from mdc.utils.logger import info as print, success, warn, error, debug
 # Common download functions
 # ------------------------------
 
-def download_file_with_filename(url: str, filename: str, path: str, filepath=None, json_headers=None) -> None:
+
+def download_file_with_filename(
+    url: str, filename: str, path: str, filepath=None, json_headers=None
+) -> None:
     """
     download file save to give path with given name from given url
     """
@@ -46,10 +49,7 @@ def download_file_with_filename(url: str, filename: str, path: str, filepath=Non
         except requests.exceptions.ProxyError:
             i += 1
             print(
-                "[-]Download :  Proxy error "
-                + str(i)
-                + "/"
-                + str(config_proxy.retry)
+                "[-]Download :  Proxy error " + str(i) + "/" + str(config_proxy.retry)
             )
         except requests.exceptions.ConnectTimeout:
             i += 1
@@ -133,6 +133,7 @@ def parallel_download_files(
 # ------------------------------
 # Specific download functions
 # ------------------------------
+
 
 def trailer_download(trailer, leak_word, c_word, hack_word, number, path, filepath):
     if (
@@ -347,16 +348,15 @@ def image_download(cover, fanart_path, thumb_path, path, filepath, json_headers=
 # ------------------------------
 __all__ = [
     # Common download functions
-    'download_file_with_filename',
-    'download_one_file',
-    'parallel_download_files',
-    
+    "download_file_with_filename",
+    "download_one_file",
+    "parallel_download_files",
     # Specific download functions
-    'trailer_download',
-    'actor_photo_download',
-    'extrafanart_download',
-    'extrafanart_download_one_by_one',
-    'extrafanart_download_threadpool',
-    'image_ext',
-    'image_download',
+    "trailer_download",
+    "actor_photo_download",
+    "extrafanart_download",
+    "extrafanart_download_one_by_one",
+    "extrafanart_download_threadpool",
+    "image_ext",
+    "image_download",
 ]

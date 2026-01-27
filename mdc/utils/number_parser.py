@@ -64,20 +64,14 @@ def get_number(debug: bool, file_path: str) -> str:
             filepath = filepath.replace(".chs", "").replace(".cht", "")
             file_number = str(re.findall(r"(.+?)\.", filepath)).strip(" [']")
             return file_number
-        elif (
-            "-" in filepath or "_" in filepath
-        ):
+        elif "-" in filepath or "_" in filepath:
             filepath = G_spat.sub("", filepath)
-            filename = str(
-                re.sub("\[\d{4}-\d{1,2}-\d{1,2}\] - ", "", filepath)
-            )
+            filename = str(re.sub("\[\d{4}-\d{1,2}-\d{1,2}\] - ", "", filepath))
             lower_check = filename.lower()
             if "fc2" in lower_check:
                 filename = lower_check.replace("--", "-").replace("_", "-").upper()
             filename = re.sub("[-_]cd\d{1,2}", "", filename, flags=re.IGNORECASE)
-            if not re.search(
-                "-|_", filename
-            ):
+            if not re.search("-|_", filename):
                 return str(
                     re.search(r"\w+", filename[: filename.find(".")], re.A).group()
                 )
@@ -116,7 +110,7 @@ def get_number(debug: bool, file_path: str) -> str:
                             r"(.+?)\.",
                             str(
                                 re.search(
-                                    '([^<>/\\\\|:\""\*\?]+)\\.\w+$', filepath
+                                    '([^<>/\\\\|:""\*\?]+)\\.\w+$', filepath
                                 ).group()
                             ),
                         )

@@ -90,6 +90,4 @@ def test_airav_query_number_url_selects_exact_match(monkeypatch):
 
     monkeypatch.setattr(parser, "getHtmlTree", lambda *_args, **_kwargs: tree)
 
-    assert (
-        parser.queryNumberUrl("DASD-854") == "https://airav.io/video?hid=110394"
-    )
+    assert parser.queryNumberUrl("DASD-854") == "https://airav.io/video?hid=110394"

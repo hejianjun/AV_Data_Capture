@@ -23,4 +23,3 @@ def test_logger_functions_accept_file_kwarg_and_write_plain_text():
     buf = io.StringIO()
     debug("debug", file=buf)
     assert buf.getvalue() == "debug\n"
-

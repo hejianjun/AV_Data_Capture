@@ -17,9 +17,7 @@ def is_japanese(raw: str) -> bool:
     """
     # 仅检测日语假名（平假名、片假名、半宽假名）
     return bool(
-        re.search(
-            r"[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F]", raw, re.UNICODE
-        )
+        re.search(r"[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F]", raw, re.UNICODE)
     )
 
 
@@ -217,6 +215,3 @@ def main(base_path: str = r"Z:\\破解\\JAV_output"):
             process_movie_dir(movie_dir)
         except Exception as e:
             print(f"处理失败：{movie_dir} | {str(e)}")
-
-
-

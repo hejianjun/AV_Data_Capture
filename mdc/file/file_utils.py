@@ -206,8 +206,12 @@ def read_nfo_title_and_outline(nfo_path: str):
         title = root.findtext("title")
         outline = root.findtext("outline")
         plot = root.findtext("plot")
-        outline_value = outline if isinstance(outline, str) and outline.strip() else plot
-        outline_value = outline_value.strip() if isinstance(outline_value, str) else None
+        outline_value = (
+            outline if isinstance(outline, str) and outline.strip() else plot
+        )
+        outline_value = (
+            outline_value.strip() if isinstance(outline_value, str) else None
+        )
         title = title.strip() if isinstance(title, str) else None
         return title, outline_value
     except Exception:

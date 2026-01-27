@@ -439,7 +439,9 @@ def move_subtitles(
     return result
 
 
-def has_subtitles(filepath, path, multi_part, number, part, leak_word, c_word, hack_word):
+def has_subtitles(
+    filepath, path, multi_part, number, part, leak_word, c_word, hack_word
+):
     filepath_obj = pathlib.Path(filepath)
     sub_res = config.getInstance().sub_rule()
     prefix = f"{number}{leak_word}{c_word}{hack_word}".lower()

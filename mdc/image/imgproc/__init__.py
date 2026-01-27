@@ -110,5 +110,3 @@ def face_center(filename, model):
         if config.getInstance().debug() == 1:
             logging.error(e)
         return (0, 0)
-
-

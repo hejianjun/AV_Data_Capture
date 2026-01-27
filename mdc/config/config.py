@@ -671,5 +671,3 @@ class IniProxy:
             proxies = {}
 
         return proxies
-
-

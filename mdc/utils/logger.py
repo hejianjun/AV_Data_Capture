@@ -1,11 +1,14 @@
 import logging
 import builtins
 
+
 def get_logger():
     return logging.getLogger("MDC")
 
+
 def _join(args, sep=" "):
     return sep.join(map(str, args))
+
 
 def _is_prefixed_message(message: str) -> bool:
     if not isinstance(message, str):
@@ -17,8 +20,10 @@ def _is_prefixed_message(message: str) -> bool:
         return False
     return s[1] in "*+!-D"
 
+
 def _with_prefix(prefix: str, message: str) -> str:
     return message if _is_prefixed_message(message) else prefix + message
+
 
 def info(*args, sep=" ", file=None, end="\n", flush=False):
     if file is not None:
@@ -27,12 +32,14 @@ def info(*args, sep=" ", file=None, end="\n", flush=False):
     msg = _join(args, sep)
     get_logger().log(logging.INFO, _with_prefix("[*] ", msg))
 
+
 def success(*args, sep=" ", file=None, end="\n", flush=False):
     if file is not None:
         builtins.print(*args, sep=sep, file=file, end=end, flush=flush)
         return
     msg = _join(args, sep)
     get_logger().log(logging.INFO, _with_prefix("[+] ", msg))
+
 
 def warn(*args, sep=" ", file=None, end="\n", flush=False):
     if file is not None:
@@ -41,12 +48,14 @@ def warn(*args, sep=" ", file=None, end="\n", flush=False):
     msg = _join(args, sep)
     get_logger().log(logging.WARNING, _with_prefix("[!] ", msg))
 
+
 def error(*args, sep=" ", file=None, end="\n", flush=False):
     if file is not None:
         builtins.print(*args, sep=sep, file=file, end=end, flush=flush)
         return
     msg = _join(args, sep)
     get_logger().log(logging.ERROR, _with_prefix("[-] ", msg))
+
 
 def debug(*args, sep=" ", file=None, end="\n", flush=False):
     if file is not None:
