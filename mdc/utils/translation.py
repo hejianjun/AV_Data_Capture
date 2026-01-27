@@ -15,9 +15,14 @@ def is_japanese(raw: str) -> bool:
     """
     日语简单检测，仅检测日语特有的假名字符
     """
-    # 仅检测日语假名（平假名、片假名、半宽假名）
+    if not isinstance(raw, str) or not raw:
+        return False
+    # 仅检测日语假名（平假名、片假名、半宽假名、语音扩展）
+    # \u3040-\u30ff: Hiragana and Katakana
+    # \u31f0-\u31ff: Katakana Phonetic Extensions
+    # \uff66-\uff9f: Halfwidth Katakana
     return bool(
-        re.search(r"[\u3040-\u309F\u30A0-\u30FF\uFF66-\uFF9F]", raw, re.UNICODE)
+        re.search(r"[\u3040-\u30ff\u31f0-\u31ff\uff66-\uff9f]", raw, re.UNICODE)
     )
 
 
@@ -46,7 +51,7 @@ def translate(
 
     if engine == "google-free":
         gsite = config.getInstance().get_translate_service_site()
-        if not re.match("^translate\.google\.(com|com\.\w{2}|\w{2})$", gsite):
+        if not re.match(r"^translate\.google\.(com|com\.\w{2}|\w{2})$", gsite):
             gsite = "translate.google.cn"
         url = f"https://{gsite}/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto&tl={target_language}&q={src}"
         result = get_html(url=url, return_type="object")

@@ -12,6 +12,8 @@ class TestTranslation:
         assert is_japanese("こんにちは")  # 平假名
         assert is_japanese("カンニチワ")  # 片假名
         assert is_japanese("Helloこんにちは")  # 混合日语（包含假名）
+        assert is_japanese("ｱｲｳｴｵ")  # 半角片假名 (Halfwidth Katakana)
+        assert is_japanese("ㇰㇱㇲ")  # 片假名语音扩展 (Katakana Phonetic Extensions)
 
         # 注意：纯汉字文本（如"日本語"）不会被检测为日语，因为汉字在中日韩文本中都存在
         # assert is_japanese("日本語")      # 这个测试会失败，因为没有假名
