@@ -165,6 +165,32 @@ def get_number_by_dict(filename: str) -> typing.Optional[str]:
     return None
 
 
+def _normalize_number_for_compare(number: typing.Optional[str]) -> str:
+    return str(number or "").strip().upper()
+
+
+def _strip_leading_numeric_prefix(number: str) -> str:
+    number = _normalize_number_for_compare(number)
+    return re.sub(r"^\d{3,}(?=[A-Z])", "", number)
+
+
+def is_number_equivalent(a: typing.Optional[str], b: typing.Optional[str]) -> bool:
+    """
+    判断两个番号是否可视为同一影片。
+
+    目前用于兼容部分站点返回的“3位以上数字前缀 + 原番号”形式（如 300MAAN-797）。
+    """
+    na = _normalize_number_for_compare(a)
+    nb = _normalize_number_for_compare(b)
+    if not na or not nb:
+        return False
+    if na == nb:
+        return True
+    sa = _strip_leading_numeric_prefix(na)
+    sb = _strip_leading_numeric_prefix(nb)
+    return sa == nb or sb == na
+
+
 class Cache_uncensored_conf:
     prefix = None
 

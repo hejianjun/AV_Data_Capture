@@ -2,6 +2,7 @@ from mdc.utils.number_parser import (
     get_number,
     get_number_by_dict,
     is_uncensored,
+    is_number_equivalent,
     G_TAKE_NUM_RULES,
 )
 
@@ -108,3 +109,10 @@ class TestNumberParser:
         assert "xxx-av" in G_TAKE_NUM_RULES
         assert "heydouga" in G_TAKE_NUM_RULES
         assert "heyzo" in G_TAKE_NUM_RULES
+
+    def test_is_number_equivalent_numeric_prefix(self):
+        assert is_number_equivalent("MAAN-797", "300MAAN-797")
+        assert is_number_equivalent("300MAAN-797", "MAAN-797")
+        assert is_number_equivalent("GANA-1234", "200GANA-1234")
+        assert not is_number_equivalent("200GANA-1234", "300GANA-1234")
+        assert not is_number_equivalent("1PONDO-010101_001", "PONDO-010101_001")

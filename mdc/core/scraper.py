@@ -22,6 +22,7 @@ from mdc.utils.actor_mapping import (
 from mdc.utils.translation import translate
 from mdc.utils.logger import info as print, success, warn, error, debug
 from mdc.utils.cookie import load_cookies
+from mdc.utils.number_parser import is_number_equivalent
 from mdc.file.file_utils import file_modification_days
 from mdc.scraping.parser import Parser
 from mdc.scraping.custom_exceptions import QueryError
@@ -424,7 +425,7 @@ def get_data_from_json(
     # 目前选用number命名规则是javdb.com Domain Creation Date: 2013-06-19T18:34:27Z
     # 然而也可以跟进关注其它命名规则如airav.wiki Domain Creation Date: 2019-08-28T07:18:42.0Z
     # 如果将来javdb.com命名规则下不同Studio出现同名碰撞导致无法区分，可考虑更换规则，更新相应的number分析和抓取代码。
-    if str(json_data.get("number")).upper() != file_number.upper():
+    if not is_number_equivalent(json_data.get("number"), file_number):
         try:
             if not json_data.get("allow_number_change"):
                 print(
