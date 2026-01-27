@@ -12,8 +12,7 @@ mkdir build
 mkdir __pycache__
 
 
-pyinstaller --collect-submodules "scrapinglib" `
-    --collect-submodules "mdc.image.imgproc" `
+pyinstaller --collect-submodules "mdc.image.imgproc" `
     --collect-data "face_recognition_models" `
     --collect-data "cloudscraper" `
     --collect-data "opencc" `
