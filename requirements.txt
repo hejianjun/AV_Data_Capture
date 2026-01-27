@@ -14,3 +14,4 @@ opencc-python-reimplemented
 chardet
 face-recognition-models
 ruff
+pytest

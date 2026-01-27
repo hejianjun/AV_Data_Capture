@@ -41,9 +41,9 @@ jobs:
           pip install face_recognition --no-deps
           pip install pyinstaller
 
-      - name: Test number_perser.get_number
+      - name: Run unit tests
         run: |
-          python number_parser.py -v
+          python -m pytest -q
 
       - name: Build with PyInstaller for macos/ubuntu
         if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
