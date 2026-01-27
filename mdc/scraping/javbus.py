@@ -92,7 +92,9 @@ class Javbus(Parser):
 
     def getTitle(self, htmltree):
         title = super().getTitle(htmltree)
-        title = str(re.findall("^.+?\s+(.*) - JavBus$", title)[0]).strip()
+        matches = re.findall("^.+?\s+(.*) - JavBus$", title)
+        if matches:
+            title = str(matches[0]).strip()
         return title
 
     def getStudio(self, htmltree):
