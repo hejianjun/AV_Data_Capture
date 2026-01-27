@@ -3,7 +3,7 @@
 import re
 import secrets
 from urllib.parse import urljoin
-from .httprequest import get_html_by_form
+from mdc.utils.http.request import get_html_by_form
 from .parser import Parser
 
 

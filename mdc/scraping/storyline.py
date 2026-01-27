@@ -19,7 +19,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 from .airav import Airav
 from .xcity import Xcity
-from .httprequest import get_html_by_form, get_html_by_scraper, request_session
+from mdc.utils.http.request import get_html_by_form, get_html_by_scraper, request_session
 from mdc.utils.translation import is_japanese
 
 # 舍弃 Amazon 源

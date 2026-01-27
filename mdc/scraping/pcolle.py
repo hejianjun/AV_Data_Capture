@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from lxml import etree
-from .httprequest import request_session
+from mdc.utils.http.request import request_session
 from .parser import Parser
 
 

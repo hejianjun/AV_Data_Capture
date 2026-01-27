@@ -44,6 +44,125 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return super().send(request, **kwargs)
 
 
+def get(
+    url: str,
+    cookies: Optional[dict] = None,
+    ua: Optional[str] = None,
+    extra_headers: Optional[dict] = None,
+    return_type: Optional[str] = None,
+    encoding: Optional[str] = None,
+    retry: Optional[int] = None,
+    timeout: Optional[int] = None,
+    proxies: Optional[dict] = None,
+    verify: Optional[bool] = None,
+) -> Union[requests.Response, bytes, str]:
+    config_proxy = config.getInstance().proxy()
+    errors = ""
+    headers = {"User-Agent": ua or G_USER_AGENT}
+    if extra_headers is not None:
+        headers.update(extra_headers)
+    retry = config_proxy.retry if retry is None else retry
+    timeout = config_proxy.timeout if timeout is None else timeout
+
+    for i in range(retry):
+        try:
+            effective_proxies = proxies
+            effective_verify = verify
+            if effective_proxies is None and config_proxy.enable:
+                effective_proxies = config_proxy.proxies()
+                if effective_verify is None:
+                    disable_insecure_request_warning()
+                    effective_verify = False
+            result = requests.get(
+                str(url),
+                headers=headers,
+                timeout=timeout,
+                proxies=effective_proxies,
+                verify=effective_verify,
+                cookies=cookies,
+            )
+            if return_type == "object":
+                return result
+            elif return_type == "content":
+                return result.content
+            else:
+                result.encoding = encoding or result.apparent_encoding
+                return result.text
+        except Exception as e:
+            if config.getInstance().debug():
+                print(f"[-]Connect: {url} retry {i + 1}/{retry}")
+            errors = str(e)
+    if config.getInstance().debug():
+        if "getaddrinfo failed" in errors:
+            print("[-]Connect Failed! Please Check your proxy config")
+            print("[-]" + errors)
+        else:
+            print("[-]" + errors)
+            print("[-]Connect Failed! Please check your Proxy or Network!")
+    raise Exception("Connect Failed")
+
+
+def post(
+    url: str,
+    data: Optional[dict] = None,
+    files: Any = None,
+    cookies: Optional[dict] = None,
+    ua: Optional[str] = None,
+    return_type: Optional[str] = None,
+    encoding: Optional[str] = None,
+    retry: Optional[int] = None,
+    timeout: Optional[int] = None,
+    proxies: Optional[dict] = None,
+    verify: Optional[bool] = None,
+) -> Union[requests.Response, bytes, str]:
+    config_proxy = config.getInstance().proxy()
+    errors = ""
+    headers = {"User-Agent": ua or G_USER_AGENT}
+    retry = config_proxy.retry if retry is None else retry
+    timeout = config_proxy.timeout if timeout is None else timeout
+
+    for i in range(retry):
+        try:
+            effective_proxies = proxies
+            effective_verify = verify
+            if effective_proxies is None and config_proxy.enable:
+                effective_proxies = config_proxy.proxies()
+                if effective_verify is None:
+                    disable_insecure_request_warning()
+                    effective_verify = False
+            result = requests.post(
+                str(url),
+                data=data,
+                files=files,
+                headers=headers,
+                timeout=timeout,
+                proxies=effective_proxies,
+                verify=effective_verify,
+                cookies=cookies,
+            )
+            if return_type == "object":
+                return result
+            elif return_type == "content":
+                return result.content
+            elif return_type == "text":
+                result.encoding = encoding or result.apparent_encoding
+                return result.text
+            else:
+                return result
+        except Exception as e:
+            if config.getInstance().debug():
+                print(f"[-]Connect: {url} retry {i + 1}/{retry}")
+            errors = str(e)
+    if config.getInstance().debug():
+        if "getaddrinfo failed" in errors:
+            print("[-]Connect Failed! Please Check your proxy config")
+            print("[-]" + errors)
+        else:
+            print("[-]" + errors)
+            print("[-]Connect Failed! Please check your Proxy or Network!")
+    raise Exception("Connect Failed")
+
+
 def get_html(
     url: str,
     cookies: Optional[dict] = None,
@@ -154,6 +273,52 @@ def post_html(
     print("[-]Connect Failed! Please check your Proxy or Network!")
     print("[-]" + errors)
     raise Exception("Connect Failed")
+
+
+def request_session(
+    cookies: Optional[dict] = None,
+    ua: Optional[str] = None,
+    retry: Optional[int] = None,
+    timeout: Optional[int] = None,
+    proxies: Optional[dict] = None,
+    verify: Optional[bool] = None,
+) -> requests.Session:
+    config_proxy = config.getInstance().proxy()
+    retry = config_proxy.retry if retry is None else retry
+    timeout = config_proxy.timeout if timeout is None else timeout
+
+    session = requests.Session()
+    retries = Retry(
+        total=retry,
+        connect=retry,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    session.mount(
+        "https://",
+        TimeoutHTTPAdapter(max_retries=retries, timeout=timeout),
+    )
+    session.mount(
+        "http://",
+        TimeoutHTTPAdapter(max_retries=retries, timeout=timeout),
+    )
+    if isinstance(cookies, dict) and len(cookies):
+        requests.utils.add_dict_to_cookiejar(session.cookies, cookies)
+
+    effective_proxies = proxies
+    effective_verify = verify
+    if effective_proxies is None and config_proxy.enable:
+        effective_proxies = config_proxy.proxies()
+        if effective_verify is None:
+            disable_insecure_request_warning()
+            effective_verify = False
+    if effective_verify is not None:
+        session.verify = effective_verify
+    if effective_proxies is not None:
+        session.proxies = effective_proxies
+
+    session.headers = {"User-Agent": ua or G_USER_AGENT}
+    return session
 
 
 def get_html_session(
@@ -298,6 +463,10 @@ def get_html_by_form(
     ua: Optional[str] = None,
     return_type: Optional[str] = None,
     encoding: Optional[str] = None,
+    retry: Optional[int] = None,
+    timeout: Optional[int] = None,
+    proxies: Optional[dict] = None,
+    verify: Optional[bool] = None,
 ) -> Union[
     requests.Response,
     bytes,
@@ -318,24 +487,32 @@ def get_html_by_form(
     :return: Response | 二进制内容 | 文本内容 | (Response, Browser) | None
     """
     config_proxy = config.getInstance().proxy()
+    retry = config_proxy.retry if retry is None else retry
+    timeout = config_proxy.timeout if timeout is None else timeout
     s = requests.Session()
     if isinstance(cookies, dict) and len(cookies):
         requests.utils.add_dict_to_cookiejar(s.cookies, cookies)
     retries = Retry(
-        total=config_proxy.retry,
-        connect=config_proxy.retry,
+        total=retry,
+        connect=retry,
         backoff_factor=1,
         status_forcelist=[429, 500, 502, 503, 504],
     )
     s.mount(
         "https://",
-        TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
+        TimeoutHTTPAdapter(max_retries=retries, timeout=timeout),
     )
     s.mount(
-        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
+        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=timeout)
     )
-    if config_proxy.enable:
+    if verify is not None:
+        s.verify = verify
+    elif config_proxy.enable:
         s.verify = config.getInstance().cacert_file()
+
+    if proxies is not None:
+        s.proxies = proxies
+    elif config_proxy.enable:
         s.proxies = config_proxy.proxies()
     try:
         browser = mechanicalsoup.StatefulBrowser(
@@ -376,6 +553,10 @@ def get_html_by_scraper(
     ua: Optional[str] = None,
     return_type: Optional[str] = None,
     encoding: Optional[str] = None,
+    retry: Optional[int] = None,
+    timeout: Optional[int] = None,
+    proxies: Optional[dict] = None,
+    verify: Optional[bool] = None,
 ) -> Union[
     requests.Session,
     requests.Response,
@@ -395,6 +576,8 @@ def get_html_by_scraper(
     :return: Scraper Session | Response | 二进制内容 | 文本内容 | (Response, Session) | None
     """
     config_proxy = config.getInstance().proxy()
+    retry = config_proxy.retry if retry is None else retry
+    timeout = config_proxy.timeout if timeout is None else timeout
     session = create_scraper(
         browser={
             "custom": ua or G_USER_AGENT,
@@ -403,20 +586,26 @@ def get_html_by_scraper(
     if isinstance(cookies, dict) and len(cookies):
         requests.utils.add_dict_to_cookiejar(session.cookies, cookies)
     retries = Retry(
-        total=config_proxy.retry,
-        connect=config_proxy.retry,
+        total=retry,
+        connect=retry,
         backoff_factor=1,
         status_forcelist=[429, 500, 502, 503, 504],
     )
     session.mount(
         "https://",
-        TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
+        TimeoutHTTPAdapter(max_retries=retries, timeout=timeout),
     )
     session.mount(
-        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
+        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=timeout)
     )
-    if config_proxy.enable:
+    if verify is not None:
+        session.verify = verify
+    elif config_proxy.enable:
         session.verify = config.getInstance().cacert_file()
+
+    if proxies is not None:
+        session.proxies = proxies
+    elif config_proxy.enable:
         session.proxies = config_proxy.proxies()
     try:
         if isinstance(url, str) and len(url):

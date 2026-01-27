@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 from lxml import etree
 
 from .custom_exceptions import QueryError
-from .httprequest import request_session
+from mdc.utils.http.request import request_session
 from .parser import Parser
 from mdc.utils.logger import info as print, success, warn, error, debug
 from mdc.utils.http.ssl_warnings import disable_insecure_request_warning

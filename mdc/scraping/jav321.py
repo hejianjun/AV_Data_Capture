@@ -2,7 +2,7 @@
 
 import re
 from lxml import etree
-from . import httprequest
+from mdc.utils.http import request as httprequest
 from .parser import Parser
 
 
@@ -33,13 +33,7 @@ class Jav321(Parser):
         """
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
-            resp = httprequest.get(
-                self.detailurl,
-                cookies=self.cookies,
-                proxies=self.proxies,
-                verify=self.verify,
-            )
-            self.detailhtml = resp
+            self.detailhtml = self.getHtmlTree(self.detailurl)
             return etree.fromstring(resp, etree.HTMLParser())
         resp = httprequest.post(
             url,

@@ -5,7 +5,7 @@ import re
 from lxml import etree, html
 import traceback
 from mdc.config import config
-from . import httprequest
+from mdc.utils.http import request as httprequest
 from .utils import getTreeElement, getTreeAll
 from mdc.utils.logger import info as print, success, warn, error, debug
 
