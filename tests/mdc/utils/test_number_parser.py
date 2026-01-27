@@ -47,7 +47,7 @@ class TestNumberParser:
         assert result == "SSNI-829"
 
         # 测试Windows路径
-        result = get_number(False, "C:\path\to\SSNI-829.mp4")
+        result = get_number(False, r"C:\path\to\SSNI-829.mp4")
         assert result == "SSNI-829"
 
     def test_get_number_by_dict(self):

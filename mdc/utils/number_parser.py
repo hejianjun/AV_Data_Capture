@@ -39,7 +39,7 @@ def get_number(debug: bool, file_path: str) -> str:
     >>> get_number(False, "snis-829-C.mp4")
     'snis-829'
     """
-    filepath = os.path.basename(file_path)
+    filepath = os.path.basename(str(file_path).replace("\\", "/"))
     # debug True 和 False 两块代码块合并，原因是此模块及函数只涉及字符串计算，没有IO操作，debug on时输出导致异常信息即可
     try:
         # 先对自定义正则进行匹配
