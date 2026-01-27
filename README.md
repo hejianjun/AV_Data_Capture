@@ -262,7 +262,6 @@ mdc/
 │   ├── imgproc/  # 图像处理实现
 │   └── Img/              # 水印图片资源
 ├── scraping/      # 数据源模块
-│   ├── api.py           # 数据源API接口
 │   ├── parser.py        # 基础刮削类
 │   └── 各数据源实现文件    # 如javbus.py, javdb.py等
 ├── config/        # 配置模块
@@ -313,7 +312,6 @@ mdc/
 - **Img/**: 存储水印图片资源
 
 #### mdc/scraping/ 数据源模块
-- **api.py**: 提供数据源搜索和获取接口
 - **parser.py**: 定义基础刮削类和通用方法
 - **各数据源文件**: 实现 javbus, javdb, fanza 等 30+ 数据源的具体调用和解析
 
