@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 from mdc.config import config
 
 import typing

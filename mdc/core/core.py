@@ -2,14 +2,11 @@ import os.path
 import pathlib
 import shutil
 import sys
-import requests
-import time
 import re
 import json
 
 from PIL import Image
 from io import BytesIO
-from datetime import datetime
 # from videoprops import get_video_properties
 
 from mdc.utils import *
@@ -22,9 +19,8 @@ from mdc.download.subtitles import download_subtitles
 from mdc.file.file_utils import *
 from mdc.download.downloader import *
 from mdc.core.metadata import *
-from mdc.file.file_utils import escape_path, moveFailedFolder, create_folder, get_info
+from mdc.file.file_utils import moveFailedFolder, create_folder
 from mdc.download.downloader import (
-    download_file_with_filename,
     trailer_download,
     actor_photo_download,
     extrafanart_download,

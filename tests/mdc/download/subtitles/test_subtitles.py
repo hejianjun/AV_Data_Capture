@@ -115,7 +115,6 @@ class TestSubtitles:
         assert mock_get.call_count == 2
 
         # 方案1：验证保存的文件名（不验证路径格式）
-        from pathlib import Path
 
         expected_path = Path("SSNI-813.zh-CN.srt")
         mock_file.assert_called_once_with(expected_path, "wb")

@@ -5,19 +5,17 @@ import sys
 import time
 import shutil
 import typing
-import urllib3
 import signal
 import platform
 from mdc.config import config
 import logging
 
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from opencc import OpenCC
 
 from mdc.core.scraper import get_data_from_json
-from mdc.file.file_utils import file_modification_days
 from mdc.utils.http import get_html
 from mdc.utils.number_parser import get_number
 from mdc.core.core import core_main, core_main_no_net_op, debug_print

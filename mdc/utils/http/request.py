@@ -1,5 +1,4 @@
 # build-in lib
-import typing
 from typing import Optional, Union, Tuple, Any
 
 # third party lib

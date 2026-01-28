@@ -1,5 +1,4 @@
 import os
-import re
 import shutil
 import time
 from pathlib import Path
@@ -8,7 +7,6 @@ from mdc.config import config
 
 from datetime import datetime
 from mdc.utils.translation import is_japanese
-from mdc.file.common_utils import file_not_exist_or_empty
 
 
 def escape_path(path, escape_literals: str):  # Remove escape literals

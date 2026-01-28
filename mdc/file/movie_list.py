@@ -1,9 +1,7 @@
-import os
 import re
 import typing
 from pathlib import Path
 from mdc.config import config
-from mdc.utils.number_parser import get_number
 
 
 
