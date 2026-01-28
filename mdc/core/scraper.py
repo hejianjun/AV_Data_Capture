@@ -28,17 +28,6 @@ from mdc.scraping.parser import Parser
 from mdc.scraping.custom_exceptions import QueryError
 
 
-def getSupportedSources(tag="adult"):
-    """
-    :param tag: `adult`, `general`
-    """
-    sc = Scraping()
-    if tag == "adult":
-        return ",".join(sc.adult_full_sources)
-    else:
-        return ",".join(sc.general_full_sources)
-
-
 class Scraping:
     """ """
 

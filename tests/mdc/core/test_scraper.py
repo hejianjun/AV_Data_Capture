@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from mdc.core.scraper import getSupportedSources, Scraping, get_data_from_json
+from mdc.core.scraper import Scraping, get_data_from_json
 import json
 
 class TestScraper(unittest.TestCase):
@@ -8,17 +8,6 @@ class TestScraper(unittest.TestCase):
     def tearDown(self):
         Scraping.searchGeneral.cache_clear()
         Scraping.searchAdult.cache_clear()
-
-    def test_getSupportedSources(self):
-        # Test adult sources
-        adult_sources = getSupportedSources("adult")
-        self.assertIn("javlibrary", adult_sources)
-        self.assertIn("javdb", adult_sources)
-        
-        # Test general sources
-        general_sources = getSupportedSources("general")
-        self.assertIn("tmdb", general_sources)
-        self.assertIn("imdb", general_sources)
 
     @patch("mdc.core.scraper.load_cookies")
     @patch("mdc.core.scraper.file_modification_days")
