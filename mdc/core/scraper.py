@@ -363,134 +363,87 @@ def search(number, sources: str = None, **kwargs):
     return sc.search(number, sources, **kwargs)
 
 
-def get_data_from_json(
-    file_number: str, open_cc: opencc.OpenCC, specified_source: str, specified_url: str
-) -> typing.Optional[dict]:
-    """
-    iterate through all services and fetch the data 从网站上查询片名解析JSON返回元数据
-    :param file_number: 影片名称
-    :param open_cc: 简繁转换器
-    :param specified_source: 指定的媒体数据源
-    :param specified_url: 指定的数据查询地址, 目前未使用
-    :return 给定影片名称的具体信息
-    """
-    conf = config.getInstance()
-    ccm = conf.cc_convert_mode()
-    actor_mapping_data = get_actor_mapping(ccm)
-    info_mapping_data = get_info_mapping(ccm)
-
-    # default fetch order list, from the beginning to the end
-    sources = conf.sources().split(",")
-    # TODO 准备参数
-    # - 清理 ADC_function, webcrawler
+def _build_search_kwargs(
+    conf: config, specified_source: str, specified_url: str
+) -> dict:
+    """构造 search() 调用参数，集中处理代理、证书、javdb 站点等配置。"""
     proxies: dict = None
     config_proxy = conf.proxy()
     if config_proxy.enable:
         proxies = config_proxy.proxies()
 
-    # javdb website logic
-    # javdb have suffix
-    javdb_sites = conf.javdb_sites().split(",")
-    javdb_sites = [f"javdb{site}" for site in javdb_sites]
-    ca_cert = None
-    if conf.cacert_file():
-        ca_cert = conf.cacert_file()
+    ca_cert = conf.cacert_file() or None
 
-    json_data = search(
-        file_number,
-        sources,
-        proxies=proxies,
-        verify=ca_cert,
-        dbsite=secrets.choice(javdb_sites),
-        morestoryline=conf.is_storyline(),
-        specifiedSource=specified_source,
-        specifiedUrl=specified_url,
-        debug=conf.debug(),
+    javdb_sites = [site for site in conf.javdb_sites().split(",") if site]
+    javdb_sites = [f"javdb{site}" for site in javdb_sites] or ["javdb"]
+
+    return {
+        "proxies": proxies,
+        "verify": ca_cert,
+        "dbsite": secrets.choice(javdb_sites),
+        "morestoryline": conf.is_storyline(),
+        "specifiedSource": specified_source,
+        "specifiedUrl": specified_url,
+        "debug": conf.debug(),
+    }
+
+
+def _is_number_change_allowed(file_number: str, json_data: dict) -> bool:
+    """判断抓取到的番号是否允许与输入番号不一致。"""
+    if is_number_equivalent(json_data.get("number"), file_number):
+        return True
+
+    try:
+        return bool(json_data.get("allow_number_change"))
+    except Exception:
+        return False
+
+
+def _parse_actor_list(raw_actor: typing.Any) -> list[str]:
+    """把抓取到的 actor 字段（可能是 list/str/None）规范化成字符串列表。"""
+    if raw_actor is None:
+        return []
+    actor_list = str(raw_actor).strip("[ ]").replace("'", "").split(",")
+    return [actor.strip() for actor in actor_list if actor.strip()]
+
+
+def _parse_tag_list(raw_tag: typing.Any) -> list[str]:
+    """把抓取到的 tag 字段规范化成字符串列表，并移除占位标签。"""
+    if raw_tag is None:
+        return []
+    tag_list = (
+        str(raw_tag)
+        .strip("[ ]")
+        .replace("'", "")
+        .replace(" ", "")
+        .split(",")
     )
-    # Return if data not found in all sources
-    if not json_data or not json_data.get("number"):
-        print("[-]Movie Number not found!")
-        return None
+    return [t for t in tag_list if t and t not in {"XXXX", "xxx"}]
 
-    # 增加number严格判断，避免提交任何number，总是返回"本橋実来 ADZ335"，这种返回number不一致的数据源故障
-    # 目前选用number命名规则是javdb.com Domain Creation Date: 2013-06-19T18:34:27Z
-    # 然而也可以跟进关注其它命名规则如airav.wiki Domain Creation Date: 2019-08-28T07:18:42.0Z
-    # 如果将来javdb.com命名规则下不同Studio出现同名碰撞导致无法区分，可考虑更换规则，更新相应的number分析和抓取代码。
-    if not is_number_equivalent(json_data.get("number"), file_number):
-        try:
-            if not json_data.get("allow_number_change"):
-                print(
-                    "[-]Movie number has changed! [{}]->[{}]".format(
-                        file_number, str(json_data.get("number"))
-                    )
-                )
-                return None
-        except Exception:
-            print(
-                "[-]Movie number has changed! [{}]->[{}]".format(
-                    file_number, str(json_data.get("number"))
-                )
-            )
-            return None
 
-    # ================================================网站规则添加结束================================================
-
-    if json_data.get("title") == "":
-        print("[-]Movie Number or Title not found!")
-        return None
-
-    title = json_data.get("title")
-    actor_list = (
-        str(json_data.get("actor")).strip("[ ]").replace("'", "").split(",")
-    )  # 字符串转列表
-    actor_list = [actor.strip() for actor in actor_list]  # 去除空白
+def _normalize_and_update_json_data(json_data: dict, conf: config) -> str:
+    """清洗字段并回写到 json_data，返回用于 title 本地字典的 number。"""
+    title = json_data.get("title") or ""
+    actor_list = _parse_actor_list(json_data.get("actor"))
     director = json_data.get("director")
-    release = json_data.get("release")
-    number = json_data.get("number")
+    release = json_data.get("release") or ""
+    number = json_data.get("number") or ""
     studio = json_data.get("studio")
-    json_data.get("source")
-    json_data.get("runtime")
     outline = json_data.get("outline")
     label = json_data.get("label")
     series = json_data.get("series")
     year = json_data.get("year")
 
-    if json_data.get("cover_small"):
-        cover_small = json_data.get("cover_small")
-    else:
-        cover_small = ""
+    cover_small = json_data.get("cover_small") or ""
+    trailer = json_data.get("trailer") or ""
+    extrafanart = json_data.get("extrafanart") or ""
+    tag = _parse_tag_list(json_data.get("tag"))
 
-    if json_data.get("trailer"):
-        trailer = json_data.get("trailer")
-    else:
-        trailer = ""
-
-    if json_data.get("extrafanart"):
-        extrafanart = json_data.get("extrafanart")
-    else:
-        extrafanart = ""
-
-    json_data.get("imagecut")
-    tag = (
-        str(json_data.get("tag"))
-        .strip("[ ]")
-        .replace("'", "")
-        .replace(" ", "")
-        .split(",")
-    )  # 字符串转列表 @
-    while "XXXX" in tag:
-        tag.remove("XXXX")
-    while "xxx" in tag:
-        tag.remove("xxx")
-    if json_data["source"] == "pissplay":  # pissplay actor为英文名，不用去除空格
+    if json_data.get("source") == "pissplay":
         actor = str(actor_list).strip("[ ]").replace("'", "")
     else:
         actor = str(actor_list).strip("[ ]").replace("'", "").replace(" ", "")
 
-    # if imagecut == '3':
-    #     DownloadFileWithFilename()
-
-    # ====================处理异常字符====================== #\/:*?"<>|
     actor = special_characters_replacement(actor)
     actor_list = [special_characters_replacement(a) for a in actor_list]
     title = special_characters_replacement(title)
@@ -500,17 +453,15 @@ def get_data_from_json(
     studio = special_characters_replacement(studio)
     director = special_characters_replacement(director)
     tag = [special_characters_replacement(t) for t in tag]
-    release = release.replace("/", "-")
-    tmpArr = cover_small.split(",")
-    if len(tmpArr) > 0:
-        cover_small = tmpArr[0].strip('"').strip("'")
-    # ====================处理异常字符 END================== #\/:*?"<>|
 
-    # 处理大写
+    release = release.replace("/", "-")
+
+    cover_small_first = cover_small.split(",")[0] if cover_small else ""
+    cover_small = cover_small_first.strip('"').strip("'")
+
     if conf.number_uppercase():
         json_data["number"] = number.upper()
 
-    # 返回处理后的json_data
     json_data["title"] = title
     json_data["original_title"] = title
     json_data["actor"] = actor
@@ -527,61 +478,66 @@ def get_data_from_json(
     json_data["studio"] = studio
     json_data["director"] = director
 
-    if conf.is_translate():
-        translate_values = conf.translate_values().split(",")
-        for translate_value in translate_values:
-            if (
-                json_data.get(translate_value) is None
-                or json_data[translate_value] == ""
-            ):
-                continue
-            if translate_value == "title":
-                title_dict = {}
-                title_file = Path.home() / ".local" / "share" / "mdc" / "c_number.json"
-                if title_file.exists():
-                    try:
-                        title_dict = json.loads(title_file.read_text(encoding="utf-8"))
-                        if number in title_dict:
-                            json_data[translate_value] = title_dict[number]
-                            continue
-                    except Exception:
-                        pass
+    return number
 
-            if conf.get_translate_engine() == "azure":
-                translate(
-                    json_data[translate_value],
-                    target_language="zh-Hans",
-                    engine=conf.get_translate_engine(),
-                    key=conf.get_translate_key(),
-                )
-            else:
-                if len(json_data[translate_value]):
-                    if isinstance(json_data[translate_value], str):
-                        json_data[translate_value] = special_characters_replacement(
-                            json_data[translate_value]
-                        )
-                        json_data[translate_value] = translate(
-                            json_data[translate_value]
-                        )
-                    else:
-                        for i in range(len(json_data[translate_value])):
-                            json_data[translate_value][i] = (
-                                special_characters_replacement(
-                                    json_data[translate_value][i]
-                                )
-                            )
-                        list_in_str = ",".join(json_data[translate_value])
-                        json_data[translate_value] = translate(list_in_str).split(",")
 
-    # 无论是否开启open_cc，都处理演员信息
+def _maybe_translate(json_data: dict, conf: config, title_lookup_number: str) -> None:
+    """按配置翻译字段；title 会优先查本地番号字典缓存。"""
+    if not conf.is_translate():
+        return
+
+    translate_values = conf.translate_values().split(",")
+    for translate_value in translate_values:
+        if json_data.get(translate_value) is None or json_data[translate_value] == "":
+            continue
+
+        if translate_value == "title":
+            title_dict = {}
+            title_file = Path.home() / ".local" / "share" / "mdc" / "c_number.json"
+            if title_file.exists():
+                try:
+                    title_dict = json.loads(title_file.read_text(encoding="utf-8"))
+                    if title_lookup_number in title_dict:
+                        json_data[translate_value] = title_dict[title_lookup_number]
+                        continue
+                except Exception:
+                    pass
+
+        if conf.get_translate_engine() == "azure":
+            translate(
+                json_data[translate_value],
+                target_language="zh-Hans",
+                engine=conf.get_translate_engine(),
+                key=conf.get_translate_key(),
+            )
+            continue
+
+        if not len(json_data[translate_value]):
+            continue
+
+        if isinstance(json_data[translate_value], str):
+            json_data[translate_value] = special_characters_replacement(
+                json_data[translate_value]
+            )
+            json_data[translate_value] = translate(json_data[translate_value])
+            continue
+
+        for i in range(len(json_data[translate_value])):
+            json_data[translate_value][i] = special_characters_replacement(
+                json_data[translate_value][i]
+            )
+        list_in_str = ",".join(json_data[translate_value])
+        json_data[translate_value] = translate(list_in_str).split(",")
+
+
+def _apply_actor_mapping(json_data: dict, actor_mapping_data: dict) -> None:
+    """应用演员别名映射，并重新生成 actor 展示字段。"""
     try:
-        # 处理actor_list中的每个演员
         json_data["actor_list"] = [
             process_special_actor_name(actor, actor_mapping_data)
             for actor in json_data["actor_list"]
         ]
-        # 重新生成actor字段，确保使用处理后的actor_list
-        if json_data["source"] == "pissplay":
+        if json_data.get("source") == "pissplay":
             json_data["actor"] = (
                 str(json_data["actor_list"]).strip("[ ]").replace("'", "")
             )
@@ -595,13 +551,14 @@ def get_data_from_json(
     except Exception as e:
         print(f"[-]处理演员信息失败: {e}")
 
-    # 处理tag和其他字段
+
+def _apply_info_mappings(json_data: dict, info_mapping_data: dict) -> None:
+    """应用标签/文本字段映射（例如同义词替换）。"""
     try:
         json_data["tag"] = process_text_mappings(json_data["tag"], info_mapping_data)
     except Exception as e:
         print(f"[-]处理标签信息失败: {e}")
 
-    # 处理其他需要映射的字段
     mapping_fields = ["outline", "series", "studio", "title"]
     for field in mapping_fields:
         if field in json_data and json_data[field]:
@@ -612,41 +569,100 @@ def get_data_from_json(
             except Exception as e:
                 print(f"[-]处理{field}信息失败: {e}")
 
-    # 繁简转换
-    if open_cc:
-        cc_vars = conf.cc_convert_vars().split(",")
-        for cc in cc_vars:
-            if (
-                json_data.get(cc) is None
-                or json_data[cc] == ""
-                or len(json_data[cc]) == 0
-            ):
-                continue
-            try:
-                if isinstance(json_data[cc], list):
-                    json_data[cc] = [open_cc.convert(t) for t in json_data[cc]]
-                else:
-                    json_data[cc] = open_cc.convert(json_data[cc])
-            except Exception as e:
-                print(f"[-]繁简转换{cc}失败: {e}")
 
+def _apply_opencc(open_cc: opencc.OpenCC, conf: config, json_data: dict) -> None:
+    """对配置指定的字段做繁简转换；支持 list[str] / str。"""
+    if not open_cc:
+        return
+
+    cc_vars = conf.cc_convert_vars().split(",")
+    for cc in cc_vars:
+        if (
+            json_data.get(cc) is None
+            or json_data[cc] == ""
+            or len(json_data[cc]) == 0
+        ):
+            continue
+        try:
+            if isinstance(json_data[cc], list):
+                json_data[cc] = [open_cc.convert(t) for t in json_data[cc]]
+            else:
+                json_data[cc] = open_cc.convert(json_data[cc])
+        except Exception as e:
+            print(f"[-]繁简转换{cc}失败: {e}")
+
+
+def _build_naming_rules(conf: config, json_data: dict) -> None:
+    """根据配置拼接命名规则；original_naming_rule 用于保留原始标题。"""
     naming_rule = ""
     original_naming_rule = ""
     for i in conf.naming_rule().split("+"):
         if i not in json_data:
             naming_rule += i.strip("'").strip('"')
             original_naming_rule += i.strip("'").strip('"')
-        else:
-            item = json_data.get(i)
-            naming_rule += item if type(item) is not list else "&".join(item)
-            # PATCH：处理[title]存在翻译的情况，后续NFO文件的original_name只会直接沿用naming_rule,这导致original_name非原始名
-            # 理应在翻译处理 naming_rule和original_naming_rule
-            if i == "title":
-                item = json_data.get("original_title")
-            original_naming_rule += item if type(item) is not list else "&".join(item)
+            continue
+
+        item = json_data.get(i)
+        naming_rule += item if type(item) is not list else "&".join(item)
+
+        if i == "title":
+            item = json_data.get("original_title")
+        original_naming_rule += item if type(item) is not list else "&".join(item)
 
     json_data["naming_rule"] = naming_rule
     json_data["original_naming_rule"] = original_naming_rule
+
+
+def get_data_from_json(
+    file_number: str, open_cc: opencc.OpenCC, specified_source: str, specified_url: str
+) -> typing.Optional[dict]:
+    """
+    从网站抓取并标准化元数据。
+
+    这个函数会：
+    1) 通过多数据源查询得到 json_data；
+    2) 对番号/title/演员/标签等做清洗与字符替换（避免路径非法字符）；
+    3) 可选：翻译、演员别名映射、字段映射、繁简转换；
+    4) 生成 naming_rule / original_naming_rule，供后续文件命名与 NFO 使用。
+    """
+    conf = config.getInstance()
+    ccm = conf.cc_convert_mode()
+    actor_mapping_data = get_actor_mapping(ccm)
+    info_mapping_data = get_info_mapping(ccm)
+
+    # 数据源顺序从配置读取；search() 会依次尝试直到有结果
+    sources = conf.sources().split(",")
+    json_data = search(file_number, sources, **_build_search_kwargs(conf, specified_source, specified_url))
+
+    # Return if data not found in all sources
+    if not json_data or not json_data.get("number"):
+        print("[-]Movie Number not found!")
+        return None
+
+    # 增加number严格判断，避免提交任何number，总是返回"本橋実来 ADZ335"，这种返回number不一致的数据源故障
+    # 目前选用number命名规则是javdb.com Domain Creation Date: 2013-06-19T18:34:27Z
+    # 然而也可以跟进关注其它命名规则如airav.wiki Domain Creation Date: 2019-08-28T07:18:42.0Z
+    # 如果将来javdb.com命名规则下不同Studio出现同名碰撞导致无法区分，可考虑更换规则，更新相应的number分析和抓取代码。
+    if not _is_number_change_allowed(file_number, json_data):
+        print(
+            "[-]Movie number has changed! [{}]->[{}]".format(
+                file_number, str(json_data.get("number"))
+            )
+        )
+        return None
+
+    # ================================================网站规则添加结束================================================
+
+    if json_data.get("title") == "":
+        print("[-]Movie Number or Title not found!")
+        return None
+
+    title_lookup_number = _normalize_and_update_json_data(json_data, conf)
+    _maybe_translate(json_data, conf, title_lookup_number)
+    _apply_actor_mapping(json_data, actor_mapping_data)
+    _apply_info_mappings(json_data, info_mapping_data)
+    _apply_opencc(open_cc, conf, json_data)
+    _build_naming_rules(conf, json_data)
     return json_data
 
 
