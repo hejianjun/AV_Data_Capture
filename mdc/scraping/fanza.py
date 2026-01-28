@@ -4,7 +4,7 @@ import re
 from lxml import etree
 from urllib.parse import urlencode
 from .parser import Parser
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 
 
 class Fanza(Parser):

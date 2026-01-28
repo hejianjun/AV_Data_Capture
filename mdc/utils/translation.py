@@ -8,7 +8,7 @@ import sys
 from lxml import etree
 from mdc.config import config
 from mdc.utils.http import get_html, post_html
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 
 
 def is_japanese(raw: str) -> bool:

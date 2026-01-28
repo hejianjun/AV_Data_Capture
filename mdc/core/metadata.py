@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from mdc.config import config
 from lxml import etree
 from mdc.file.file_utils import get_info
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 
 
 def small_cover_check(

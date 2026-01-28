@@ -2,7 +2,7 @@ import requests
 from lxml import html
 from pathlib import Path
 from mdc.config import config
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 from mdc.utils.http.ssl_warnings import disable_insecure_request_warning
 
 headers = {

@@ -11,7 +11,7 @@ import time
 import secrets
 import builtins
 from mdc.config import config
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 
 from urllib.parse import urljoin
 from lxml.html import fromstring

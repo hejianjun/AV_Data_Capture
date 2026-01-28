@@ -1,6 +1,6 @@
 from aip import AipBodyAnalysis
 from mdc.config import config
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 
 
 def face_center(filename, model):

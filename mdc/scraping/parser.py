@@ -7,7 +7,7 @@ import traceback
 from mdc.config import config
 from mdc.utils.http import request as httprequest
 from .utils import getTreeElement, getTreeAll
-from mdc.utils.logger import info as print, success, warn, error, debug
+from mdc.utils.logger import info as print, warn
 
 
 class Parser:

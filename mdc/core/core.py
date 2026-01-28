@@ -32,7 +32,7 @@ from mdc.download.downloader import (
     image_ext,
 )
 from mdc.core.metadata import small_cover_check, print_files
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 
 
 # from WebCrawler import get_data_from_json

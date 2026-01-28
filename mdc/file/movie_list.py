@@ -4,7 +4,7 @@ import typing
 from pathlib import Path
 from mdc.config import config
 from mdc.utils.number_parser import get_number
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 
 
 def movie_lists(source_folder: str, regexstr: str) -> typing.List[str]:

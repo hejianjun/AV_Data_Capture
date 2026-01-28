@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 from xml.etree import ElementTree as ET
 from mdc.config import config
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 from datetime import datetime
 from mdc.utils.translation import is_japanese
 from mdc.file.common_utils import file_not_exist_or_empty

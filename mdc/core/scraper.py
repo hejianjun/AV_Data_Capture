@@ -20,7 +20,7 @@ from mdc.utils.actor_mapping import (
     process_text_mappings,
 )
 from mdc.utils.translation import translate
-from mdc.utils.logger import info as print, success, warn, error, debug
+
 from mdc.utils.cookie import load_cookies
 from mdc.utils.number_parser import is_number_equivalent
 from mdc.file.file_utils import file_modification_days
