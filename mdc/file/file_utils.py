@@ -205,7 +205,7 @@ def read_nfo_title_and_outline(nfo_path: str):
 
 def mode3_should_execute_by_nfo(nfo_path: str) -> bool:
     title, outline, year = read_nfo_title_and_outline(nfo_path)
-    if title is None and outline is None:
+    if (title is None or "马赛克" in title or  "馬賽克" in title) and outline is None:
         return True
     if is_japanese(title or ""):
         return True
