@@ -291,7 +291,7 @@ class Config:
         try:
             v = self.conf.getint("extrafanart", "parallel_download")
             return v if v >= 0 else 5
-        except:
+        except Exception:
             return 5
 
     def watermark_type(self) -> int:
@@ -372,25 +372,25 @@ class Config:
         """
         try:
             return self.conf.getint("Name_Rule", "max_title_len")
-        except:
+        except Exception:
             return 50
 
     def image_naming_with_number(self) -> bool:
         try:
             return self.conf.getboolean("Name_Rule", "image_naming_with_number")
-        except:
+        except Exception:
             return False
 
     def number_uppercase(self) -> bool:
         try:
             return self.conf.getboolean("Name_Rule", "number_uppercase")
-        except:
+        except Exception:
             return False
 
     def number_regexs(self) -> str:
         try:
             return self.conf.get("Name_Rule", "number_regexs")
-        except:
+        except Exception:
             return ""
 
     def update_check(self) -> bool:
@@ -417,25 +417,25 @@ class Config:
     def is_storyline(self) -> bool:
         try:
             return self.conf.getboolean("storyline", "switch")
-        except:
+        except Exception:
             return True
 
     def storyline_site(self) -> str:
         try:
             return self.conf.get("storyline", "site")
-        except:
+        except Exception:
             return "1:avno1,4:airavwiki"
 
     def storyline_censored_site(self) -> str:
         try:
             return self.conf.get("storyline", "censored_site")
-        except:
+        except Exception:
             return "2:airav,5:xcity,6:amazon"
 
     def storyline_uncensored_site(self) -> str:
         try:
             return self.conf.get("storyline", "uncensored_site")
-        except:
+        except Exception:
             return "3:58avgo"
 
     def storyline_show(self) -> int:

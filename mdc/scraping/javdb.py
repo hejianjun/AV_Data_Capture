@@ -273,7 +273,7 @@ class Javdb(Parser):
             numstrs = self.getTreeElement(htmltree, self.expr_userrating)
             nums = re.findall("[0-9.]+", numstrs)
             return float(nums[0])
-        except:
+        except Exception:
             return ""
 
     def getUserVotes(self, htmltree):
@@ -281,7 +281,7 @@ class Javdb(Parser):
             result = self.getTreeElement(htmltree, self.expr_uservotes)
             v = re.findall("[0-9.]+", result)
             return int(v[1])
-        except:
+        except Exception:
             return ""
 
     def getaphoto(self, url, session):
@@ -312,6 +312,6 @@ class Javdb(Parser):
                 )
                 if len(pic_url):
                     actor_photo[i.text] = pic_url
-            except:
+            except Exception:
                 pass
         return actor_photo

@@ -4,7 +4,6 @@ from pathlib import Path
 from mdc.config import config
 
 
-
 def movie_lists(source_folder: str, regexstr: str) -> typing.List[str]:
     conf = config.getInstance()
     main_mode = conf.main_mode()
@@ -16,7 +15,7 @@ def movie_lists(source_folder: str, regexstr: str) -> typing.List[str]:
     if isinstance(regexstr, str) and len(regexstr):
         try:
             cliRE = re.compile(regexstr, re.IGNORECASE)
-        except:
+        except re.error:
             pass
     failed_list_txt_path = Path(conf.failed_folder()).resolve() / "failed_list.txt"
     failed_set = set()
@@ -34,7 +33,7 @@ def movie_lists(source_folder: str, regexstr: str) -> typing.List[str]:
                     "\n".join(flist) + "\n", encoding="utf-8"
                 )
                 assert len(fset) == 0 and len(flist) == len(failed_set)
-        except:
+        except OSError:
             pass
     if not Path(source_folder).is_dir():
         print("[-]Source folder not found!")

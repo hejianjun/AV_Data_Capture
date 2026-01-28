@@ -47,5 +47,5 @@ def load_cookies(
         return json.loads(
             Path(cookies_filename).read_text(encoding="utf-8")
         ), cookies_filename
-    except:
+    except Exception:
         return None, None

@@ -43,7 +43,7 @@ class Javbus(Parser):
             try:
                 self.detailurl = "https://www.javbus.com/" + number
                 self.htmlcode = self.getHtml(self.detailurl)
-            except:
+            except Exception:
                 mirror_url = (
                     "https://www."
                     + secrets.choice(
@@ -67,7 +67,7 @@ class Javbus(Parser):
             htmltree = etree.fromstring(self.htmlcode, etree.HTMLParser())
             result = self.dictformat(htmltree)
             return result
-        except:
+        except Exception:
             self.searchUncensored(number)
 
     def searchUncensored(self, number):

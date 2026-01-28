@@ -58,7 +58,7 @@ class Gcolle(Parser):
         result = self.getTreeAll(htmltree, self.expr_outline)
         try:
             return "\n".join(result)
-        except:
+        except Exception:
             return ""
 
     def getRelease(self, htmltree):

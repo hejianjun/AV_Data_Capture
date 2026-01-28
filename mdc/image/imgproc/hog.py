@@ -1,7 +1,6 @@
 import face_recognition
 
 
-
 def face_center(filename, model):
     image = face_recognition.load_image_file(filename)
     face_locations = face_recognition.face_locations(image, 1, model)

@@ -12,8 +12,8 @@ class Getchu:
     source = "getchu"
 
     def scrape(self, number, core: None):
-        dl = dlGetchu()
-        www = wwwGetchu()
+        dlGetchu()
+        wwwGetchu()
         number = number.replace("-C", "")
         dic = {}
         if "item" in number:
@@ -23,9 +23,9 @@ class Getchu:
         for i in sort:
             try:
                 dic = eval(i)
-                if dic != None and json.loads(dic).get("title") != "":
+                if dic is not None and json.loads(dic).get("title") != "":
                     break
-            except:
+            except Exception:
                 pass
         return dic
 

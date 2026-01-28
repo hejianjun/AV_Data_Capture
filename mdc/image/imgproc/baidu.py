@@ -2,7 +2,6 @@ from aip import AipBodyAnalysis
 from mdc.config import config
 
 
-
 def face_center(filename, model):
     app_id = config.getInstance().conf.get("face", "appid")
     api_key = config.getInstance().conf.get("face", "key")

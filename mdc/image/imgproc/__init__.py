@@ -5,8 +5,7 @@ import importlib
 from pathlib import Path
 from PIL import Image
 import shutil
-from mdc.file.file_utils import file_not_exist_or_empty
-
+from mdc.file.common_utils import file_not_exist_or_empty
 
 
 def face_crop_width(filename, width, height):
@@ -30,7 +29,7 @@ def face_crop_width(filename, width, height):
                     cropLeft = width - cropWidthHalf * aspect_ratio
                     cropRight = width
                 return (cropLeft, 0, cropRight, height)
-    except:
+    except Exception:
         print("[-]Not found face!   " + filename)
     # 默认靠右切
     return (width - cropWidthHalf * aspect_ratio, 0, width, height)
@@ -52,7 +51,7 @@ def face_crop_height(filename, width, height):
                     cropTop = 0
                     cropBottom = cropHeight
                 return (0, cropTop, width, cropBottom)
-    except:
+    except Exception:
         print("[-]Not found face!   " + filename)
     # 默认从顶部向下切割
     return (0, 0, width, cropHeight)

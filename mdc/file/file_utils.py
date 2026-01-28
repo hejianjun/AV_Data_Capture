@@ -41,7 +41,7 @@ def moveFailedFolder(filepath):
                 print("[-]File Exists while moving to FailedFolder")
                 return
             shutil.move(filepath, failed_name)
-        except:
+        except OSError:
             print("[-]File Moving to FailedFolder unsuccessful!")
 
 
@@ -81,7 +81,7 @@ def create_folder(json_data):  # 创建文件夹
         path = escape_path(path, conf.escape_literals())
         try:
             os.makedirs(path)
-        except:
+        except OSError:
             path = (
                 success_folder
                 + "/"
@@ -90,7 +90,7 @@ def create_folder(json_data):  # 创建文件夹
             path = escape_path(path, conf.escape_literals())
             try:
                 os.makedirs(path)
-            except:
+            except OSError:
                 print(f"[-]Fatal error! Can not make folder '{path}'")
                 os._exit(0)
 
@@ -104,7 +104,7 @@ def create_failed_folder(failed_folder: str) -> None:
     if not os.path.exists(failed_folder):
         try:
             os.makedirs(failed_folder)
-        except:
+        except OSError:
             print(f"[-]Fatal error! Can not make folder '{failed_folder}'")
             os._exit(0)
 
@@ -127,7 +127,7 @@ def rm_empty_folder(path: str) -> None:
                 os.rmdir(current_dir)
                 deleted.add(current_dir)
                 print("[+]Deleting empty folder", current_dir)
-        except:
+        except OSError:
             pass
 
 

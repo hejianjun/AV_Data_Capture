@@ -235,7 +235,7 @@ class Parser:
         try:
             release = self.getRelease(htmltree)
             return str(re.findall("\d{4}", release)).strip(" ['']")
-        except:
+        except Exception:
             return release
 
     def getRuntime(self, htmltree):
@@ -348,7 +348,7 @@ class Parser:
             if second:
                 return second
             return ""
-        except:
+        except Exception:
             return ""
 
     def getTreeAllbyExprs(self, tree: html.HtmlElement, expr, expr2=""):
@@ -362,5 +362,5 @@ class Parser:
             clean2 = [x.strip() for x in result2 if x.strip() and x.strip() != ","]
             result = list(set(clean + clean2))
             return result
-        except:
+        except Exception:
             return []

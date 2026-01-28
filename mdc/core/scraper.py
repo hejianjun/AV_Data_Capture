@@ -170,7 +170,7 @@ class Scraping:
                     if self.debug:
                         print(f"[+]Find movie [{name}] metadata on website '{source}'")
                     break
-            except:
+            except Exception:
                 continue
 
         # Return if data not found in all sources
@@ -179,7 +179,7 @@ class Scraping:
 
         # If actor is anonymous, Fill in Anonymous
         if len(json_data.get("actor", [])) == 0:
-            if config.getInstance().anonymous_fill() == True:
+            if config.getInstance().anonymous_fill():
                 if (
                     "zh_" in config.getInstance().get_target_language()
                     or "ZH" in config.getInstance().get_target_language()
@@ -224,7 +224,7 @@ class Scraping:
                             f"[+]Find movie [{number}] metadata on website '{source}'"
                         )
                     break
-            except:
+            except Exception:
                 continue
 
         # javdb的封面有水印，如果可以用其他源的封面来替换javdb的封面
@@ -247,7 +247,7 @@ class Scraping:
                                 print(
                                     f"[+]Replace javdb cover with {other_json_data['source']} cover"
                                 )
-            except:
+            except Exception:
                 pass
 
         # Return if data not found in all sources
@@ -256,7 +256,7 @@ class Scraping:
 
         # If actor is anonymous, Fill in Anonymous
         if len(json_data.get("actor", [])) == 0:
-            if config.getInstance().anonymous_fill() == True:
+            if config.getInstance().anonymous_fill():
                 if (
                     "zh_" in config.getInstance().get_target_language()
                     or "ZH" in config.getInstance().get_target_language()
@@ -351,7 +351,9 @@ class Scraping:
         if data["number"] is None or data["number"] == "" or data["number"] == "null":
             return False
         if (
-            data.get("cover") is None or data.get("cover") == "" or data.get("cover") == "null"
+            data.get("cover") is None
+            or data.get("cover") == ""
+            or data.get("cover") == "null"
         ) and (
             data.get("cover_small") is None
             or data.get("cover_small") == ""
@@ -434,7 +436,7 @@ def get_data_from_json(
                     )
                 )
                 return None
-        except:
+        except Exception:
             print(
                 "[-]Movie number has changed! [{}]->[{}]".format(
                     file_number, str(json_data.get("number"))
@@ -457,8 +459,8 @@ def get_data_from_json(
     release = json_data.get("release")
     number = json_data.get("number")
     studio = json_data.get("studio")
-    source = json_data.get("source")
-    runtime = json_data.get("runtime")
+    json_data.get("source")
+    json_data.get("runtime")
     outline = json_data.get("outline")
     label = json_data.get("label")
     series = json_data.get("series")
@@ -479,7 +481,7 @@ def get_data_from_json(
     else:
         extrafanart = ""
 
-    imagecut = json_data.get("imagecut")
+    json_data.get("imagecut")
     tag = (
         str(json_data.get("tag"))
         .strip("[ ]")
@@ -539,7 +541,10 @@ def get_data_from_json(
     if conf.is_translate():
         translate_values = conf.translate_values().split(",")
         for translate_value in translate_values:
-            if json_data.get(translate_value) is None or json_data[translate_value] == "":
+            if (
+                json_data.get(translate_value) is None
+                or json_data[translate_value] == ""
+            ):
                 continue
             if translate_value == "title":
                 title_dict = {}
@@ -554,7 +559,7 @@ def get_data_from_json(
                         pass
 
             if conf.get_translate_engine() == "azure":
-                t = translate(
+                translate(
                     json_data[translate_value],
                     target_language="zh-Hans",
                     engine=conf.get_translate_engine(),
@@ -562,7 +567,7 @@ def get_data_from_json(
                 )
             else:
                 if len(json_data[translate_value]):
-                    if type(json_data[translate_value]) == str:
+                    if isinstance(json_data[translate_value], str):
                         json_data[translate_value] = special_characters_replacement(
                             json_data[translate_value]
                         )
@@ -622,7 +627,11 @@ def get_data_from_json(
     if open_cc:
         cc_vars = conf.cc_convert_vars().split(",")
         for cc in cc_vars:
-            if json_data.get(cc) is None or json_data[cc] == "" or len(json_data[cc]) == 0:
+            if (
+                json_data.get(cc) is None
+                or json_data[cc] == ""
+                or len(json_data[cc]) == 0
+            ):
                 continue
             try:
                 if isinstance(json_data[cc], list):

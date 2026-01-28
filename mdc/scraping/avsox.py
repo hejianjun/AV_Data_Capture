@@ -66,7 +66,7 @@ class Avsox(Parser):
         """使用搜索页面的预览小图"""
         try:
             return self.getTreeElement(self.searchtree, self.expr_smallcover)
-        except:
+        except Exception:
             self.imagecut = 1
             return ""
 
@@ -92,8 +92,8 @@ class Avsox(Parser):
         a = self.getTreeAll(htmltree, self.expr_actorphoto)
         d = {}
         for i in a:
-            l = i.find(".//img").attrib["src"]
+            img_src = i.find(".//img").attrib["src"]
             t = i.find("span").text
-            p2 = {t: l}
+            p2 = {t: img_src}
             d.update(p2)
         return d

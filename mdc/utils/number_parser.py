@@ -117,7 +117,7 @@ def get_number(debug: bool, file_path: str) -> str:
                     .strip("['']")
                     .replace("_", "-")
                 )
-            except:
+            except Exception:
                 return str(re.search(r"(.+?)\.", filepath)[0])
     except Exception as e:
         if debug:
@@ -159,7 +159,7 @@ def get_number_by_dict(filename: str) -> typing.Optional[str]:
         for k, v in G_TAKE_NUM_RULES.items():
             if re.search(k, filename, re.I):
                 return v(filename)
-    except:
+    except Exception:
         pass
     return None
 

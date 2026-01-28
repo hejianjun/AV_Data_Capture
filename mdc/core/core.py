@@ -5,20 +5,21 @@ import sys
 import re
 import json
 
+from pathlib import Path
+from lxml import etree
 from PIL import Image
 from io import BytesIO
 # from videoprops import get_video_properties
 
-from mdc.utils import *
+from mdc.config import config
+from mdc.utils import cn_space, get_html
 from mdc.core.scraper import get_data_from_json
 from mdc.utils.number_parser import is_uncensored
+from mdc.utils.logger import warn
 from mdc.image.imgproc import cutImage
 from mdc.download.subtitles import download_subtitles
 
 # 导入拆分的模块
-from mdc.file.file_utils import *
-from mdc.download.downloader import *
-from mdc.core.metadata import *
 from mdc.file.file_utils import moveFailedFolder, create_folder
 from mdc.download.downloader import (
     trailer_download,
@@ -28,7 +29,6 @@ from mdc.download.downloader import (
     image_ext,
 )
 from mdc.core.metadata import small_cover_check, print_files
-
 
 
 # from WebCrawler import get_data_from_json
@@ -202,7 +202,7 @@ def paste_file_to_folder(
             try:
                 os.link(filepath, targetpath, follow_symlinks=False)
                 action = "Link"
-            except:
+            except OSError:
                 create_softlink = True
         if link_mode == 1 or create_softlink:
             # 先尝试采用相对路径，以便网络访问时能正确打开视频，失败则可能是因为跨盘符等原因无法支持
@@ -210,7 +210,7 @@ def paste_file_to_folder(
             try:
                 filerelpath = os.path.relpath(filepath, path)
                 os.symlink(filerelpath, targetpath)
-            except:
+            except OSError:
                 os.symlink(str(filepath_obj.resolve()), targetpath)
             action = "Link"
         if action:
@@ -253,13 +253,13 @@ def paste_file_to_folder_mode2(
         elif link_mode == 2:
             try:
                 os.link(filepath, targetpath, follow_symlinks=False)
-            except:
+            except OSError:
                 create_softlink = True
         if link_mode == 1 or create_softlink:
             try:
                 filerelpath = os.path.relpath(filepath, path)
                 os.symlink(filerelpath, targetpath)
-            except:
+            except OSError:
                 os.symlink(str(filepath_obj.resolve()), targetpath)
         print("[!]Link =>          ", path)
     except FileExistsError as fee:
@@ -300,7 +300,7 @@ def linkImage(path, number, part, leak_word, c_word, hack_word, ext):
             continue
         try:
             os.link(str(normal_path), str(multi_path), follow_symlinks=False)
-        except:
+        except OSError:
             shutil.copyfile(str(normal_path), str(multi_path))
 
 
@@ -319,7 +319,7 @@ def debug_print(data: json):
             print(f"[+]  - {i:<{cn_space(i, 19)}} : {v}")
 
         print("[+] ------- DEBUG INFO -------")
-    except:
+    except Exception:
         pass
 
 
@@ -382,7 +382,7 @@ def core_main_no_net_op(movie_path, number):
             nfo_xml = etree.parse(full_nfo)
             nfo_fanart_path = nfo_xml.xpath("//fanart/text()")[0]
             ext = Path(nfo_fanart_path).suffix
-        except:
+        except Exception:
             return
     else:
         return
@@ -651,7 +651,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
                 # 下载演员头像 KODI .actors 目录位置
                 if conf.download_actor_photo_for_kodi():
                     actor_photo_download(json_data.get("actor_photo"), path, number)
-            except:
+            except Exception:
                 pass
 
         # 裁剪图
@@ -791,7 +791,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
                 # 下载演员头像 KODI .actors 目录位置
                 if conf.download_actor_photo_for_kodi():
                     actor_photo_download(json_data.get("actor_photo"), path, number)
-            except:
+            except Exception:
                 pass
 
         # 裁剪图

@@ -132,7 +132,7 @@ class Dlsite(Parser):
             result = []
             for i in self.getTreeAll(self.expr_extrafanart):
                 result.append("https:" + i)
-        except:
+        except Exception:
             result = ""
         return result
 

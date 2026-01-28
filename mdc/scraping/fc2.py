@@ -88,7 +88,7 @@ class Fc2(Parser):
                 )
                 url_json = eval(self.getHtml(video_url))["path"].replace("\\", "")
                 return url_json
-            except:
+            except Exception:
                 return ""
         else:
             return ""

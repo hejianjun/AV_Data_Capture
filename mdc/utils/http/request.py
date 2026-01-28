@@ -181,7 +181,7 @@ def get_html(
     :param json_headers: json头部信息
     :return: 响应对象 | 二进制内容 | 文本内容
     """
-    verify = config.getInstance().cacert_file()
+    config.getInstance().cacert_file()
     config_proxy = config.getInstance().proxy()
     errors = ""
 
@@ -501,9 +501,7 @@ def get_html_by_form(
         "https://",
         TimeoutHTTPAdapter(max_retries=retries, timeout=timeout),
     )
-    s.mount(
-        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=timeout)
-    )
+    s.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=timeout))
     if verify is not None:
         s.verify = verify
     elif config_proxy.enable:
@@ -520,7 +518,7 @@ def get_html_by_form(
         result = browser.open(url)
         if not result.ok:
             return None
-        form = (
+        (
             browser.select_form()
             if form_select is None
             else browser.select_form(form_select)
@@ -594,9 +592,7 @@ def get_html_by_scraper(
         "https://",
         TimeoutHTTPAdapter(max_retries=retries, timeout=timeout),
     )
-    session.mount(
-        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=timeout)
-    )
+    session.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=timeout))
     if verify is not None:
         session.verify = verify
     elif config_proxy.enable:

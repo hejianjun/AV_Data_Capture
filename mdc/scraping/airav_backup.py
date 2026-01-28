@@ -95,7 +95,7 @@ class Airav(Parser):
             return re.search(
                 r"\d{4}-\d{2}-\d{2}", str(super().getRelease(htmltree))
             ).group()
-        except:
+        except Exception:
             return ""
 
     def getYear(self, htmltree):
@@ -110,7 +110,7 @@ class Airav(Parser):
         # return self.getTreeAll(htmltree, self.expr_outline).replace('\n','').strip()
         try:
             result = htmltree["description"]
-        except:
+        except Exception:
             result = ""
         return result
 
@@ -167,7 +167,7 @@ class Airav(Parser):
     def getExtrafanart(self, htmltree):
         try:
             result = htmltree["images"]
-        except:
+        except Exception:
             result = ""
         return result
 
@@ -177,6 +177,6 @@ class Airav(Parser):
             tags = []
             for i in tag:
                 tags.append(i["name"])
-        except:
+        except Exception:
             tags = []
         return tags

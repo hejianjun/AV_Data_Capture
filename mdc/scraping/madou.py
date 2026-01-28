@@ -91,7 +91,7 @@ class Madou(Parser):
                 result = re.split(r"[^\x00-\x7F]+", result, 1)[0]
             # 移除多余的符号
             return result.strip("- ")
-        except:
+        except Exception:
             return ""
 
     def getTitle(self, htmltree):
@@ -109,7 +109,7 @@ class Madou(Parser):
         try:
             url = str(re.findall("shareimage      : '(.*?)'", self.htmlcode)[0])
             return url.strip()
-        except:
+        except Exception:
             return ""
 
     def getTags(self, htmltree):

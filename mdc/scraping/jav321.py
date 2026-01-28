@@ -33,8 +33,11 @@ class Jav321(Parser):
         """
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
-            self.detailhtml = self.getHtmlTree(self.detailurl)
-            return etree.fromstring(resp, etree.HTMLParser())
+            resp_text = self.getHtml(self.detailurl)
+            if resp_text == 404:
+                return None
+            self.detailhtml = resp_text
+            return etree.fromstring(resp_text, etree.HTMLParser())
         resp = httprequest.post(
             url,
             data={"sn": self.number},

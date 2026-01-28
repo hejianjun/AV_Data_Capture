@@ -62,21 +62,21 @@ class Xcity(Parser):
         try:
             result = self.getTreeElement(htmltree, self.expr_release, 1)
             return re.findall("\d{4}/\d{2}/\d{2}", result)[0].replace("/", "-")
-        except:
+        except Exception:
             return ""
 
     def getCover(self, htmltree):
         try:
             result = super().getCover(htmltree)
             return "https:" + result
-        except:
+        except Exception:
             return ""
 
     def getDirector(self, htmltree):
         try:
             result = super().getDirector(htmltree).replace("\n", "").replace("\t", "")
             return result
-        except:
+        except Exception:
             return ""
 
     def getActorPhoto(self, htmltree):
@@ -91,7 +91,7 @@ class Xcity(Parser):
                 if "noimage.gif" in picUrl:
                     continue
                 o[k] = urljoin("https://xcity.jp", picUrl)
-            except:
+            except Exception:
                 pass
         return o
 

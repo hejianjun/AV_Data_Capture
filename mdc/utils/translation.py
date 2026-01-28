@@ -10,7 +10,6 @@ from mdc.config import config
 from mdc.utils.http import get_html, post_html
 
 
-
 def is_japanese(raw: str) -> bool:
     """
     日语简单检测，仅检测日语特有的假名字符
@@ -46,7 +45,7 @@ def translate(
     is_jp = is_japanese(src)
 
     # 中文句子如果包含&等符号会被谷歌翻译截断损失内容，而且中文翻译到中文也没有意义，故而忽略，只翻译带有日语的
-    if (is_jp == False) and ("zh_" in target_language):
+    if (not is_jp) and ("zh_" in target_language):
         return src
 
     if engine == "google-free":

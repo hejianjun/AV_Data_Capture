@@ -14,7 +14,7 @@ def getTreeElement(tree: HtmlElement, expr="", index=0):
     result = tree.xpath(expr)
     try:
         return result[index]
-    except:
+    except Exception:
         return ""
 
 
@@ -29,5 +29,5 @@ def getTreeAll(tree: HtmlElement, expr=""):
     result = tree.xpath(expr)
     try:
         return result
-    except:
+    except Exception:
         return []

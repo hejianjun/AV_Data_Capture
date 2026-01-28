@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 from mdc.config import config
 from lxml import etree
-from mdc.file.file_utils import get_info
-
+from mdc.file.common_utils import file_not_exist_or_empty
+from mdc.file.file_utils import get_info, moveFailedFolder
+from mdc.download.downloader import download_file_with_filename
 
 
 def small_cover_check(
@@ -114,7 +115,7 @@ def print_files(
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
-            except:
+            except OSError:
                 print(f"[-]Fatal error! can not make folder '{path}'")
                 os._exit(0)
 
@@ -159,7 +160,7 @@ def print_files(
                         old_value = old_nfo.xpath(f"//{elem}/text()")[0]
                         if old_value:
                             old_nfo_dict[elem] = old_value
-                    except:
+                    except Exception:
                         pass
                 try:
                     old_actor_list = [
@@ -167,9 +168,9 @@ def print_files(
                         for v in old_nfo.xpath("//actor/name/text()")
                         if isinstance(v, str) and v.strip()
                     ]
-                except:
+                except Exception:
                     old_actor_list = []
-        except:
+        except Exception:
             pass
 
         if main_mode == 3:
@@ -190,7 +191,7 @@ def print_files(
                     actor_list = old_actor_list
                 else:
                     actor_list = new_actor_list
-            except:
+            except Exception:
                 pass
 
         # 模式3下，保留原有值，仅当新值非空时覆盖
@@ -276,7 +277,7 @@ def print_files(
             else:
                 try:
                     print("  <set>" + series + "</set>", file=code)
-                except:
+                except Exception:
                     print("  <set></set>", file=code)
 
             # 处理studio
@@ -311,7 +312,7 @@ def print_files(
             # 处理director
             if main_mode == 3 and "director" in old_nfo_dict and not director:
                 print(f"  <director>{old_nfo_dict['director']}</director>", file=code)
-            elif False != conf.get_direct():
+            elif conf.get_direct():
                 print("  <director>" + director + "</director>", file=code)
 
             # 处理poster
@@ -338,15 +339,11 @@ def print_files(
                 for key in actor_list:
                     print("  <actor>", file=code)
                     print("    <name>" + key + "</name>", file=code)
-                    try:
-                        print(
-                            "    <thumb>" + actor_photo.get(str(key)) + "</thumb>",
-                            file=code,
-                        )
-                    except:
-                        pass
+                    thumb = actor_photo.get(str(key))
+                    if thumb:
+                        print("    <thumb>" + thumb + "</thumb>", file=code)
                     print("  </actor>", file=code)
-            except:
+            except Exception:
                 pass
 
             # 处理maker
@@ -367,7 +364,7 @@ def print_files(
                     for key in actor_list:
                         try:
                             print("  <tag>" + key + "</tag>", file=code)
-                        except:
+                        except Exception:
                             pass
                 else:
                     if cn_sub:
@@ -385,16 +382,10 @@ def print_files(
                     for i in tag:
                         try:
                             print("  <tag>" + i + "</tag>", file=code)
-                        except:
+                        except Exception:
                             pass
 
             print("</movie>", file=code)
     except Exception as e:
         print(f"[-]Error writing NFO file: {e}")
         moveFailedFolder(filepath)
-
-
-# 由于这些函数在metadata.py中被调用但在其他模块中定义，需要从相应模块导入
-from mdc.file.file_utils import file_not_exist_or_empty
-from mdc.download.downloader import download_file_with_filename
-from mdc.file.file_utils import moveFailedFolder

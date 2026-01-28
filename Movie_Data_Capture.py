@@ -118,7 +118,7 @@ def setup_logging(logdir):
     if not log_dir.exists():
         try:
             log_dir.mkdir(parents=True, exist_ok=True)
-        except:
+        except OSError:
             return
 
     if not log_dir.is_dir():
@@ -384,7 +384,7 @@ def main(args: tuple) -> typing.Optional[Path]:
     ccm = conf.cc_convert_mode()
     try:
         oCC = None if ccm == 0 else OpenCC("t2s.json" if ccm == 1 else "s2t.json")
-    except:
+    except Exception:
         # some OS no OpenCC cpython, try opencc-python-reimplemented.
         # pip uninstall opencc && pip install opencc-python-reimplemented
         oCC = None if ccm == 0 else OpenCC("t2s" if ccm == 1 else "s2t")

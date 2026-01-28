@@ -13,8 +13,8 @@ from concurrent.futures import ThreadPoolExecutor
 # project wide
 from mdc.config import config
 from mdc.utils.http.request import get_html
-from mdc.file.file_utils import moveFailedFolder, file_not_exist_or_empty
-
+from mdc.file.common_utils import file_not_exist_or_empty
+from mdc.file.file_utils import moveFailedFolder
 
 
 # ------------------------------
@@ -36,7 +36,7 @@ def download_file_with_filename(
             if not os.path.exists(path):
                 try:
                     os.makedirs(path)
-                except:
+                except OSError:
                     print(f"[-]Fatal error! Can not make folder '{path}'")
                     os._exit(0)
             r = get_html(url=url, return_type="object", json_headers=json_headers)
@@ -298,7 +298,7 @@ def image_ext(url):
         if ext in {".jpg", ".jpge", ".bmp", ".png", ".gif"}:
             return ext
         return ".jpg"
-    except:
+    except Exception:
         return ".jpg"
 
 
@@ -309,7 +309,7 @@ def image_download(cover, fanart_path, thumb_path, path, filepath, json_headers=
         and not file_not_exist_or_empty(full_filepath)
     ):
         return
-    if json_headers != None:
+    if json_headers is not None:
         if (
             download_file_with_filename(
                 cover, thumb_path, path, filepath, json_headers["headers"]
@@ -327,7 +327,7 @@ def image_download(cover, fanart_path, thumb_path, path, filepath, json_headers=
     for i in range(configProxy.retry):
         if file_not_exist_or_empty(full_filepath):
             print(f"[!]Image Download Failed! Trying again. [{i + 1}/3]")
-            if json_headers != None:
+            if json_headers is not None:
                 download_file_with_filename(
                     cover, thumb_path, path, filepath, json_headers["headers"]
                 )

@@ -62,7 +62,7 @@ class TestConfig:
 
         # 验证覆盖是否生效
         assert conf2.face_aspect_ratio() == 2
-        assert conf2.face_aways_imagecut() == False
+        assert not conf2.face_aways_imagecut()
         assert conf2.sources() == "javdb"
 
     def test_new_instance(self):

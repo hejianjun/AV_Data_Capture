@@ -5,7 +5,6 @@ from .parser import Parser
 from .madou import change_number
 
 
-
 class Madouji(Parser):
     source = "madouji"
 
@@ -66,7 +65,7 @@ class Madouji(Parser):
             if self.number != number:
                 print(number)
             self.detailurl = self.queryNumberUrl(number)
-        if self.detailurl == None:
+        if self.detailurl is None:
             return 404
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404 or self.htmlcode == 403:
@@ -95,6 +94,6 @@ class Madouji(Parser):
         # 删除番号
         try:
             title = str(re.sub("（.+?）( #\w+)*$", "", title, 1))
-        except:
+        except Exception:
             title = title.replace("（" + self.number + "）", "")
         return title.strip()

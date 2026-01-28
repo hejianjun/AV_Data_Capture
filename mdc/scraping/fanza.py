@@ -6,7 +6,6 @@ from urllib.parse import urlencode
 from .parser import Parser
 
 
-
 class Fanza(Parser):
     source = "fanza"
 
@@ -94,7 +93,7 @@ class Fanza(Parser):
             if "※ 配信方法によって収録内容が異なる場合があります。" == result:
                 result = self.getTreeElement(htmltree, self.expr_outline_og)
             return result
-        except:
+        except Exception:
             return ""
 
     def getRuntime(self, htmltree):
@@ -145,7 +144,7 @@ class Fanza(Parser):
                 result = xpath_result[0]
             else:
                 raise IndexError("No results found")
-        except:
+        except Exception:
             # sometimes fanza modify _ to \u0005f for image id
             if "_" in cover_number:
                 cover_number = cover_number.replace("_", r"\u005f")
@@ -155,7 +154,7 @@ class Fanza(Parser):
                     result = xpath_result[0]
                 else:
                     raise IndexError("No results found")
-            except:
+            except Exception:
                 # (TODO) handle more edge case
                 # print(html)
                 # raise exception here, same behavior as before

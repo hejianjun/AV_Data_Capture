@@ -1,5 +1,6 @@
 import os
 
+
 def file_not_exist_or_empty(filepath):
     if not os.path.exists(filepath):
         return True

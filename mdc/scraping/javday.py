@@ -5,7 +5,6 @@ from .parser import Parser
 from .madou import change_number
 
 
-
 class Javday(Parser):
     source = "javday"
 
@@ -50,7 +49,7 @@ class Javday(Parser):
         try:
             title = str(re.sub("^[\w\-]+", "", title, 1))
             title = str(re.sub("[\w\.\-]+$", "", title, 1))
-        except:
+        except Exception:
             print("非标准标题" + title)
             title = title.replace(self.number, "")
             title = title.replace("JAVDAY.TV", "")
