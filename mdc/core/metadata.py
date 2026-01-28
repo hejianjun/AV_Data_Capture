@@ -358,6 +358,13 @@ def print_files(
             else:
                 print("  <label>" + label + "</label>", file=code)
 
+            # 处理genre
+            for i in tag:
+                try:
+                    print("  <genre>" + i + "</genre>", file=code)
+                except Exception:
+                    pass
+
             jellyfin = config.getInstance().jellyfin()
             if not jellyfin:
                 if config.getInstance().actor_only_tag():

@@ -69,7 +69,7 @@ class Airav(Parser):
             cand_num = _extract_number(title)
             cand_norm = _norm(cand_num) if cand_num else ""
 
-            is_mosaic = "馬賽克破解版" in title
+            is_mosaic = "馬賽克破解版" in title or "馬賽克破壞版" in title
 
             if cand_norm and cand_norm == target_norm and not is_mosaic:
                 return "https://airav.io" + href
