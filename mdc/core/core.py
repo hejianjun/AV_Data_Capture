@@ -309,12 +309,12 @@ def debug_print(data: json):
         print("[+] ------- DEBUG INFO -------")
         for i, v in data.items():
             if i == "outline":
-                print("[+]  -", "%-19s" % i, ":", len(v), "characters")
+                print(f"[+]  - {i:<19} : {len(v)} characters")
                 continue
             if i == "actor_photo" or i == "year":
                 continue
             if i == "extrafanart":
-                print("[+]  -", "%-19s" % i, ":", len(v), "links")
+                print(f"[+]  - {i:<19} : {len(v)} links")
                 continue
             print(f"[+]  - {i:<{cn_space(i, 19)}} : {v}")
 
