@@ -68,16 +68,23 @@ class Airav(Parser):
             )
             cand_num = _extract_number(title)
             cand_norm = _norm(cand_num) if cand_num else ""
-            if cand_norm and cand_norm == target_norm:
+
+            is_mosaic = "馬賽克破解版" in title
+
+            if cand_norm and cand_norm == target_norm and not is_mosaic:
                 return "https://airav.io" + href
-            candidates.append((href, cand_norm, cand_num))
+            candidates.append((href, cand_norm, cand_num, is_mosaic))
 
         best_href = ""
         best_score = -1.0
-        for href, cand_norm, cand_num in candidates:
+        for href, cand_norm, cand_num, is_mosaic in candidates:
             score = 0.0
             if cand_norm:
-                score = SequenceMatcher(None, target_norm, cand_norm).ratio()
+                score = SequenceMatcher[str](None, target_norm, cand_norm).ratio()
+
+            if is_mosaic:
+                score -= 0.001
+
             if score > best_score:
                 best_score = score
                 best_href = href
