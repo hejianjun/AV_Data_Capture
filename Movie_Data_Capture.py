@@ -28,6 +28,7 @@ from mdc.file.file_utils import (
     rm_empty_folder,
     mode3_should_execute_by_nfo,
 )
+from mdc.utils.system import WindowsInhibitor
 
 
 # 日志配置
@@ -332,6 +333,9 @@ def main(args: tuple) -> typing.Optional[Path]:
         signal.signal(signal.SIGWINCH, sigdebug_handler)
     setup_logging(logdir)
 
+    os_inhibitor = WindowsInhibitor()
+    os_inhibitor.inhibit()
+
     platform_total = str(
         " - "
         + platform.platform()
@@ -396,6 +400,7 @@ def main(args: tuple) -> typing.Optional[Path]:
             json_data = get_data_from_json(i, oCC, None, None)
             debug_print(json_data)
             time.sleep(int(config.getInstance().sleep()))
+        os_inhibitor.uninhibit()
         os._exit(0)
 
     if not single_file_path == "":  # Single File
@@ -470,6 +475,8 @@ def main(args: tuple) -> typing.Optional[Path]:
     end_time = time.time()
     print("[+]Finish at", time.strftime("%Y-%m-%d %H:%M:%S"))
     print("[+]Total time: {:.2f}s".format(end_time - start_time))
+
+    os_inhibitor.uninhibit()
 
     rm_empty_folder(conf.source_folder())
 
