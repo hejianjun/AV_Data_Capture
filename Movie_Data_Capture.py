@@ -4,6 +4,7 @@ import random
 import sys
 import time
 import shutil
+import itertools
 import typing
 import signal
 import platform
@@ -416,24 +417,46 @@ def main(args: tuple) -> typing.Optional[Path]:
         if not isinstance(folder_path, str) or folder_path == "":
             folder_path = os.path.abspath(".")
 
-        movie_list = movie_lists(folder_path, regexstr)
-
-        count = 0
-        count_all = str(len(movie_list))
-        print("[+]Find", count_all, "movies.")
-        print("[*]======================================================")
         stop_count = conf.stop_counter()
         if stop_count < 1:
             stop_count = 999999
-        else:
-            count_all = str(min(len(movie_list), stop_count))
+        movie_iter = movie_lists(folder_path, regexstr)
+        peek_limit = 100
+        peeked_movies = list(itertools.islice(movie_iter, peek_limit))
+        movie_iter = itertools.chain(peeked_movies, movie_iter)
 
-        for movie_path in movie_list:  # 遍历电影列表 交给core处理
+        count = 0
+        count_all_int = None
+        if stop_count != 999999:
+            if len(peeked_movies) < stop_count:
+                count_all_int = len(peeked_movies)
+            elif stop_count <= peek_limit:
+                count_all_int = stop_count
+        elif len(peeked_movies) < peek_limit:
+            count_all_int = len(peeked_movies)
+
+        count_all = str(count_all_int) if count_all_int is not None else "99+"
+        print("[+]Find", count_all, "movies.")
+        print("[*]======================================================")
+
+        for movie_path in movie_iter:  # 遍历电影列表 交给core处理
             count = count + 1
-            percentage = str(count / int(count_all) * 100)[:4] + "%"
+            if count_all_int:
+                percentage = str(count / count_all_int * 100)[:4] + "%"
+                progress_str = (
+                    "- "
+                    + percentage
+                    + " ["
+                    + str(count)
+                    + "/"
+                    + count_all
+                    + "] -"
+                )
+            else:
+                progress_str = "- [" + str(count) + "/" + count_all + "] -"
             print(
                 "[!] {:>30}{:>21}".format(
-                    "- " + percentage + " [" + str(count) + "/" + count_all + "] -",
+                    progress_str,
                     time.strftime("%H:%M:%S"),
                 )
             )

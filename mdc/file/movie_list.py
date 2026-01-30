@@ -1,10 +1,11 @@
 import re
+import os
 import typing
 from pathlib import Path
 from mdc.config import config
 
 
-def movie_lists(source_folder: str, regexstr: str) -> typing.List[str]:
+def movie_lists(source_folder: str, regexstr: str) -> typing.Iterator[str]:
     conf = config.getInstance()
     main_mode = conf.main_mode()
     debug = conf.debug()
@@ -37,35 +38,39 @@ def movie_lists(source_folder: str, regexstr: str) -> typing.List[str]:
             pass
     if not Path(source_folder).is_dir():
         print("[-]Source folder not found!")
-        return []
-    total = []
+        return iter(())
     source = Path(source_folder).resolve()
     skip_failed_cnt = 0
     escape_folder_set = set(re.split("[,，]", conf.escape_folder()))
-    for full_name in source.glob(r"**/*"):
-        if main_mode != 3 and set(full_name.parent.parts) & escape_folder_set:
-            continue
-        if not full_name.is_file():
-            continue
-        if full_name.suffix.lower() not in file_type:
-            continue
-        absf = str(full_name)
-        if absf in failed_set:
-            skip_failed_cnt += 1
-            if debug:
-                print(f"[!]Skip failed movie '{absf}'")
-            continue
-        if re.search(trailerRE, absf):
-            if debug:
-                print(f"[!]Skip trailer '{absf}'")
-            continue
-        if cliRE and not re.search(cliRE, absf):
-            continue
-        total.append(absf)
 
-    if skip_failed_cnt:
-        print(
-            f"[!]Skip {skip_failed_cnt} movies in failed list '{failed_list_txt_path}'."
-        )
+    def _iter_movies() -> typing.Iterator[str]:
+        nonlocal skip_failed_cnt
+        for root, dirs, files in os.walk(source):
+            root_path = Path(root)
+            if main_mode != 3 and set(root_path.parts) & escape_folder_set:
+                dirs[:] = []
+                continue
+            for file in files:
+                full_name = root_path / file
+                if full_name.suffix.lower() not in file_type:
+                    continue
+                absf = str(full_name)
+                if absf in failed_set:
+                    skip_failed_cnt += 1
+                    if debug:
+                        print(f"[!]Skip failed movie '{absf}'")
+                    continue
+                if trailerRE.search(absf):
+                    if debug:
+                        print(f"[!]Skip trailer '{absf}'")
+                    continue
+                if cliRE and not cliRE.search(absf):
+                    continue
+                yield absf
 
-    return total
+        if skip_failed_cnt:
+            print(
+                f"[!]Skip {skip_failed_cnt} movies in failed list '{failed_list_txt_path}'."
+            )
+
+    return _iter_movies()
