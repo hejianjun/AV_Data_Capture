@@ -28,6 +28,7 @@ from mdc.file.file_utils import (
     rm_empty_folder,
     mode3_should_execute_by_nfo,
 )
+from mdc.utils.mapping_organizer import run_mode4
 from mdc.utils.system import WindowsInhibitor
 
 
@@ -320,9 +321,9 @@ def main(args: tuple) -> typing.Optional[Path]:
     conf = config.getInstance()
     main_mode = conf.main_mode()
     folder_path = ""
-    if main_mode not in (1, 2, 3):
+    if main_mode not in (1, 2, 3, 4):
         print(
-            f"[-]Main mode must be 1 or 2 or 3! You can run '{os.path.basename(sys.argv[0])} --help' for more help."
+            f"[-]Main mode must be 1 or 2 or 3 or 4! You can run '{os.path.basename(sys.argv[0])} --help' for more help."
         )
         os._exit(4)
 
@@ -367,9 +368,12 @@ def main(args: tuple) -> typing.Optional[Path]:
         "[+]Main Working mode ## {}: {} ## {}{}{}".format(
             *(
                 main_mode,
-                ["Scraping", "Organizing", "Scraping in analysis folder"][
-                    main_mode - 1
-                ],
+                [
+                    "Scraping",
+                    "Organizing",
+                    "Scraping in analysis folder",
+                    "Mapping organize by NFO",
+                ][main_mode - 1],
                 "" if not conf.multi_threading() else ", multi_threading on",
                 ""
                 if conf.nfo_skip_days() == 0
@@ -422,55 +426,59 @@ def main(args: tuple) -> typing.Optional[Path]:
         if not isinstance(folder_path, str) or folder_path == "":
             folder_path = os.path.abspath(".")
 
-        stop_count = conf.stop_counter()
-        if stop_count < 1:
-            stop_count = 999999
-        movie_iter = movie_lists(folder_path, regexstr)
-        peek_limit = 100
-        peeked_movies = list(itertools.islice(movie_iter, peek_limit))
-        movie_iter = itertools.chain(peeked_movies, movie_iter)
+        if main_mode == 4:
+            print("[+]==================== Mode4 Mapping ==================")
+            run_mode4(folder_path, dry_run=zero_op, mapping_mode=1)
+        else:
+            stop_count = conf.stop_counter()
+            if stop_count < 1:
+                stop_count = 999999
+            movie_iter = movie_lists(folder_path, regexstr)
+            peek_limit = 100
+            peeked_movies = list(itertools.islice(movie_iter, peek_limit))
+            movie_iter = itertools.chain(peeked_movies, movie_iter)
 
-        count = 0
-        count_all_int = None
-        if stop_count != 999999:
-            if len(peeked_movies) < stop_count:
+            count = 0
+            count_all_int = None
+            if stop_count != 999999:
+                if len(peeked_movies) < stop_count:
+                    count_all_int = len(peeked_movies)
+                elif stop_count <= peek_limit:
+                    count_all_int = stop_count
+            elif len(peeked_movies) < peek_limit:
                 count_all_int = len(peeked_movies)
-            elif stop_count <= peek_limit:
-                count_all_int = stop_count
-        elif len(peeked_movies) < peek_limit:
-            count_all_int = len(peeked_movies)
 
-        count_all = str(count_all_int) if count_all_int is not None else "99+"
-        print("[+]Find", count_all, "movies.")
-        print("[*]======================================================")
+            count_all = str(count_all_int) if count_all_int is not None else "99+"
+            print("[+]Find", count_all, "movies.")
+            print("[*]======================================================")
 
-        for movie_path in movie_iter:  # 遍历电影列表 交给core处理
-            count = count + 1
-            if count_all_int:
-                percentage = str(count / count_all_int * 100)[:4] + "%"
-                progress_str = (
-                    "- "
-                    + percentage
-                    + " ["
-                    + str(count)
-                    + "/"
-                    + count_all
-                    + "] -"
+            for movie_path in movie_iter:  # 遍历电影列表 交给core处理
+                count = count + 1
+                if count_all_int:
+                    percentage = str(count / count_all_int * 100)[:4] + "%"
+                    progress_str = (
+                        "- "
+                        + percentage
+                        + " ["
+                        + str(count)
+                        + "/"
+                        + count_all
+                        + "] -"
+                    )
+                else:
+                    progress_str = "- [" + str(count) + "/" + count_all + "] -"
+                print(
+                    "[!] {:>30}{:>21}".format(
+                        progress_str,
+                        time.strftime("%H:%M:%S"),
+                    )
                 )
-            else:
-                progress_str = "- [" + str(count) + "/" + count_all + "] -"
-            print(
-                "[!] {:>30}{:>21}".format(
-                    progress_str,
-                    time.strftime("%H:%M:%S"),
-                )
-            )
-            create_data_and_move(movie_path, zero_op, no_net_op, oCC)
-            if count >= stop_count:
-                print("[!]Stop counter triggered!")
-                break
-            sleep_seconds = random.randint(conf.sleep(), conf.sleep() + 2)
-            time.sleep(sleep_seconds)
+                create_data_and_move(movie_path, zero_op, no_net_op, oCC)
+                if count >= stop_count:
+                    print("[!]Stop counter triggered!")
+                    break
+                sleep_seconds = random.randint(conf.sleep(), conf.sleep() + 2)
+                time.sleep(sleep_seconds)
 
     end_time = time.time()
     print("[+]Finish at", time.strftime("%Y-%m-%d %H:%M:%S"))

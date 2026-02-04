@@ -19,7 +19,7 @@ def argparse_function(
         "--main-mode",
         default="",
         nargs="?",
-        help="Main mode. 1:Scraping 2:Organizing 3:Scraping in analysis folder",
+        help="Main mode. 1:Scraping 2:Organizing 3:Scraping in analysis folder 4:Mapping organize by NFO",
     )
     parser.add_argument(
         "-n",

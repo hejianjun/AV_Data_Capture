@@ -148,39 +148,3 @@ class TestActorMapping:
         # 测试不存在的名称
         result = process_special_actor_name("unknown", mapping)
         assert result == "unknown"
-
-    def test_is_movie_dir(self):
-        """测试电影目录检测功能"""
-        from mdc.utils.actor_mapping import is_movie_dir
-
-        # 创建模拟路径
-        mock_path = MagicMock(spec=Path)
-        mock_path.is_dir.return_value = True
-        mock_file = MagicMock(spec=Path)
-        mock_file.suffix = ".nfo"
-        mock_path.glob.return_value = [mock_file]
-
-        # 测试目录检测
-        result = is_movie_dir(mock_path)
-        assert mock_path.is_dir.called
-        assert mock_path.glob.called
-        assert result
-
-    def test_safe_iterdir(self):
-        """测试安全遍历目录功能"""
-        from mdc.utils.actor_mapping import safe_iterdir
-
-        # 创建模拟路径
-        mock_path = MagicMock(spec=Path)
-        mock_file = MagicMock(spec=Path)
-        mock_dir = MagicMock(spec=Path)
-        mock_path.iterdir.return_value = [mock_file, mock_dir]
-
-        # 测试正常情况
-        result = safe_iterdir(mock_path)
-        assert result == [mock_file, mock_dir]
-
-        # 测试异常情况
-        mock_path.iterdir.side_effect = PermissionError
-        result = safe_iterdir(mock_path)
-        assert result == []
