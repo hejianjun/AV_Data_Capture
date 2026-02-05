@@ -18,6 +18,7 @@ class TestMovieList(unittest.TestCase):
         #   movie1.mp4
         #   movie2.avi
         #   ignored.txt
+        #   movie-trailer.mp4
         #   subdir/
         #     movie3.mkv
         #   escaped/
@@ -26,6 +27,7 @@ class TestMovieList(unittest.TestCase):
         (self.source / "movie1.mp4").touch()
         (self.source / "movie2.avi").touch()
         (self.source / "ignored.txt").touch()
+        (self.source / "movie-trailer.mp4").touch()
         
         (self.source / "subdir").mkdir()
         (self.source / "subdir" / "movie3.mkv").touch()
@@ -40,7 +42,7 @@ class TestMovieList(unittest.TestCase):
         self.config_mock.link_mode.return_value = False
         self.config_mock.media_type.return_value = ".mp4,.avi,.mkv"
         self.config_mock.failed_folder.return_value = self.test_dir
-        self.config_mock.ignore_failed_list.return_value = True
+        self.config_mock.ignore_failed_list.return_value = True # Default to ignore failed list check
         self.config_mock.escape_folder.return_value = "escaped,hidden"
         
         # Patch config.getInstance
@@ -52,18 +54,36 @@ class TestMovieList(unittest.TestCase):
         shutil.rmtree(self.test_dir)
 
     def test_movie_lists_basic(self):
-        files = movie_lists(str(self.source), "")
-        # Should contain movie1, movie2, movie3. Should NOT contain movie4 (escaped) or ignored.txt (wrong ext)
-        
+        files = list(movie_lists(str(self.source), ""))
         filenames = [Path(f).name for f in files]
+        
         self.assertIn("movie1.mp4", filenames)
         self.assertIn("movie2.avi", filenames)
         self.assertIn("movie3.mkv", filenames)
         self.assertNotIn("ignored.txt", filenames)
-        self.assertNotIn("movie4.mp4", filenames)
-        
+        self.assertNotIn("movie4.mp4", filenames) # Escaped
+        self.assertNotIn("movie-trailer.mp4", filenames) # Trailer skipped
+
     def test_movie_lists_regex(self):
-        files = movie_lists(str(self.source), "movie1")
+        files = list(movie_lists(str(self.source), "movie1"))
         filenames = [Path(f).name for f in files]
         self.assertIn("movie1.mp4", filenames)
         self.assertNotIn("movie2.avi", filenames)
+
+    def test_movie_lists_failed_list(self):
+        # Enable failed list check
+        self.config_mock.ignore_failed_list.return_value = False
+        self.config_mock.main_mode.return_value = 3 # Only checks failed list in mode 3 or link_mode
+        
+        failed_file = self.source / "failed_list.txt"
+        failed_path = str((self.source / "movie1.mp4").resolve())
+        failed_file.write_text(failed_path, encoding="utf-8")
+        
+        files = list(movie_lists(str(self.source), ""))
+        filenames = [Path(f).name for f in files]
+        
+        self.assertNotIn("movie1.mp4", filenames)
+        self.assertIn("movie2.avi", filenames)
+
+if __name__ == '__main__':
+    unittest.main()
