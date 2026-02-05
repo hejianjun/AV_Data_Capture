@@ -4,49 +4,19 @@ import typing
 from pathlib import Path
 
 from mdc.utils.actor_mapping import get_actor_mapping, get_info_mapping, normalize_nfo_xml
+from mdc.file.file_utils import (
+    iter_movie_dirs_with_nfo,
+    pick_main_nfo,
+    is_windows_path_too_long,
+)
+from mdc.file.common_utils import windows_long_path
 
 
-def _maybe_windows_long_path(path: Path) -> Path:
-    if os.name != "nt":
-        return path
-    try:
-        p = str(path)
-        if p.startswith("\\\\?\\"):
-            return path
-        lp = "\\\\?\\" + p
-        return Path(lp) if Path(lp).exists() else path
-    except Exception:
-        return path
-
-
-def _iter_movie_dirs(root: Path) -> typing.Iterator[Path]:
-    root_str = str(root)
-    for dirpath, dirnames, filenames in os.walk(root_str, topdown=True):
-        dirnames[:] = [d for d in dirnames if d not in ("translated", ".git", "__pycache__")]
-        if os.path.basename(dirpath) == "failed":
-            dirnames[:] = []
-            continue
-
-        has_nfo = any(name.lower().endswith(".nfo") for name in filenames)
-        has_child_dir = any(d != "translated" for d in dirnames)
-        if has_nfo and not has_child_dir:
-            yield Path(dirpath)
-            dirnames[:] = []
-
-
-def _pick_main_nfo(movie_dir: Path) -> typing.Optional[Path]:
-    try:
-        for entry in os.scandir(str(movie_dir)):
-            if entry.is_file() and entry.name.lower().endswith(".nfo"):
-                return movie_dir / entry.name
-    except Exception:
-        return None
-    return None
 
 
 def process_movie_dir(movie_dir: Path, dry_run: bool = False, mapping_mode: int = 1) -> dict:
-    movie_dir = _maybe_windows_long_path(movie_dir)
-    main_nfo = _pick_main_nfo(movie_dir)
+    movie_dir = windows_long_path(movie_dir)
+    main_nfo = pick_main_nfo(movie_dir)
     if main_nfo is None:
         return {"movie_dir": str(movie_dir), "skipped": True, "reason": "no_nfo"}
 
@@ -98,7 +68,7 @@ def process_movie_dir(movie_dir: Path, dry_run: bool = False, mapping_mode: int 
         if new_actor_dir != original_actor_dir:
             base_path = movie_dir.parent.parent
             dest_dir = base_path / new_actor_dir / movie_dir.name
-            if os.name == "nt" and len(str(dest_dir)) >= 250:
+            if is_windows_path_too_long(dest_dir, limit=250):
                 return {
                     "movie_dir": str(movie_dir),
                     "modified_nfo": modified,
@@ -135,14 +105,14 @@ def run_mode4(base_path: str, dry_run: bool = False, mapping_mode: int = 1) -> d
     if not root.exists():
         raise FileNotFoundError(f"根目录不存在: {base_path}")
 
-    root = _maybe_windows_long_path(root)
+    root = windows_long_path(root)
 
     processed = 0
     skipped = 0
     modified = 0
     moved = 0
     conflicts = 0
-    for movie_dir in _iter_movie_dirs(root):
+    for movie_dir in iter_movie_dirs_with_nfo(root):
         processed += 1
         result = process_movie_dir(movie_dir, dry_run=dry_run, mapping_mode=mapping_mode)
         if result.get("skipped"):
@@ -174,4 +144,3 @@ def run_mode4(base_path: str, dry_run: bool = False, mapping_mode: int = 1) -> d
         f"[*]Mode4 summary: processed={processed} skipped={skipped} conflicts={conflicts} modified_nfo={modified} moved={moved}"
     )
     return summary
-

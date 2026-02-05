@@ -4,9 +4,11 @@ import time
 from pathlib import Path
 from xml.etree import ElementTree as ET
 from mdc.config import config
+from typing import Iterator, Optional
 
 from datetime import datetime
 from mdc.utils.translation import is_japanese
+from mdc.file.common_utils import windows_long_path
 
 
 def escape_path(path, escape_literals: str):  # Remove escape literals
@@ -214,3 +216,35 @@ def mode3_should_execute_by_nfo(nfo_path: str) -> bool:
     if not isinstance(year, str) or not year.strip():
         return True
     return False
+
+
+def is_windows_path_too_long(path: Path, limit: int = 250) -> bool:
+    if os.name != "nt":
+        return False
+    try:
+        return len(str(path)) >= limit
+    except Exception:
+        return False
+
+
+def iter_movie_dirs_with_nfo(root: Path) -> Iterator[Path]:
+    root = windows_long_path(root)
+    root_str = str(root)
+    for dirpath, dirnames, filenames in os.walk(root_str, topdown=True):
+        dirnames[:] = [d for d in dirnames if d not in ("translated", ".git", "__pycache__", "failed")]
+        has_nfo = any(name.lower().endswith(".nfo") for name in filenames)
+        has_child_dir = any(d != "translated" for d in dirnames)
+        if has_nfo and not has_child_dir:
+            yield Path(dirpath)
+            dirnames[:] = []
+
+
+def pick_main_nfo(movie_dir: Path) -> Optional[Path]:
+    movie_dir = windows_long_path(movie_dir)
+    try:
+        for entry in os.scandir(str(movie_dir)):
+            if entry.is_file() and entry.name.lower().endswith(".nfo"):
+                return movie_dir / entry.name
+    except Exception:
+        return None
+    return None

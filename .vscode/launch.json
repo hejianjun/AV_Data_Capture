@@ -62,6 +62,20 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Python: 移动",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "E:\\Workspace\\AV_Data_Capture\\Movie_Data_Capture.py",
+            "args": [
+                "-p",
+                "Z:\\日本/JAV_output/日向森子/blk-567",
+                "-m",
+                "4"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }
