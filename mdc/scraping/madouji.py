@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
+
 from lxml import etree
-from .parser import Parser
+
 from .madou import change_number
+from .parser import Parser
 
 
 class Madouji(Parser):
@@ -21,13 +23,7 @@ class Madouji(Parser):
         for info in self.infos:
             num = re.search("番号：(.+)", info.text)
             if num:
-                return (
-                    num.group(1)
-                    .replace("兔子先生", "")
-                    .replace("皇家华人", "")
-                    .replace("绝对领域", "")
-                    .strip()
-                )
+                return num.group(1).replace("兔子先生", "").replace("皇家华人", "").replace("绝对领域", "").strip()
         return ""
 
     def getActors(self, htmltree) -> list:

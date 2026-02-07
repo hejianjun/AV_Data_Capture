@@ -1,7 +1,8 @@
-import re
 import os
+import re
 import typing
 from pathlib import Path
+
 from mdc.config import config
 
 
@@ -24,15 +25,13 @@ def movie_lists(source_folder: str, regexstr: str) -> typing.Iterator[str]:
         try:
             flist = failed_list_txt_path.read_text(encoding="utf-8").splitlines()
             failed_set = set(flist)
-            if (
-                len(flist) != len(failed_set)
+            if len(flist) != len(
+                failed_set
             ):  # 检查去重并写回，但是不改变failed_list.txt内条目的先后次序，重复的只保留最后的
                 fset = failed_set.copy()
                 for i in range(len(flist) - 1, -1, -1):
                     fset.remove(flist[i]) if flist[i] in fset else flist.pop(i)
-                failed_list_txt_path.write_text(
-                    "\n".join(flist) + "\n", encoding="utf-8"
-                )
+                failed_list_txt_path.write_text("\n".join(flist) + "\n", encoding="utf-8")
                 assert len(fset) == 0 and len(flist) == len(failed_set)
         except OSError:
             pass
@@ -69,8 +68,6 @@ def movie_lists(source_folder: str, regexstr: str) -> typing.Iterator[str]:
                 yield absf
 
         if skip_failed_cnt:
-            print(
-                f"[!]Skip {skip_failed_cnt} movies in failed list '{failed_list_txt_path}'."
-            )
+            print(f"[!]Skip {skip_failed_cnt} movies in failed list '{failed_list_txt_path}'.")
 
     return _iter_movies()

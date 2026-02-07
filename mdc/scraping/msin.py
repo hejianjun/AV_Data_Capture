@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from lxml import etree
+
 from mdc.utils.http.request import request_session
+
 from .parser import Parser
 
 
@@ -13,7 +15,9 @@ class Msin(Parser):
     expr_title_unsubscribe = '//div[@class="mv_title unsubscribe"]/text()'
     expr_studio = '//a[@class="mv_writer"]/text()'
     expr_director = '//a[@class="mv_writer"]/text()'
-    expr_actor = '//div[contains(text(),"出演者：")]/following-sibling::div[1]/div/div[@class="performer_text"]/a/text()'
+    expr_actor = (
+        '//div[contains(text(),"出演者：")]/following-sibling::div[1]/div/div[@class="performer_text"]/a/text()'
+    )
     expr_label = '//a[@class="mv_mfr"]/text()'
     expr_series = '//a[@class="mv_mfr"]/text()'
     expr_release = '//a[@class="mv_createDate"]/text()'
@@ -32,9 +36,7 @@ class Msin(Parser):
         self.number = number.lower().replace("fc2-ppv-", "").replace("fc2-", "")
         self.cookies = {"age": "off"}
         self.detailurl = "https://db.msin.jp/search/movie?str=fc2-ppv-" + self.number
-        session = request_session(
-            cookies=self.cookies, proxies=self.proxies, verify=self.verify
-        )
+        session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
         htmlcode = session.get(self.detailurl).text
         htmltree = etree.HTML(htmlcode)
         # if title are null, use unsubscribe title
@@ -60,19 +62,10 @@ class Msin(Parser):
         return super().getTags(htmltree)
 
     def getRelease(self, htmltree):
-        return (
-            super()
-            .getRelease(htmltree)
-            .replace("年", "-")
-            .replace("月", "-")
-            .replace("日", "")
-        )
+        return super().getRelease(htmltree).replace("年", "-").replace("月", "-").replace("日", "")
 
     def getCover(self, htmltree):
-        if (
-            ".gif" in super().getCover(htmltree)
-            and len(super().getExtrafanart(htmltree)) != 0
-        ):
+        if ".gif" in super().getCover(htmltree) and len(super().getExtrafanart(htmltree)) != 0:
             return super().getExtrafanart(htmltree)[0]
         return super().getCover(htmltree)
 

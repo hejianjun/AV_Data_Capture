@@ -3,13 +3,14 @@
 import re
 from ssl import SSLError
 from urllib.parse import urljoin
+
 from lxml import etree
 
-from .custom_exceptions import QueryError
 from mdc.utils.http.request import request_session
-from .parser import Parser
-
 from mdc.utils.http.ssl_warnings import disable_insecure_request_warning
+
+from .custom_exceptions import QueryError
+from .parser import Parser
 
 
 class Javdb(Parser):
@@ -23,13 +24,9 @@ class Javdb(Parser):
     expr_runtime2 = '//strong[contains(text(),"時長")]/../span/a/text()'
     expr_uncensored = '//strong[contains(text(),"類別")]/../span/a[contains(@href,"/tags/uncensored?") or contains(@href,"/tags/western?")]'
     expr_actor = '//span[@class="value"]/a[contains(@href,"/actors/")]/text()'
-    expr_actor2 = (
-        '//span[@class="value"]/a[contains(@href,"/actors/")]/../strong/@class'
-    )
+    expr_actor2 = '//span[@class="value"]/a[contains(@href,"/actors/")]/../strong/@class'
     expr_release = '//strong[contains(text(),"日期")]/../span/text()'
-    expr_release_no = (
-        '//*[contains(@class,"movie-list")]/div/a/div[contains(@class, "meta")]/text()'
-    )
+    expr_release_no = '//*[contains(@class,"movie-list")]/div/a/div[contains(@class, "meta")]/text()'
     expr_studio = '//strong[contains(text(),"片商")]/../span/a/text()'
     expr_studio2 = '//strong[contains(text(),"賣家:")]/../span/a/text()'
     expr_director = '//strong[contains(text(),"導演")]/../span/text()'
@@ -47,9 +44,7 @@ class Javdb(Parser):
     expr_label2 = '//strong[contains(text(),"系列")]/../span/a/text()'
     expr_userrating = '//span[@class="score-stars"]/../text()'
     expr_uservotes = '//span[@class="score-stars"]/../text()'
-    expr_actorphoto = (
-        '//strong[contains(text(),"演員:")]/../span/a[starts-with(@href,"/actors/")]'
-    )
+    expr_actorphoto = '//strong[contains(text(),"演員:")]/../span/a[starts-with(@href,"/actors/")]'
 
     def extraInit(self):
         self.fixstudio = False
@@ -70,9 +65,7 @@ class Javdb(Parser):
         else:
             self.dbsite = "javdb"
         if core.dbcookies:
-            self.cookies = core.dbcookies.get(
-                self.source, {"over18": "1", "theme": "auto", "locale": "zh"}
-            )
+            self.cookies = core.dbcookies.get(self.source, {"over18": "1", "theme": "auto", "locale": "zh"})
         else:
             self.cookies = {"over18": "1", "theme": "auto", "locale": "zh"}
 
@@ -84,9 +77,7 @@ class Javdb(Parser):
             print(number)
             self.allow_number_change = True
             self.uncensored = True
-        self.session = request_session(
-            cookies=self.cookies, proxies=self.proxies, verify=self.verify
-        )
+        self.session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
@@ -127,9 +118,7 @@ class Javdb(Parser):
         print(f"搜索的URL: {javdb_url}")
         print(f"搜索的番号: {number}")
         self.querytree = etree.fromstring(resp.text, etree.HTMLParser())
-        urls = self.getTreeAll(
-            self.querytree, '//*[contains(@class,"movie-list")]/div/a/@href'
-        )
+        urls = self.getTreeAll(self.querytree, '//*[contains(@class,"movie-list")]/div/a/@href')
         ids = self.getTreeAll(self.querytree, self.expr_title_no)
         print(f"提取的ID列表: {ids}")
         print(f"提取的URL列表: {urls}")
@@ -146,9 +135,7 @@ class Javdb(Parser):
                     correct_url = urls[idx]
                     break
             else:
-                raise QueryError(
-                    number, f"精确匹配失败{resp.text}，但可能找到近似结果：{ids[0]}"
-                )
+                raise QueryError(number, f"精确匹配失败{resp.text}，但可能找到近似结果：{ids[0]}")
         return urljoin(resp.url, correct_url)
 
     def getNum(self, htmltree):
@@ -168,14 +155,11 @@ class Javdb(Parser):
         stripped_original = original_upper.lstrip("0123456789")
         # 检查是否完全匹配或存在数字前缀且剩余部分匹配
         if original_upper == dp_upper or (
-            stripped_original == dp_upper
-            and len(stripped_original) < len(original_upper)
+            stripped_original == dp_upper and len(stripped_original) < len(original_upper)
         ):
             self.number = dp_number
         else:
-            raise Exception(
-                f"[!] {self.number}: find [{dp_number}] in javdb, not match"
-            )
+            raise Exception(f"[!] {self.number}: find [{dp_number}] in javdb, not match")
         return self.number
 
     def getTitle(self, htmltree):
@@ -192,15 +176,11 @@ class Javdb(Parser):
 
     def getRelease(self, htmltree):
         if self.noauth:
-            return self.getTreeElement(
-                htmltree, self.expr_release_no, self.queryid
-            ).strip()
+            return self.getTreeElement(htmltree, self.expr_release_no, self.queryid).strip()
         return super().getRelease(htmltree)
 
     def getDirector(self, htmltree):
-        return self.getTreeElementbyExprs(
-            htmltree, self.expr_director, self.expr_director2
-        )
+        return self.getTreeElementbyExprs(htmltree, self.expr_director, self.expr_director2)
 
     def getSeries(self, htmltree):
         # NOTE 不清楚javdb是否有一部影片多个series的情况，暂时保留
@@ -227,10 +207,7 @@ class Javdb(Parser):
         for act in actors:
             if (
                 (actor_gendor == "all")
-                or (
-                    actor_gendor == "both"
-                    and genders[idx] in ["symbol female", "symbol male"]
-                )
+                or (actor_gendor == "both" and genders[idx] in ["symbol female", "symbol male"])
                 or (actor_gendor == "female" and genders[idx] == "symbol female")
                 or (actor_gendor == "male" and genders[idx] == "symbol male")
             ):
@@ -307,9 +284,7 @@ class Javdb(Parser):
             # pic_url = f"https://c1.jdbstatic.com/avatars/{actor_id[:2].lower()}/{actor_id}.jpg"
             # if not self.session.head(pic_url).ok:
             try:
-                pic_url = self.getaphoto(
-                    urljoin("https://javdb.com", i.attrib["href"]), self.session
-                )
+                pic_url = self.getaphoto(urljoin("https://javdb.com", i.attrib["href"]), self.session)
                 if len(pic_url):
                     actor_photo[i.text] = pic_url
             except Exception:

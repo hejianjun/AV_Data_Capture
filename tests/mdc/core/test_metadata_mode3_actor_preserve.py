@@ -81,9 +81,7 @@ def _json_data(number: str) -> dict:
     }
 
 
-def test_mode3_anonymous_actor_does_not_override_existing_real_actor(
-    tmp_path: Path, _mode3_config
-):
+def test_mode3_anonymous_actor_does_not_override_existing_real_actor(tmp_path: Path, _mode3_config):
     movie = tmp_path / "ABC-123.mp4"
     nfo = movie.with_suffix(".nfo")
     _write_nfo_with_actors(nfo, ["Alice"])
@@ -115,9 +113,7 @@ def test_mode3_anonymous_actor_does_not_override_existing_real_actor(
     assert "<name>佚名</name>" not in out
 
 
-def test_mode3_anonymous_actor_written_when_old_nfo_has_no_actor(
-    tmp_path: Path, _mode3_config
-):
+def test_mode3_anonymous_actor_written_when_old_nfo_has_no_actor(tmp_path: Path, _mode3_config):
     movie = tmp_path / "ABC-124.mp4"
     nfo = movie.with_suffix(".nfo")
     _write_nfo_with_actors(nfo, None)

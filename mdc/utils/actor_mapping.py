@@ -1,8 +1,8 @@
-from pathlib import Path
-from lxml import etree
 import re
 import typing
+from pathlib import Path
 
+from lxml import etree
 
 # 全局映射缓存（按 mode 缓存）
 _actor_mapping_by_mode: dict[int, dict] = {}
@@ -67,9 +67,7 @@ def get_info_mapping(mode):
     return cached
 
 
-def process_text_mappings(
-    json_data: typing.Union[str, list, dict], mapping: dict
-) -> typing.Union[str, list, dict]:
+def process_text_mappings(json_data: typing.Union[str, list, dict], mapping: dict) -> typing.Union[str, list, dict]:
     """处理文本映射"""
     if isinstance(json_data, list):
         newlists = []
@@ -99,9 +97,7 @@ def process_text_mapping(text: str, mapping: dict) -> tuple:
 
 def process_special_actor_name(original: str, actor_mapping: dict) -> str:
     """处理带括号的特殊演员名称"""
-    if ("（" not in original or "）" not in original) and (
-        "(" not in original or ")" not in original
-    ):
+    if ("（" not in original or "）" not in original) and ("(" not in original or ")" not in original):
         return actor_mapping.get(original.lower(), original)
 
     # 处理全角括号
@@ -125,9 +121,7 @@ def process_special_actor_name(original: str, actor_mapping: dict) -> str:
     return f"{norm_outer}({norm_inner})" if norm_inner != norm_outer else norm_outer
 
 
-def normalize_nfo_xml(
-    xml_content: str, actor_mapping: dict, info_mapping: dict
-) -> tuple[str, list[str], bool, bool]:
+def normalize_nfo_xml(xml_content: str, actor_mapping: dict, info_mapping: dict) -> tuple[str, list[str], bool, bool]:
     modified = False
     new_actors: list[str] = []
 
@@ -164,9 +158,7 @@ def normalize_nfo_xml(
             modified = True
 
     if modified:
-        new_content = etree.tostring(
-            root, encoding="utf-8", pretty_print=True, xml_declaration=True
-        ).decode("utf-8")
+        new_content = etree.tostring(root, encoding="utf-8", pretty_print=True, xml_declaration=True).decode("utf-8")
         return new_content, new_actors, True, False
 
     return xml_content, new_actors, False, False

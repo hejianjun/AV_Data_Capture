@@ -1,10 +1,12 @@
+import importlib
 import logging
 import os
-from mdc.config import config
-import importlib
-from pathlib import Path
-from PIL import Image
 import shutil
+from pathlib import Path
+
+from PIL import Image
+
+from mdc.config import config
 from mdc.file.common_utils import file_not_exist_or_empty
 
 
@@ -64,9 +66,7 @@ def cutImage(imagecut, path, thumb_path, poster_path, skip_facerec=False):
     aspect_ratio = conf.face_aspect_ratio()
     if conf.face_aways_imagecut():
         imagecut = 1
-    elif conf.download_only_missing_images() and not file_not_exist_or_empty(
-        fullpath_poster
-    ):
+    elif conf.download_only_missing_images() and not file_not_exist_or_empty(fullpath_poster):
         return
     # imagecut为4时同时也是有码影片 也用人脸识别裁剪封面
     if imagecut == 1 or imagecut == 4:  # 剪裁大封面
@@ -79,9 +79,7 @@ def cutImage(imagecut, path, thumb_path, poster_path, skip_facerec=False):
                     img2 = img.crop(face_crop_width(fullpath_fanart, width, height))
                 elif skip_facerec:
                     # 有码封面默认靠右切
-                    img2 = img.crop(
-                        (width - int(height / 3) * aspect_ratio, 0, width, height)
-                    )
+                    img2 = img.crop((width - int(height / 3) * aspect_ratio, 0, width, height))
                 else:
                     # 以人像为中心切取
                     img2 = img.crop(face_crop_width(fullpath_fanart, width, height))

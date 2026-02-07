@@ -1,30 +1,27 @@
 # build-in lib
 import os
 import re
-import time
 import shutil
+import time
 import typing
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 # third party lib
 import requests
-from concurrent.futures import ThreadPoolExecutor
 
 # project wide
 from mdc.config import config
-from mdc.utils.http.request import get_html
 from mdc.file.common_utils import file_not_exist_or_empty
 from mdc.file.file_utils import moveFailedFolder
-
+from mdc.utils.http.request import get_html
 
 # ------------------------------
 # Common download functions
 # ------------------------------
 
 
-def download_file_with_filename(
-    url: str, filename: str, path: str, filepath=None, json_headers=None
-) -> None:
+def download_file_with_filename(url: str, filename: str, path: str, filepath=None, json_headers=None) -> None:
     """
     download file save to give path with given name from given url
     """
@@ -48,24 +45,16 @@ def download_file_with_filename(
             return
         except requests.exceptions.ProxyError:
             i += 1
-            print(
-                "[-]Download :  Proxy error " + str(i) + "/" + str(config_proxy.retry)
-            )
+            print("[-]Download :  Proxy error " + str(i) + "/" + str(config_proxy.retry))
         except requests.exceptions.ConnectTimeout:
             i += 1
-            print(
-                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
-            )
+            print("[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry))
         except requests.exceptions.ConnectionError:
             i += 1
-            print(
-                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
-            )
+            print("[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry))
         except requests.exceptions.RequestException:
             i += 1
-            print(
-                "[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry)
-            )
+            print("[-]Download :  Connect retry " + str(i) + "/" + str(config_proxy.retry))
         except Exception as e:
             print("[-]Image Download :Error", e)
     print("[-]Connect Failed! Please check your Proxy or Network!")
@@ -82,9 +71,7 @@ def download_one_file(args) -> str:
 
     (url, save_path, json_headers) = args
     if json_headers is not None:
-        filebytes = get_html(
-            url, return_type="content", json_headers=json_headers["headers"]
-        )
+        filebytes = get_html(url, return_type="content", json_headers=json_headers["headers"])
     else:
         filebytes = get_html(url, return_type="content")
     if isinstance(filebytes, bytes) and len(filebytes):
@@ -93,9 +80,7 @@ def download_one_file(args) -> str:
                 return str(save_path)
 
 
-def parallel_download_files(
-    dn_list: typing.Iterable[typing.Sequence], parallel: int = 0, json_headers=None
-):
+def parallel_download_files(dn_list: typing.Iterable[typing.Sequence], parallel: int = 0, json_headers=None):
     """
     download files in parallel 多线程下载文件
 
@@ -148,9 +133,7 @@ def trailer_download(trailer, leak_word, c_word, hack_word, number, path, filepa
         return
     configProxy = config.getInstance().proxy()
     for i in range(configProxy.retry):
-        if file_not_exist_or_empty(
-            path + "/" + number + leak_word + c_word + hack_word + "-trailer.mp4"
-        ):
+        if file_not_exist_or_empty(path + "/" + number + leak_word + c_word + hack_word + "-trailer.mp4"):
             print("[!]Video Download Failed! Trying again. [{}/3]", i + 1)
             download_file_with_filename(
                 trailer,
@@ -161,9 +144,7 @@ def trailer_download(trailer, leak_word, c_word, hack_word, number, path, filepa
             continue
         else:
             break
-    if file_not_exist_or_empty(
-        path + "/" + number + leak_word + c_word + hack_word + "-trailer.mp4"
-    ):
+    if file_not_exist_or_empty(path + "/" + number + leak_word + c_word + hack_word + "-trailer.mp4"):
         return
     print(
         "[+]Video Downloaded!",
@@ -194,17 +175,13 @@ def actor_photo_download(actors, save_dir, number):
         return
     parallel = min(len(dn_list), conf.extrafanart_thread_pool_download())
     if parallel > 100:
-        print(
-            "[!]Warrning: Parallel download thread too large may cause website ban IP!"
-        )
+        print("[!]Warrning: Parallel download thread too large may cause website ban IP!")
     result = parallel_download_files(dn_list, parallel)
     failed = 0
     for i, r in enumerate(result):
         if not r:
             failed += 1
-            print(
-                f"[-]Actor photo '{dn_list[i][0]}' to '{dn_list[i][1]}' download failed!"
-            )
+            print(f"[-]Actor photo '{dn_list[i][0]}' to '{dn_list[i][1]}' download failed!")
     if failed:  # 非致命错误，电影不移入失败文件夹，将来可以用模式3补齐
         print(
             f"[-]Failed downloaded {failed}/{len(result)} actor photo for [{number}] to '{actors_dir}', you may retry run mode 3 later."
@@ -231,18 +208,13 @@ def extrafanart_download_one_by_one(data, path, filepath, json_data=None):
         jpg_fullpath = os.path.join(path, jpg_filename)
         if download_only_missing_images and not file_not_exist_or_empty(jpg_fullpath):
             continue
-        if (
-            download_file_with_filename(url, jpg_filename, path, filepath, json_data)
-            == "failed"
-        ):
+        if download_file_with_filename(url, jpg_filename, path, filepath, json_data) == "failed":
             moveFailedFolder(filepath)
             return
         for i in range(configProxy.retry):
             if file_not_exist_or_empty(jpg_fullpath):
                 print(f"[!]Image Download Failed! Trying again. [{i + 1}/3]")
-                download_file_with_filename(
-                    url, jpg_filename, path, filepath, json_data
-                )
+                download_file_with_filename(url, jpg_filename, path, filepath, json_data)
                 continue
             else:
                 break
@@ -251,9 +223,7 @@ def extrafanart_download_one_by_one(data, path, filepath, json_data=None):
         print("[+]Image Downloaded!", Path(jpg_fullpath).name)
         j += 1
     if conf.debug():
-        print(
-            f"[!]Extrafanart download one by one mode runtime {time.perf_counter() - tm_start:.3f}s"
-        )
+        print(f"[!]Extrafanart download one by one mode runtime {time.perf_counter() - tm_start:.3f}s")
 
 
 def extrafanart_download_threadpool(url_list, save_dir, number, json_data=None):
@@ -271,9 +241,7 @@ def extrafanart_download_threadpool(url_list, save_dir, number, json_data=None):
         return
     parallel = min(len(dn_list), conf.extrafanart_thread_pool_download())
     if parallel > 100:
-        print(
-            "[!]Warrning: Parallel download thread too large may cause website ban IP!"
-        )
+        print("[!]Warrning: Parallel download thread too large may cause website ban IP!")
     result = parallel_download_files(dn_list, parallel, json_data)
     failed = 0
     for i, r in enumerate(result, start=1):
@@ -287,9 +255,7 @@ def extrafanart_download_threadpool(url_list, save_dir, number, json_data=None):
     else:
         print(f"[+]Successfully downloaded {len(result)} extrafanarts.")
     if conf.debug():
-        print(
-            f"[!]Extrafanart download ThreadPool mode runtime {time.perf_counter() - tm_start:.3f}s"
-        )
+        print(f"[!]Extrafanart download ThreadPool mode runtime {time.perf_counter() - tm_start:.3f}s")
 
 
 def image_ext(url):
@@ -304,18 +270,10 @@ def image_ext(url):
 
 def image_download(cover, fanart_path, thumb_path, path, filepath, json_headers=None):
     full_filepath = os.path.join(path, thumb_path)
-    if (
-        config.getInstance().download_only_missing_images()
-        and not file_not_exist_or_empty(full_filepath)
-    ):
+    if config.getInstance().download_only_missing_images() and not file_not_exist_or_empty(full_filepath):
         return
     if json_headers is not None:
-        if (
-            download_file_with_filename(
-                cover, thumb_path, path, filepath, json_headers["headers"]
-            )
-            == "failed"
-        ):
+        if download_file_with_filename(cover, thumb_path, path, filepath, json_headers["headers"]) == "failed":
             moveFailedFolder(filepath)
             return
     else:
@@ -328,9 +286,7 @@ def image_download(cover, fanart_path, thumb_path, path, filepath, json_headers=
         if file_not_exist_or_empty(full_filepath):
             print(f"[!]Image Download Failed! Trying again. [{i + 1}/3]")
             if json_headers is not None:
-                download_file_with_filename(
-                    cover, thumb_path, path, filepath, json_headers["headers"]
-                )
+                download_file_with_filename(cover, thumb_path, path, filepath, json_headers["headers"])
             else:
                 download_file_with_filename(cover, thumb_path, path, filepath)
             continue

@@ -1,11 +1,10 @@
+import configparser
 import os
 import re
 import sys
-import configparser
 import time
 import typing
 from pathlib import Path
-
 
 G_conf_override = {
     # index 0 save Config() first instance for quick access by using getInstance()
@@ -64,10 +63,7 @@ class Config:
             # 执行路径下都可以放心使用。
             res_path = None
             # pyinstaller打包的在打包中找config.ini
-            if (
-                hasattr(sys, "_MEIPASS")
-                and (Path(getattr(sys, "_MEIPASS")) / "config.ini").is_file()
-            ):
+            if hasattr(sys, "_MEIPASS") and (Path(getattr(sys, "_MEIPASS")) / "config.ini").is_file():
                 res_path = Path(getattr(sys, "_MEIPASS")) / "config.ini"
             # 脚本运行的所在位置找
             elif (Path(__file__).resolve().parent / "config.ini").is_file():
@@ -80,9 +76,7 @@ class Config:
             # 用户目录才确定具有写权限，因此选择 ~/mdc.ini 作为配置文件生成路径，而不是有可能并没有写权限的
             # 当前目录。目前版本也不再鼓励使用当前路径放置配置文件了，只是作为多配置文件的切换技巧保留。
             write_path = path_search_order[2]  # Path.home() / "mdc.ini"
-            write_path.write_text(
-                res_path.read_text(encoding="utf-8"), encoding="utf-8"
-            )
+            write_path.write_text(res_path.read_text(encoding="utf-8"), encoding="utf-8")
             print("Config file '{}' created.".format(write_path.resolve()))
             input("Press Enter key exit...")
             os._exit(0)
@@ -129,9 +123,7 @@ class Config:
                 sec_lo = sec.lower().strip()
                 key_lo = key.lower().strip()
                 syntax_err = False
-            elif (
-                sec_name
-            ):  # 已经出现过一次小节名，属于同一个小节的后续键名可以省略小节名
+            elif sec_name:  # 已经出现过一次小节名，属于同一个小节的后续键名可以省略小节名
                 rex = re.findall(r"^(.*?)(=|\+=)(.*)$", cmd, re.U)
                 if len(rex) and len(rex[0]) == 3:
                     (key, assign, val) = rex[0]
@@ -143,9 +135,7 @@ class Config:
                     f"[-]Config override syntax incorrect. example: 'd:s=1' or 'debug_mode:switch=1'. cmd='{cmd}' all='{option_cmd}'"
                 )
             if not len(sec_lo):
-                err_exit(
-                    f"[-]Config override Section name '{sec}' is empty! cmd='{cmd}'"
-                )
+                err_exit(f"[-]Config override Section name '{sec}' is empty! cmd='{cmd}'")
             if not len(key_lo):
                 err_exit(f"[-]Config override Key name '{key}' is empty! cmd='{cmd}'")
             if not len(val.strip()):
@@ -160,9 +150,7 @@ class Config:
                     )
                 sec_name = s
             if sec_name is None:
-                err_exit(
-                    f"[-]Conig overide Section name '{sec}' not found! cmd='{cmd}'"
-                )
+                err_exit(f"[-]Conig overide Section name '{sec}' not found! cmd='{cmd}'")
             key_name = None
             keys = self.conf[sec_name]
             for k in keys:
@@ -178,9 +166,7 @@ class Config:
             if assign == "+=":
                 val = keys[key_name] + val
             if self.debug():
-                print(
-                    f"[!]Set config override [{sec_name}]{key_name}={val}  by cmd='{cmd}'"
-                )
+                print(f"[!]Set config override [{sec_name}]{key_name}={val}  by cmd='{cmd}'")
             self.conf.set(sec_name, key_name, val)
 
     def main_mode(self) -> int:
@@ -190,25 +176,13 @@ class Config:
             self._exit("common:main_mode")
 
     def source_folder(self) -> str:
-        return (
-            self.conf.get("common", "source_folder")
-            .replace("\\\\", "/")
-            .replace("\\", "/")
-        )
+        return self.conf.get("common", "source_folder").replace("\\\\", "/").replace("\\", "/")
 
     def failed_folder(self) -> str:
-        return (
-            self.conf.get("common", "failed_output_folder")
-            .replace("\\\\", "/")
-            .replace("\\", "/")
-        )
+        return self.conf.get("common", "failed_output_folder").replace("\\\\", "/").replace("\\", "/")
 
     def success_folder(self) -> str:
-        return (
-            self.conf.get("common", "success_output_folder")
-            .replace("\\\\", "/")
-            .replace("\\", "/")
-        )
+        return self.conf.get("common", "success_output_folder").replace("\\\\", "/").replace("\\", "/")
 
     def actor_gender(self) -> str:
         return self.conf.get("common", "actor_gender")
@@ -217,9 +191,7 @@ class Config:
         return self.conf.getint("common", "link_mode")
 
     def scan_hardlink(self) -> bool:
-        return self.conf.getboolean(
-            "common", "scan_hardlink", fallback=False
-        )  # 未找到配置选项,默认不刮削
+        return self.conf.getboolean("common", "scan_hardlink", fallback=False)  # 未找到配置选项,默认不刮削
 
     def failed_move(self) -> bool:
         return self.conf.getboolean("common", "failed_move")
@@ -546,7 +518,7 @@ class Config:
 
         sec7 = "escape"
         conf.add_section(sec7)
-        conf.set(sec7, "literals", "\()/")  # noqa
+        conf.set(sec7, "literals", r"\()/")  # noqa
         conf.set(sec7, "folders", "failed, JAV_output")
 
         sec8 = "debug_mode"
@@ -574,9 +546,7 @@ class Config:
 
         sec12 = "media"
         conf.add_section(sec12)
-        conf.set(
-            sec12, "media_type", ".mp4,.avi,.rmvb,.wmv,.mov,.mkv,.flv,.ts,.webm,iso"
-        )
+        conf.set(sec12, "media_type", ".mp4,.avi,.rmvb,.wmv,.mov,.mkv,.flv,.ts,.webm,iso")
         conf.set(
             sec12,
             "sub_type",

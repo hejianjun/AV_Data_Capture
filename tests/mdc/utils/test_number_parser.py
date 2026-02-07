@@ -1,9 +1,9 @@
 from mdc.utils.number_parser import (
+    G_TAKE_NUM_RULES,
     get_number,
     get_number_by_dict,
-    is_uncensored,
     is_number_equivalent,
-    G_TAKE_NUM_RULES,
+    is_uncensored,
 )
 
 
@@ -29,9 +29,7 @@ class TestNumberParser:
 
         for input_file, expected in test_cases:
             result = get_number(False, input_file)
-            assert result == expected, (
-                f"测试失败: 输入={input_file}, 预期={expected}, 实际={result}"
-            )
+            assert result == expected, f"测试失败: 输入={input_file}, 预期={expected}, 实际={result}"
 
     def test_get_number_special_cases(self):
         """测试特殊情况的番号提取"""
@@ -65,9 +63,7 @@ class TestNumberParser:
 
         for input_file, expected in test_cases:
             result = get_number_by_dict(input_file)
-            assert result == expected, (
-                f"测试失败: 输入={input_file}, 预期={expected}, 实际={result}"
-            )
+            assert result == expected, f"测试失败: 输入={input_file}, 预期={expected}, 实际={result}"
 
     def test_is_uncensored(self):
         """测试判断是否为无码功能"""

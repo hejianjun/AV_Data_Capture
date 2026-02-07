@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import re
-from lxml import etree
 from urllib.parse import urlencode
+
+from lxml import etree
+
 from .parser import Parser
 
 
@@ -22,9 +24,7 @@ class Fanza(Parser):
         self.number = number
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
-            durl = "https://www.dmm.co.jp/age_check/=/declared=yes/?" + urlencode(
-                {"rurl": self.detailurl}
-            )
+            durl = "https://www.dmm.co.jp/age_check/=/declared=yes/?" + urlencode({"rurl": self.detailurl})
             self.htmltree = self.getHtmlTree(durl)
             result = self.dictformat(self.htmltree)
             return result
@@ -49,15 +49,9 @@ class Fanza(Parser):
 
         for url in fanza_urls:
             self.detailurl = url + fanza_search_number
-            url = "https://www.dmm.co.jp/age_check/=/declared=yes/?" + urlencode(
-                {"rurl": self.detailurl}
-            )
+            url = "https://www.dmm.co.jp/age_check/=/declared=yes/?" + urlencode({"rurl": self.detailurl})
             self.htmlcode = self.getHtml(url)
-            if (
-                self.htmlcode != 404
-                and "Sorry! This content is not available in your region."
-                not in self.htmlcode
-            ):
+            if self.htmlcode != 404 and "Sorry! This content is not available in your region." not in self.htmlcode:
                 self.htmltree = etree.HTML(self.htmlcode)
                 if self.htmltree is not None:
                     result = self.dictformat(self.htmltree)
@@ -87,9 +81,7 @@ class Fanza(Parser):
         try:
             result = self.getTreeElement(htmltree, self.expr_outline).replace("\n", "")
             if result == "":
-                result = self.getTreeElement(htmltree, self.expr_outline2).replace(
-                    "\n", ""
-                )
+                result = self.getTreeElement(htmltree, self.expr_outline2).replace("\n", "")
             if "※ 配信方法によって収録内容が異なる場合があります。" == result:
                 result = self.getTreeElement(htmltree, self.expr_outline_og)
             return result
@@ -163,9 +155,7 @@ class Fanza(Parser):
         return result
 
     def getExtrafanart(self, htmltree):
-        htmltext = re.search(
-            r"<div id=\"sample-image-block\"[\s\S]*?<br></div>\s*?</div>", self.htmlcode
-        )
+        htmltext = re.search(r"<div id=\"sample-image-block\"[\s\S]*?<br></div>\s*?</div>", self.htmlcode)
         if htmltext:
             htmltext = htmltext.group()
             extrafanart_images = re.findall(r"<img.*?src=\"(.*?)\"", htmltext)
@@ -193,24 +183,16 @@ class Fanza(Parser):
 
     def getFanzaString(self, expr):
         result1 = str(
-            self.htmltree.xpath(
-                "//td[contains(text(),'" + expr + "')]/following-sibling::td/a/text()"
-            )
+            self.htmltree.xpath("//td[contains(text(),'" + expr + "')]/following-sibling::td/a/text()")
         ).strip(" ['']")
-        result2 = str(
-            self.htmltree.xpath(
-                "//td[contains(text(),'" + expr + "')]/following-sibling::td/text()"
-            )
-        ).strip(" ['']")
+        result2 = str(self.htmltree.xpath("//td[contains(text(),'" + expr + "')]/following-sibling::td/text()")).strip(
+            " ['']"
+        )
         return result1 + result2
 
     def getFanzaStrings(self, string):
-        result1 = self.htmltree.xpath(
-            "//td[contains(text(),'" + string + "')]/following-sibling::td/a/text()"
-        )
+        result1 = self.htmltree.xpath("//td[contains(text(),'" + string + "')]/following-sibling::td/a/text()")
         if len(result1) > 0:
             return result1
-        result2 = self.htmltree.xpath(
-            "//td[contains(text(),'" + string + "')]/following-sibling::td/text()"
-        )
+        result2 = self.htmltree.xpath("//td[contains(text(),'" + string + "')]/following-sibling::td/text()")
         return result2

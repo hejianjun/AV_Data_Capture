@@ -2,12 +2,16 @@
 
 import json
 import re
-from lxml import etree, html
 import traceback
+
+from lxml import etree, html
+
 from mdc.config import config
 from mdc.utils.http import request as httprequest
-from .utils import getTreeElement, getTreeAll
-from mdc.utils.logger import info as print, warn
+from mdc.utils.logger import info as print
+from mdc.utils.logger import warn
+
+from .utils import getTreeAll, getTreeElement
 
 
 class Parser:
@@ -226,24 +230,18 @@ class Parser:
         return self.getTreeElement(htmltree, self.expr_title).strip()
 
     def getRelease(self, htmltree):
-        return (
-            self.getTreeElement(htmltree, self.expr_release).strip().replace("/", "-")
-        )
+        return self.getTreeElement(htmltree, self.expr_release).strip().replace("/", "-")
 
     def getYear(self, htmltree):
         """year基本都是从release中解析的"""
         try:
             release = self.getRelease(htmltree)
-            return str(re.findall("\d{4}", release)).strip(" ['']")
+            return str(re.findall(r"\d{4}", release)).strip(" ['']")
         except Exception:
             return release
 
     def getRuntime(self, htmltree):
-        return (
-            self.getTreeElementbyExprs(htmltree, self.expr_runtime, self.expr_runtime2)
-            .strip()
-            .rstrip("mi")
-        )
+        return self.getTreeElementbyExprs(htmltree, self.expr_runtime, self.expr_runtime2).strip().rstrip("mi")
 
     def getOutline(self, htmltree):
         return self.getTreeElement(htmltree, self.expr_outline).strip()
@@ -300,9 +298,7 @@ class Parser:
         if self.expr_uncensored:
             u = self.getTreeAll(htmltree, self.expr_uncensored)
             self.uncensored = bool(u)
-        elif (
-            "無码" in tags or "無修正" in tags or "uncensored" in tags or "无码" in tags
-        ):
+        elif "無码" in tags or "無修正" in tags or "uncensored" in tags or "无码" in tags:
             self.uncensored = True
         elif "無码" in title or "無修正" in title or "uncensored" in title.lower():
             self.uncensored = True

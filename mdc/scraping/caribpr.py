@@ -2,7 +2,9 @@
 
 import re
 from urllib.parse import urljoin
+
 from lxml import html
+
 from .parser import Parser
 
 
@@ -14,7 +16,9 @@ class Caribpr(Parser):
     expr_runtime = "//li[3]/span[@class='spec-content']/text()"
     expr_actor = "//li[1]/span[@class='spec-content']/a[@class='spec-item']/text()"
     expr_tags = "//li[5]/span[@class='spec-content']/a[@class='spec-item']/text()"
-    expr_extrafanart = "//div[@class='movie-gallery']/div[@class='section is-wide']/div[2]/div[@class='grid-item']/div/a/@href"
+    expr_extrafanart = (
+        "//div[@class='movie-gallery']/div[@class='section is-wide']/div[2]/div[@class='grid-item']/div/a/@href"
+    )
     # expr_label = "//span[@class='spec-title'][contains(text(),'シリーズ')]/../span[@class='spec-content']/a/text()"
     # expr_series = "//span[@class='spec-title'][contains(text(),'シリーズ')]/../span[@class='spec-content']/a/text()"
     expr_outline = "//div[@class='movie-info']/div[@class='section is-wide']/p/text()"
@@ -28,9 +32,7 @@ class Caribpr(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = (
-                f"https://www.caribbeancompr.com/moviepages/{number}/index.html"
-            )
+            self.detailurl = f"https://www.caribbeancompr.com/moviepages/{number}/index.html"
         htmlcode = self.getHtml(self.detailurl)
         if htmlcode == 404 or 'class="movie-info"' not in htmlcode:
             return 404
@@ -86,9 +88,7 @@ class Caribpr(Parser):
         for k, v in t.items():
             if "/search_act/" not in v:
                 continue
-            r = self.getHtml(
-                urljoin("https://www.caribbeancompr.com", v), type="object"
-            )
+            r = self.getHtml(urljoin("https://www.caribbeancompr.com", v), type="object")
             if not r.ok:
                 continue
             html = r.text

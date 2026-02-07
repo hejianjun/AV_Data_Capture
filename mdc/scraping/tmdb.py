@@ -32,6 +32,4 @@ class Tmdb(Parser):
         return movieUrl
 
     def getCover(self, htmltree):
-        return "https://www.themoviedb.org" + self.getTreeElement(
-            htmltree, self.expr_cover
-        )
+        return "https://www.themoviedb.org" + self.getTreeElement(htmltree, self.expr_cover)

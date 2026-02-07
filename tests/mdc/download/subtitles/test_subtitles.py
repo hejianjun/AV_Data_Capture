@@ -1,5 +1,6 @@
-from unittest.mock import patch, MagicMock, mock_open
 from pathlib import Path
+from unittest.mock import MagicMock, mock_open, patch
+
 from mdc.download.subtitles import download_subtitles, open_download
 
 
@@ -10,9 +11,7 @@ class TestSubtitles:
     @patch("mdc.download.subtitles.requests.get")
     @patch("mdc.download.subtitles.html.fromstring")
     @patch("mdc.download.subtitles.open_download")
-    def test_download_subtitles_success(
-        self, mock_open_download, mock_fromstring, mock_get, mock_config
-    ):
+    def test_download_subtitles_success(self, mock_open_download, mock_fromstring, mock_get, mock_config):
         """测试字幕下载成功的情况"""
         # 设置模拟配置
         mock_proxy = MagicMock()
@@ -37,9 +36,7 @@ class TestSubtitles:
         mock_open_download.return_value = True
 
         # 测试下载功能
-        result = download_subtitles(
-            "./test.mp4", "./", False, "SSNI-813", 1, "", "", ""
-        )
+        result = download_subtitles("./test.mp4", "./", False, "SSNI-813", 1, "", "", "")
 
         # 验证结果
         assert result
@@ -65,9 +62,7 @@ class TestSubtitles:
         mock_get.return_value = mock_response
 
         # 测试下载功能
-        result = download_subtitles(
-            "./test.mp4", "./", False, "SSNI-813", 1, "", "", ""
-        )
+        result = download_subtitles("./test.mp4", "./", False, "SSNI-813", 1, "", "", "")
 
         # 验证结果
         assert not result
@@ -76,9 +71,7 @@ class TestSubtitles:
     @patch("mdc.download.subtitles.requests.get")
     @patch("mdc.download.subtitles.html.fromstring")
     @patch("builtins.open", new_callable=mock_open)
-    def test_open_download_success(
-        self, mock_file, mock_fromstring, mock_get, mock_config
-    ):
+    def test_open_download_success(self, mock_file, mock_fromstring, mock_get, mock_config):
         """测试打开下载链接并保存文件"""
         # 设置模拟配置
         mock_proxy = MagicMock()

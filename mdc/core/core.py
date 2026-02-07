@@ -1,35 +1,34 @@
+import json
 import os.path
 import pathlib
+import re
 import shutil
 import sys
-import re
-import json
-
+from io import BytesIO
 from pathlib import Path
+
 from lxml import etree
 from PIL import Image
-from io import BytesIO
+
 # from videoprops import get_video_properties
-
 from mdc.config import config
-from mdc.utils import cn_space, get_html
+from mdc.core.metadata import print_files, small_cover_check
 from mdc.core.scraper import get_data_from_json
-from mdc.utils.number_parser import is_uncensored
-from mdc.utils.logger import warn
-from mdc.image.imgproc import cutImage
-from mdc.download.subtitles import download_subtitles
-
-# 导入拆分的模块
-from mdc.file.file_utils import moveFailedFolder, create_folder
 from mdc.download.downloader import (
-    trailer_download,
     actor_photo_download,
     extrafanart_download,
     image_download,
     image_ext,
+    trailer_download,
 )
-from mdc.core.metadata import small_cover_check, print_files
+from mdc.download.subtitles import download_subtitles
 
+# 导入拆分的模块
+from mdc.file.file_utils import create_folder, moveFailedFolder
+from mdc.image.imgproc import cutImage
+from mdc.utils import cn_space, get_html
+from mdc.utils.logger import warn
+from mdc.utils.number_parser import is_uncensored
 
 # from WebCrawler import get_data_from_json
 
@@ -121,17 +120,11 @@ def add_to_pic(pic_path, img_pic, size, count, mode):
         print("[-]Error: watermark image param mode invalid!")
         return
     # 先找pyinstaller打包的图片
-    if hasattr(sys, "_MEIPASS") and os.path.isfile(
-        os.path.join(getattr(sys, "_MEIPASS"), pngpath)
-    ):
+    if hasattr(sys, "_MEIPASS") and os.path.isfile(os.path.join(getattr(sys, "_MEIPASS"), pngpath)):
         mark_pic_path = os.path.join(getattr(sys, "_MEIPASS"), pngpath)
     # 再找py脚本所在路径的图片
-    elif os.path.isfile(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), pngpath)
-    ):
-        mark_pic_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), pngpath
-        )
+    elif os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), pngpath)):
+        mark_pic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), pngpath)
     elif os.path.isfile(
         os.path.join(
             pathlib.Path(__file__).resolve().parents[1],
@@ -150,8 +143,7 @@ def add_to_pic(pic_path, img_pic, size, count, mode):
     else:
         mark_pic_path = BytesIO(
             get_html(
-                "https://raw.githubusercontent.com/yoshiko2/AV_Data_Capture/master/"
-                + pngpath,
+                "https://raw.githubusercontent.com/yoshiko2/AV_Data_Capture/master/" + pngpath,
                 return_type="content",
             )
         )
@@ -180,15 +172,11 @@ def paste_file_to_folder(
     filepath_obj = pathlib.Path(filepath)
     houzhui = filepath_obj.suffix
     try:
-        targetpath = os.path.join(
-            path, f"{number}{leak_word}{c_word}{hack_word}{houzhui}"
-        )
+        targetpath = os.path.join(path, f"{number}{leak_word}{c_word}{hack_word}{houzhui}")
         # 任何情况下都不要覆盖，以免遭遇数据源或者引擎错误导致所有文件得到同一个number，逐一
         # 同名覆盖致使全部文件损失且不可追回的最坏情况
         if os.path.exists(targetpath):
-            raise FileExistsError(
-                "File Exists on destination path, we will never overwriting."
-            )
+            raise FileExistsError("File Exists on destination path, we will never overwriting.")
         link_mode = config.getInstance().link_mode()
         # 如果link_mode 1: 建立软链接 2: 硬链接优先、无法建立硬链接再尝试软链接。
         # 移除原先soft_link=2的功能代码，因默认记录日志，已经可追溯文件来源
@@ -236,13 +224,9 @@ def paste_file_to_folder_mode2(
         number += part  # 这时number会被附加上CD1后缀
     filepath_obj = pathlib.Path(filepath)
     houzhui = filepath_obj.suffix
-    targetpath = os.path.join(
-        path, f"{number}{part}{leak_word}{c_word}{hack_word}{houzhui}"
-    )
+    targetpath = os.path.join(path, f"{number}{part}{leak_word}{c_word}{hack_word}{houzhui}")
     if os.path.exists(targetpath):
-        raise FileExistsError(
-            "File Exists on destination path, we will never overwriting."
-        )
+        raise FileExistsError("File Exists on destination path, we will never overwriting.")
     try:
         link_mode = config.getInstance().link_mode()
         create_softlink = False
@@ -408,17 +392,13 @@ def core_main_no_net_op(movie_path, number):
         bool(conf.face_uncensored_only() and not uncensored),
     )
     if conf.is_watermark():
-        add_mark(
-            full_poster_path, full_thumb_path, cn_sub, leak, uncensored, hack, _4k, iso
-        )
+        add_mark(full_poster_path, full_thumb_path, cn_sub, leak, uncensored, hack, _4k, iso)
 
     if multi and conf.jellyfin_multi_part_fanart():
         linkImage(path, number, part, leak_word, c_word, hack_word, ext)
 
 
-def move_subtitles(
-    filepath, path, multi_part, number, part, leak_word, c_word, hack_word
-) -> bool:
+def move_subtitles(filepath, path, multi_part, number, part, leak_word, c_word, hack_word) -> bool:
     filepath_obj = pathlib.Path(filepath)
     link_mode = config.getInstance().link_mode()
     sub_res = config.getInstance().sub_rule()
@@ -427,15 +407,9 @@ def move_subtitles(
         if subfile.is_file() and subfile.suffix.lower() in sub_res:
             if multi_part and part.lower() not in subfile.name.lower():
                 continue
-            if (
-                filepath_obj.stem.split(".")[0].lower()
-                != subfile.stem.split(".")[0].lower()
-            ):
+            if filepath_obj.stem.split(".")[0].lower() != subfile.stem.split(".")[0].lower():
                 continue
-            sub_targetpath = (
-                Path(path)
-                / f"{number}{leak_word}{c_word}{hack_word}{''.join(subfile.suffixes)}"
-            )
+            sub_targetpath = Path(path) / f"{number}{leak_word}{c_word}{hack_word}{''.join(subfile.suffixes)}"
             if link_mode not in (1, 2):
                 shutil.move(str(subfile), str(sub_targetpath))
                 print(f"[+]Sub Moved!        {sub_targetpath.name}")
@@ -449,9 +423,7 @@ def move_subtitles(
     return result
 
 
-def has_subtitles(
-    filepath, path, multi_part, number, part, leak_word, c_word, hack_word
-):
+def has_subtitles(filepath, path, multi_part, number, part, leak_word, c_word, hack_word):
     filepath_obj = pathlib.Path(filepath)
     sub_res = config.getInstance().sub_rule()
     prefix = f"{number}{leak_word}{c_word}{hack_word}".lower()
@@ -468,10 +440,7 @@ def has_subtitles(
         if subfile.is_file() and subfile.suffix.lower() in sub_res:
             if multi_part and part.lower() not in subfile.name.lower():
                 continue
-            if (
-                filepath_obj.stem.split(".")[0].lower()
-                != subfile.stem.split(".")[0].lower()
-            ):
+            if filepath_obj.stem.split(".")[0].lower() != subfile.stem.split(".")[0].lower():
                 continue
             return True
     return False
@@ -494,9 +463,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
     # 下面被注释的变量不需要
     # rootpath = os.getcwd
     number = number_th
-    json_data = get_data_from_json(
-        number, oCC, specified_source, specified_url
-    )  # 定义番号
+    json_data = get_data_from_json(number, oCC, specified_source, specified_url)  # 定义番号
 
     # Return if blank dict returned (data not found)
     if not json_data:
@@ -609,9 +576,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
                     json_data,
                 )
             else:
-                small_cover_check(
-                    path, poster_path, json_data.get("cover_small"), movie_path
-                )
+                small_cover_check(path, poster_path, json_data.get("cover_small"), movie_path)
 
         # creatFolder会返回番号路径
         if "headers" in json_data:
@@ -644,9 +609,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
                             json_data,
                         )
                     else:
-                        extrafanart_download(
-                            json_data.get("extrafanart"), path, number, movie_path
-                        )
+                        extrafanart_download(json_data.get("extrafanart"), path, number, movie_path)
 
                 # 下载演员头像 KODI .actors 目录位置
                 if conf.download_actor_photo_for_kodi():
@@ -668,14 +631,10 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
             linkImage(path, number_th, part, leak_word, c_word, hack_word, ext)
 
         # 移动电影
-        paste_file_to_folder(
-            movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
-        )
+        paste_file_to_folder(movie_path, path, multi_part, number, part, leak_word, c_word, hack_word)
 
         # Move subtitles
-        move_status = move_subtitles(
-            movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
-        )
+        move_status = move_subtitles(movie_path, path, multi_part, number, part, leak_word, c_word, hack_word)
         if move_status:
             cn_sub = True
         else:
@@ -722,14 +681,10 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
         # 创建文件夹
         path = create_folder(json_data)
         # 移动文件
-        paste_file_to_folder_mode2(
-            movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
-        )
+        paste_file_to_folder_mode2(movie_path, path, multi_part, number, part, leak_word, c_word, hack_word)
 
         # Move subtitles
-        move_subtitles(
-            movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
-        ) or download_subtitles(
+        move_subtitles(movie_path, path, multi_part, number, part, leak_word, c_word, hack_word) or download_subtitles(
             movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
         )
 
@@ -749,9 +704,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
                     json_data,
                 )
             else:
-                small_cover_check(
-                    path, poster_path, json_data.get("cover_small"), movie_path
-                )
+                small_cover_check(path, poster_path, json_data.get("cover_small"), movie_path)
 
         # creatFolder会返回番号路径
         if "headers" in json_data:
@@ -784,9 +737,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
                             json_data,
                         )
                     else:
-                        extrafanart_download(
-                            json_data.get("extrafanart"), path, number, movie_path
-                        )
+                        extrafanart_download(json_data.get("extrafanart"), path, number, movie_path)
 
                 # 下载演员头像 KODI .actors 目录位置
                 if conf.download_actor_photo_for_kodi():
@@ -803,9 +754,7 @@ def core_main(movie_path, number_th, oCC, specified_source=None, specified_url=N
             bool(conf.face_uncensored_only() and not uncensored),
         )
 
-        if not cn_sub and has_subtitles(
-            movie_path, path, multi_part, number, part, leak_word, c_word, hack_word
-        ):
+        if not cn_sub and has_subtitles(movie_path, path, multi_part, number, part, leak_word, c_word, hack_word):
             cn_sub = True
         if not cn_sub:
             cn_sub = cn_sub or download_subtitles(

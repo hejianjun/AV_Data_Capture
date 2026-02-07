@@ -1,11 +1,13 @@
-from pathlib import Path
-import re
-import uuid
 import json
-import time
-import requests
+import re
 import sys
+import time
+import uuid
+from pathlib import Path
+
+import requests
 from lxml import etree
+
 from mdc.config import config
 from mdc.utils.http import get_html, post_html
 
@@ -20,9 +22,7 @@ def is_japanese(raw: str) -> bool:
     # \u3040-\u30ff: Hiragana and Katakana
     # \u31f0-\u31ff: Katakana Phonetic Extensions
     # \uff66-\uff9f: Halfwidth Katakana
-    return bool(
-        re.search(r"[\u3040-\u30ff\u31f0-\u31ff\uff66-\uff9f]", raw, re.UNICODE)
-    )
+    return bool(re.search(r"[\u3040-\u30ff\u31f0-\u31ff\uff66-\uff9f]", raw, re.UNICODE))
 
 
 def translate(
@@ -65,10 +65,7 @@ def translate(
         except Exception:
             return ""
     elif engine == "azure":
-        url = (
-            "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to="
-            + target_language
-        )
+        url = "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=" + target_language
         headers = {
             "Ocp-Apim-Subscription-Key": key,
             "Ocp-Apim-Subscription-Region": "global",
@@ -135,9 +132,9 @@ def modify_nfo_content(nfo_path: Path) -> tuple:
 
         # 生成最终内容
         if modified:
-            new_content = etree.tostring(
-                root, encoding="utf-8", pretty_print=True, xml_declaration=True
-            ).decode("utf-8")
+            new_content = etree.tostring(root, encoding="utf-8", pretty_print=True, xml_declaration=True).decode(
+                "utf-8"
+            )
             return new_content, True
         return content, False
 
@@ -167,9 +164,7 @@ def is_movie_dir(path: Path) -> bool:
     return (
         path.is_dir()
         and any(path.glob("*.nfo"))  # 包含NFO文件
-        and not any(
-            child.is_dir() and child.name != "translated" for child in path.iterdir()
-        )  # 没有子目录
+        and not any(child.is_dir() and child.name != "translated" for child in path.iterdir())  # 没有子目录
     )
 
 

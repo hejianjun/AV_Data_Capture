@@ -1,7 +1,7 @@
 import json
 
-from mdc.config import config as config_mod
 import mdc.scraping.parser as parser_mod
+from mdc.config import config as config_mod
 from mdc.scraping.parser import Parser
 
 

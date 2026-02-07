@@ -1,17 +1,14 @@
-import os
 import shutil
 import typing
 from pathlib import Path
 
-from mdc.utils.actor_mapping import get_actor_mapping, get_info_mapping, normalize_nfo_xml
+from mdc.file.common_utils import windows_long_path
 from mdc.file.file_utils import (
+    is_windows_path_too_long,
     iter_movie_dirs_with_nfo,
     pick_main_nfo,
-    is_windows_path_too_long,
 )
-from mdc.file.common_utils import windows_long_path
-
-
+from mdc.utils.actor_mapping import get_actor_mapping, get_info_mapping, normalize_nfo_xml
 
 
 def process_movie_dir(movie_dir: Path, dry_run: bool = False, mapping_mode: int = 1) -> dict:
@@ -32,9 +29,7 @@ def process_movie_dir(movie_dir: Path, dry_run: bool = False, mapping_mode: int 
     actor_mapping = get_actor_mapping(mapping_mode)
     info_mapping = get_info_mapping(mapping_mode)
     try:
-        new_content, new_actors, modified, conflict = normalize_nfo_xml(
-            xml_content, actor_mapping, info_mapping
-        )
+        new_content, new_actors, modified, conflict = normalize_nfo_xml(xml_content, actor_mapping, info_mapping)
     except Exception as e:
         return {
             "movie_dir": str(movie_dir),

@@ -1,5 +1,5 @@
-import logging
 import builtins
+import logging
 
 
 def get_logger():

@@ -26,9 +26,7 @@ class TestConfig:
         }
 
         # 测试所有公共方法是否可调用
-        for _m in [
-            m for m in dir(self.config) if not m.startswith("__") and m not in mfilter
-        ]:
+        for _m in [m for m in dir(self.config) if not m.startswith("__") and m not in mfilter]:
             method = getattr(self.config, _m)
             if callable(method):
                 # 确保方法可以被调用
@@ -42,11 +40,7 @@ class TestConfig:
         pfilter = {"proxies", "SUPPORT_PROXY_TYPE"}
 
         # 测试所有公共属性和方法是否可访问
-        for _p in [
-            p
-            for p in dir(getInstance().proxy())
-            if not p.startswith("__") and p not in pfilter
-        ]:
+        for _p in [p for p in dir(getInstance().proxy()) if not p.startswith("__") and p not in pfilter]:
             attr = getattr(getInstance().proxy(), _p)
             # 无论属性是方法还是普通属性，都应该可以访问
             _ = attr
@@ -56,9 +50,7 @@ class TestConfig:
         # 创建一个新的Config实例
         conf2 = Config()
         # 应用配置覆盖，使用正确的语法
-        conf2.set_override(
-            "face:aspect_ratio=2;face:aways_imagecut=0;priority:website=javdb"
-        )
+        conf2.set_override("face:aspect_ratio=2;face:aways_imagecut=0;priority:website=javdb")
 
         # 验证覆盖是否生效
         assert conf2.face_aspect_ratio() == 2

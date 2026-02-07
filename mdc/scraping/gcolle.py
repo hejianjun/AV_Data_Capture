@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import re
+
 from lxml import etree
+
 from mdc.utils.http.request import request_session
+
 from .parser import Parser
 
 
@@ -32,12 +35,8 @@ class Gcolle(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = (
-                "https://gcolle.net/product_info.php/products_id/" + self.number
-            )
-        session = request_session(
-            cookies=self.cookies, proxies=self.proxies, verify=self.verify
-        )
+            self.detailurl = "https://gcolle.net/product_info.php/products_id/" + self.number
+        session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
         htmlcode = session.get(self.detailurl).text
         htmltree = etree.HTML(htmlcode)
 
@@ -62,7 +61,7 @@ class Gcolle(Parser):
             return ""
 
     def getRelease(self, htmltree):
-        return re.findall("\d{4}-\d{2}-\d{2}", super().getRelease(htmltree))[0]
+        return re.findall(r"\d{4}-\d{2}-\d{2}", super().getRelease(htmltree))[0]
 
     def getCover(self, htmltree):
         return "https:" + super().getCover(htmltree)

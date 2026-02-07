@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import re
-import os
-import secrets
 import inspect
-from lxml import etree
+import os
+import re
+import secrets
 from urllib.parse import urljoin
+
+from lxml import etree
+
 from .parser import Parser
 
 
@@ -28,9 +30,7 @@ class Javbus(Parser):
     expr_actorphoto = '//div[@class="star-name"]/../a/img'
     expr_extrafanart = '//div[@id="sample-waterfall"]/a/@href'
     expr_tags = '/html/head/meta[@name="keywords"]/@content'
-    expr_uncensored = (
-        '//*[@id="navbar"]/ul[1]/li[@class="active"]/a[contains(@href,"uncensored")]'
-    )
+    expr_uncensored = '//*[@id="navbar"]/ul[1]/li[@class="active"]/a[contains(@href,"uncensored")]'
 
     def search(self, number):
         self.number = number
@@ -145,11 +145,7 @@ class Javbus(Parser):
 
     def getOutline(self, htmltree):
         if self.morestoryline:
-            if any(
-                caller
-                for caller in inspect.stack()
-                if os.path.basename(caller.filename) == "airav.py"
-            ):
+            if any(caller for caller in inspect.stack() if os.path.basename(caller.filename) == "airav.py"):
                 return ""  # 从airav.py过来的调用不计算outline直接返回，避免重复抓取数据拖慢处理速度
             from .storyline import getStoryline
 

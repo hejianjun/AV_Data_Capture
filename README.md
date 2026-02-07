@@ -474,6 +474,25 @@ JAV_output/
 5. **失败处理**：失败的文件会记录在 `failed/failed_list.txt`
 6. **日志文件**：默认保存在 `~/.mlogs/` 目录
 
+## 开发与代码规范
+
+本项目使用 Ruff 统一进行代码格式化与规范检查。
+
+```bash
+# 安装开发依赖（仅包含 ruff）
+python -m pip install -r requirements-dev.txt
+
+# 自动格式化
+ruff format .
+
+# 仅检查（CI 会执行）
+ruff format --check .
+ruff check .
+
+# 自动修复（如 import 排序、未使用导入等）
+ruff check --fix .
+```
+
 ## 许可证
 
 本项目遵循开源许可证，详见 LICENSE 文件。

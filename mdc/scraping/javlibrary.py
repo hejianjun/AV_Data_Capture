@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from lxml import etree
+
 from mdc.utils.http.request import request_session
+
 from .parser import Parser
 
 
@@ -16,12 +18,8 @@ class Javlibrary(Parser):
     expr_release = '//div[@id="video_date"]/table/tr/td[@class="text"]/text()'
     expr_studio = '//div[@id="video_maker"]/table/tr/td[@class="text"]/span/a/text()'
     expr_runtime = '//div[@id="video_length"]/table/tr/td/span[@class="text"]/text()'
-    expr_userrating = (
-        '//div[@id="video_review"]/table/tr/td/span[@class="score"]/text()'
-    )
-    expr_director = (
-        '//div[@id="video_director"]/table/tr/td[@class="text"]/span/a/text()'
-    )
+    expr_userrating = '//div[@id="video_review"]/table/tr/td/span[@class="score"]/text()'
+    expr_director = '//div[@id="video_director"]/table/tr/td[@class="text"]/span/a/text()'
     expr_extrafanart = '//div[@class="previewthumbs"]/img/@src'
 
     def extraInit(self):
@@ -40,9 +38,7 @@ class Javlibrary(Parser):
 
     def search(self, number):
         self.number = number.upper()
-        self.session = request_session(
-            cookies=self.cookies, proxies=self.proxies, verify=self.verify
-        )
+        self.session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:

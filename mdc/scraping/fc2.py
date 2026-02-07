@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import re
-from lxml import etree
 from urllib.parse import urljoin
+
+from lxml import etree
 
 from .parser import Parser
 
@@ -11,14 +12,10 @@ class Fc2(Parser):
     source = "fc2"
 
     expr_title = "/html/head/title/text()"
-    expr_studio = (
-        '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
-    )
+    expr_studio = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
     expr_release = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/div[2]/p/text()'
     expr_runtime = "//p[@class='items_article_info']/text()"
-    expr_director = (
-        '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
-    )
+    expr_director = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
     expr_actor = '//*[@id="top"]/div[1]/section[1]/div/section/div[2]/ul/li[3]/a/text()'
     expr_cover = "//div[@class='items_article_MainitemThumb']/span/img/@src"
     expr_extrafanart = '//ul[@class="items_article_SampleImagesArea"]/li/a/@href'
@@ -41,9 +38,7 @@ class Fc2(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = (
-                "https://adult.contents.fc2.com/article/" + self.number + "/"
-            )
+            self.detailurl = "https://adult.contents.fc2.com/article/" + self.number + "/"
             # self.detailurl = 'https://adult.contents.fc2.com/article/' + self.number + '/review'
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404 or self.htmlcode == 403:
@@ -80,12 +75,7 @@ class Fc2(Parser):
         if video:
             try:
                 video_url = video[0].replace("'", "")
-                video_url = (
-                    "https://adult.contents.fc2.com/api/v2/videos/"
-                    + self.number
-                    + "/sample?key="
-                    + video_url
-                )
+                video_url = "https://adult.contents.fc2.com/api/v2/videos/" + self.number + "/sample?key=" + video_url
                 url_json = eval(self.getHtml(video_url))["path"].replace("\\", "")
                 return url_json
             except Exception:

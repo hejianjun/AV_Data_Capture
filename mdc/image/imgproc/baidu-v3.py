@@ -1,7 +1,8 @@
-from aip import AipFace
-from mdc.config import config
-
 import base64
+
+from aip import AipFace
+
+from mdc.config import config
 
 
 def face_center(filename, model):

@@ -1,10 +1,10 @@
 # build-in lib
-import json
-import secrets
-import typing
-import re
 import importlib
+import json
+import re
+import secrets
 import traceback
+import typing
 from functools import lru_cache
 from pathlib import Path
 
@@ -13,19 +13,18 @@ import opencc
 
 # project wide definitions
 from mdc.config import config
+from mdc.file.file_utils import file_modification_days
+from mdc.scraping.custom_exceptions import QueryError
+from mdc.scraping.parser import Parser
 from mdc.utils.actor_mapping import (
     get_actor_mapping,
     get_info_mapping,
     process_special_actor_name,
     process_text_mappings,
 )
-from mdc.utils.translation import translate
-
 from mdc.utils.cookie import load_cookies
 from mdc.utils.number_parser import is_number_equivalent
-from mdc.file.file_utils import file_modification_days
-from mdc.scraping.parser import Parser
-from mdc.scraping.custom_exceptions import QueryError
+from mdc.utils.translation import translate
 
 
 class Scraping:
@@ -209,9 +208,7 @@ class Scraping:
                 # if any service return a valid return, break
                 if self.get_data_state(json_data):
                     if self.debug:
-                        print(
-                            f"[+]Find movie [{number}] metadata on website '{source}'"
-                        )
+                        print(f"[+]Find movie [{number}] metadata on website '{source}'")
                     break
             except Exception:
                 continue
@@ -233,9 +230,7 @@ class Scraping:
                         ):
                             json_data["cover"] = other_json_data["cover"]
                             if self.debug:
-                                print(
-                                    f"[+]Replace javdb cover with {other_json_data['source']} cover"
-                                )
+                                print(f"[+]Replace javdb cover with {other_json_data['source']} cover")
             except Exception:
                 pass
 
@@ -339,14 +334,8 @@ class Scraping:
             return False
         if data["number"] is None or data["number"] == "" or data["number"] == "null":
             return False
-        if (
-            data.get("cover") is None
-            or data.get("cover") == ""
-            or data.get("cover") == "null"
-        ) and (
-            data.get("cover_small") is None
-            or data.get("cover_small") == ""
-            or data.get("cover_small") == "null"
+        if (data.get("cover") is None or data.get("cover") == "" or data.get("cover") == "null") and (
+            data.get("cover_small") is None or data.get("cover_small") == "" or data.get("cover_small") == "null"
         ):
             return False
         return True
@@ -363,9 +352,7 @@ def search(number, sources: str = None, **kwargs):
     return sc.search(number, sources, **kwargs)
 
 
-def _build_search_kwargs(
-    conf: config, specified_source: str, specified_url: str
-) -> dict:
+def _build_search_kwargs(conf: config, specified_source: str, specified_url: str) -> dict:
     """构造 search() 调用参数，集中处理代理、证书、javdb 站点等配置。"""
     proxies: dict = None
     config_proxy = conf.proxy()
@@ -411,13 +398,7 @@ def _parse_tag_list(raw_tag: typing.Any) -> list[str]:
     """把抓取到的 tag 字段规范化成字符串列表，并移除占位标签。"""
     if raw_tag is None:
         return []
-    tag_list = (
-        str(raw_tag)
-        .strip("[ ]")
-        .replace("'", "")
-        .replace(" ", "")
-        .split(",")
-    )
+    tag_list = str(raw_tag).strip("[ ]").replace("'", "").replace(" ", "").split(",")
     return [t for t in tag_list if t and t not in {"XXXX", "xxx"}]
 
 
@@ -516,16 +497,12 @@ def _maybe_translate(json_data: dict, conf: config, title_lookup_number: str) ->
             continue
 
         if isinstance(json_data[translate_value], str):
-            json_data[translate_value] = special_characters_replacement(
-                json_data[translate_value]
-            )
+            json_data[translate_value] = special_characters_replacement(json_data[translate_value])
             json_data[translate_value] = translate(json_data[translate_value])
             continue
 
         for i in range(len(json_data[translate_value])):
-            json_data[translate_value][i] = special_characters_replacement(
-                json_data[translate_value][i]
-            )
+            json_data[translate_value][i] = special_characters_replacement(json_data[translate_value][i])
         list_in_str = ",".join(json_data[translate_value])
         json_data[translate_value] = translate(list_in_str).split(",")
 
@@ -534,20 +511,12 @@ def _apply_actor_mapping(json_data: dict, actor_mapping_data: dict) -> None:
     """应用演员别名映射，并重新生成 actor 展示字段。"""
     try:
         json_data["actor_list"] = [
-            process_special_actor_name(actor, actor_mapping_data)
-            for actor in json_data["actor_list"]
+            process_special_actor_name(actor, actor_mapping_data) for actor in json_data["actor_list"]
         ]
         if json_data.get("source") == "pissplay":
-            json_data["actor"] = (
-                str(json_data["actor_list"]).strip("[ ]").replace("'", "")
-            )
+            json_data["actor"] = str(json_data["actor_list"]).strip("[ ]").replace("'", "")
         else:
-            json_data["actor"] = (
-                str(json_data["actor_list"])
-                .strip("[ ]")
-                .replace("'", "")
-                .replace(" ", "")
-            )
+            json_data["actor"] = str(json_data["actor_list"]).strip("[ ]").replace("'", "").replace(" ", "")
     except Exception as e:
         print(f"[-]处理演员信息失败: {e}")
 
@@ -563,9 +532,7 @@ def _apply_info_mappings(json_data: dict, info_mapping_data: dict) -> None:
     for field in mapping_fields:
         if field in json_data and json_data[field]:
             try:
-                json_data[field] = process_text_mappings(
-                    json_data[field], info_mapping_data
-                )
+                json_data[field] = process_text_mappings(json_data[field], info_mapping_data)
             except Exception as e:
                 print(f"[-]处理{field}信息失败: {e}")
 
@@ -577,11 +544,7 @@ def _apply_opencc(open_cc: opencc.OpenCC, conf: config, json_data: dict) -> None
 
     cc_vars = conf.cc_convert_vars().split(",")
     for cc in cc_vars:
-        if (
-            json_data.get(cc) is None
-            or json_data[cc] == ""
-            or len(json_data[cc]) == 0
-        ):
+        if json_data.get(cc) is None or json_data[cc] == "" or len(json_data[cc]) == 0:
             continue
         try:
             if isinstance(json_data[cc], list):
@@ -644,11 +607,7 @@ def get_data_from_json(
     # 然而也可以跟进关注其它命名规则如airav.wiki Domain Creation Date: 2019-08-28T07:18:42.0Z
     # 如果将来javdb.com命名规则下不同Studio出现同名碰撞导致无法区分，可考虑更换规则，更新相应的number分析和抓取代码。
     if not _is_number_change_allowed(file_number, json_data):
-        print(
-            "[-]Movie number has changed! [{}]->[{}]".format(
-                file_number, str(json_data.get("number"))
-            )
-        )
+        print("[-]Movie number has changed! [{}]->[{}]".format(file_number, str(json_data.get("number"))))
         return None
 
     # ================================================网站规则添加结束================================================

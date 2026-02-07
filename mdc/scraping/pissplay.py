@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import re
-from lxml import etree
-from .parser import Parser
 from datetime import datetime
+
+from lxml import etree
+
+from .parser import Parser
 
 
 # 搜刮 https://pissplay.com/ 中的视频
@@ -12,9 +14,7 @@ from datetime import datetime
 class Pissplay(Parser):
     source = "pissplay"
 
-    expr_number = (
-        '//*[@id="video_title"]/text()'  # 这个网站上的视频没有番号，因此用标题代替
-    )
+    expr_number = '//*[@id="video_title"]/text()'  # 这个网站上的视频没有番号，因此用标题代替
     expr_title = '//*[@id="video_title"]/text()'
     expr_cover = '/html/head//meta[@property="og:image"]/@content'
     expr_tags = '//div[@id="video_tags"]/a/text()'
@@ -31,9 +31,7 @@ class Pissplay(Parser):
             self.detailurl = self.specifiedUrl
         else:
             newName = re.sub(r"[^a-zA-Z0-9 ]", "", number)  # 删除特殊符号
-            self.detailurl = (
-                "https://pissplay.com/videos/" + newName.lower().replace(" ", "-") + "/"
-            )
+            self.detailurl = "https://pissplay.com/videos/" + newName.lower().replace(" ", "-") + "/"
         self.htmlcode = self.getHtml(self.detailurl)
         if self.htmlcode == 404:
             return 404
@@ -67,11 +65,7 @@ class Pissplay(Parser):
     def getTags(self, htmltree):
         tags = self.getTreeAll(htmltree, self.expr_tags)
         if "Guests" in tags:
-            if (
-                tags[0] == "Collaboration"
-                or tags[0] == "Toilet for a Day"
-                or tags[0] == "Collaboration"
-            ):
+            if tags[0] == "Collaboration" or tags[0] == "Toilet for a Day" or tags[0] == "Collaboration":
                 del tags[1]
             else:
                 tags = tags[1:]
@@ -80,11 +74,7 @@ class Pissplay(Parser):
     def getActors(self, htmltree) -> list:
         tags = self.getTreeAll(htmltree, self.expr_tags)
         if "Guests" in tags:
-            if (
-                tags[0] == "Collaboration"
-                or tags[0] == "Toilet for a Day"
-                or tags[0] == "Collaboration"
-            ):
+            if tags[0] == "Collaboration" or tags[0] == "Toilet for a Day" or tags[0] == "Collaboration":
                 return [tags[1]]
             else:
                 return [tags[0]]

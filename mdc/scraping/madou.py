@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import re
-from lxml import etree
-from urllib.parse import urlparse, unquote
-from .parser import Parser
+from urllib.parse import unquote, urlparse
 
+from lxml import etree
+
+from .parser import Parser
 
 NUM_RULES3 = [
     r"(?P<eng>(mm|tz|mmz|msd|mdm|yk|pm|pme|pmd|pmc|pmx|qdog|qqog|fsog|rs|xkg|xsj|91cm|91kcm|91ycm|tmw|tmq|misav|ps|gx|EMTC|KCM|DAD|JDXYX|EMX|xkyp|xkvp|NFDM|jdyl)-?)(?P<num>\d{2,})(?P<part>-(ep\d*|av\d*|\d*|[a-d]*))?.*",
@@ -100,9 +101,7 @@ class Madou(Parser):
         # <title>MD0094／贫嘴贱舌中出大嫂／坏嫂嫂和小叔偷腥内射受孕-麻豆社</title>
         # <title>TM0002-我的痴女女友-麻豆社</title>
         browser_title = str(super().getTitle(htmltree))
-        title = str(
-            re.findall(r"^[A-Z0-9 ///\-]*(.*)-麻豆社$", browser_title)[0]
-        ).strip()
+        title = str(re.findall(r"^[A-Z0-9 ///\-]*(.*)-麻豆社$", browser_title)[0]).strip()
         return title
 
     def getCover(self, htmltree):

@@ -30,11 +30,7 @@ class Mgstage(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = (
-                "https://www.mgstage.com/product/product_detail/"
-                + str(self.number)
-                + "/"
-            )
+            self.detailurl = "https://www.mgstage.com/product/product_detail/" + str(self.number) + "/"
         htmltree = self.getHtmlTree(self.detailurl)
         result = self.dictformat(htmltree)
         return result

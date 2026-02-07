@@ -1,12 +1,12 @@
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from mdc.utils.actor_mapping import (
-    load_mapping,
     get_actor_mapping,
     get_info_mapping,
-    process_text_mappings,
-    process_text_mapping,
+    load_mapping,
     process_special_actor_name,
+    process_text_mapping,
+    process_text_mappings,
 )
 
 
@@ -116,9 +116,7 @@ class TestActorMapping:
         assert result == "测试1"
 
         # 测试列表处理
-        result = process_text_mappings(
-            ["test1", "test2", "delete", "not_found"], mapping
-        )
+        result = process_text_mappings(["test1", "test2", "delete", "not_found"], mapping)
         assert result == ["测试1", "测试2", "not_found"]
 
         # 测试其他类型（应原样返回）

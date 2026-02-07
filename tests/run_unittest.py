@@ -23,12 +23,8 @@ def main() -> int:
     for test_file in sorted(tests_root.rglob("test*.py")):
         if test_file.name == "__init__.py":
             continue
-        module_name = (
-            "tests_"
-            + str(test_file.relative_to(repo_root))
-            .replace("\\", "_")
-            .replace("/", "_")
-            .replace(".", "_")
+        module_name = "tests_" + str(test_file.relative_to(repo_root)).replace("\\", "_").replace("/", "_").replace(
+            ".", "_"
         )
         module = _load_module_from_path(module_name, test_file)
         suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(module))
@@ -39,4 +35,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

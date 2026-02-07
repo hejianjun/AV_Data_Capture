@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
+
 from lxml import etree
-from .parser import Parser
+
 from .madou import change_number
+from .parser import Parser
 
 
 class Javday(Parser):
@@ -26,11 +28,7 @@ class Javday(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            number = (
-                "".join(item for item in change_number(number) if item)
-                .replace("-", "")
-                .upper()
-            )
+            number = "".join(item for item in change_number(number) if item).replace("-", "").upper()
             if self.number != number:
                 print(number)
             self.detailurl = "https://javday.tv/videos/" + number + "/"

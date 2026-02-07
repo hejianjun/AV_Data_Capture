@@ -4,27 +4,27 @@
 
 """
 
+import builtins
 import json
 import os
 import re
-import time
 import secrets
-import builtins
-from mdc.config import config
-
-
-from urllib.parse import urljoin
-from lxml.html import fromstring
+import time
 from multiprocessing.dummy import Pool as ThreadPool
+from urllib.parse import urljoin
 
-from .airav import Airav
-from .xcity import Xcity
+from lxml.html import fromstring
+
+from mdc.config import config
 from mdc.utils.http.request import (
     get_html_by_form,
     get_html_by_scraper,
     request_session,
 )
 from mdc.utils.translation import is_japanese
+
+from .airav import Airav
+from .xcity import Xcity
 
 # 舍弃 Amazon 源
 G_registered_storyline_site = {"airavwiki", "airav", "avno1", "xcity", "58avgo"}
@@ -44,14 +44,10 @@ class noThread(object):
 
 
 # 获取剧情介绍 从列表中的站点同时查，取值优先级从前到后
-def getStoryline(
-    number, title=None, sites: list = None, uncensored=None, proxies=None, verify=None
-):
+def getStoryline(number, title=None, sites: list = None, uncensored=None, proxies=None, verify=None):
     start_time = time.time()
     debug = False
-    storyine_sites = (
-        config.getInstance().storyline_site().split(",")
-    )  # "1:airav,4:airavwiki".split(',')
+    storyine_sites = config.getInstance().storyline_site().split(",")  # "1:airav,4:airavwiki".split(',')
     if uncensored:
         storyine_sites = (
             config.getInstance().storyline_uncensored_site().split(",") + storyine_sites
@@ -88,13 +84,7 @@ def getStoryline(
                 sel_site, sel = site, desc
     for site, desc in zip(sort_sites, results):
         sl = len(desc) if isinstance(desc, str) else 0
-        s += (
-            f"，[选中{site}字数:{sl}]"
-            if site == sel_site
-            else f"，{site}字数:{sl}"
-            if sl
-            else f"，{site}:空"
-        )
+        s += f"，[选中{site}字数:{sl}]" if site == sel_site else f"，{site}字数:{sl}" if sl else f"，{site}:空"
     if config.getInstance().debug():
         print(s)
     return sel
@@ -139,9 +129,7 @@ def getStoryline_airav(number, debug, proxies, verify):
         if not res:
             raise ValueError(f"get_html_by_session('{url}') failed")
         lx = fromstring(res.text)
-        urls = lx.xpath(
-            '//div[@class="resultcontent"]/ul/li/div/a[@class="ga_click"]/@href'
-        )
+        urls = lx.xpath('//div[@class="resultcontent"]/ul/li/div/a[@class="ga_click"]/@href')
         txts = lx.xpath(
             '//div[@class="resultcontent"]/ul/li/div/a[@class="ga_click"]/h3[@class="one_name ga_name"]/text()'
         )
@@ -160,9 +148,7 @@ def getStoryline_airav(number, debug, proxies, verify):
         airav_number = str(re.findall(r"^\s*\[(.*?)]", t)[0])
         if not re.search(number, airav_number, re.I):
             raise ValueError(f"page number ->[{airav_number}] not match")
-        desc = str(
-            lx.xpath('//span[@id="ContentPlaceHolder1_Label2"]/text()')[0]
-        ).strip()
+        desc = str(lx.xpath('//span[@id="ContentPlaceHolder1_Label2"]/text()')[0]).strip()
         return desc
     except Exception as e:
         if debug:
@@ -217,9 +203,7 @@ def getStoryline_58avgo(number, debug, proxies, verify):
             raise ValueError(f"get_html_by_form('{url}','{number}') failed")
         if f"searchresults.aspx?Search={kwd}" not in browser.url:
             raise ValueError("number not found")
-        s = browser.page.select(
-            "div.resultcontent > ul > li.listItem > div.one-info-panel.one > a.ga_click"
-        )
+        s = browser.page.select("div.resultcontent > ul > li.listItem > div.one-info-panel.one > a.ga_click")
         link = None
         for a in s:
             title = a.h3.text.strip()
@@ -233,7 +217,7 @@ def getStoryline_58avgo(number, debug, proxies, verify):
         if not result.ok or "playon.aspx" not in browser.url:
             raise ValueError("detail page not found")
         title = browser.page.select_one("head > title").text.strip()
-        detail_number = str(re.findall("\[(.*?)]", title)[0])
+        detail_number = str(re.findall(r"\[(.*?)]", title)[0])
         if not re.search(number, detail_number, re.I):
             raise ValueError(f"detail page number not match, got ->[{detail_number}]")
         return browser.page.select_one("#ContentPlaceHolder1_Label2").text.strip()
@@ -271,10 +255,7 @@ def getStoryline_avno1(number, debug, proxies, verify):  # 获取剧情介绍 �
             page_number = title[title.rfind(" ") + 1 :].strip()
             if not partial_num:
                 # 不选择title中带破坏版的简介
-                if (
-                    re.match(f"^{number}$", page_number, re.I)
-                    and title.rfind("破坏版") == -1
-                ):
+                if re.match(f"^{number}$", page_number, re.I) and title.rfind("破坏版") == -1:
                     return desc.strip()
             elif re.search(number, page_number, re.I):
                 return desc.strip()
@@ -286,14 +267,11 @@ def getStoryline_avno1(number, debug, proxies, verify):  # 获取剧情介绍 �
     return ""
 
 
-def getStoryline_avno1OLD(
-    number, debug, proxies, verify
-):  # 获取剧情介绍 从avno1.cc取得
+def getStoryline_avno1OLD(number, debug, proxies, verify):  # 获取剧情介绍 从avno1.cc取得
     try:
         url = "http://www.avno1.cc/cn/" + secrets.choice(
             [
-                "usercenter.php?item="
-                + secrets.choice(["pay_support", "qa", "contact", "guide-vpn"]),
+                "usercenter.php?item=" + secrets.choice(["pay_support", "qa", "contact", "guide-vpn"]),
                 "?top=1&cat=hd",
                 "?top=1",
                 "?cat=hd",

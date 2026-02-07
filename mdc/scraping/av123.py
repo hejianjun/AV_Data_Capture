@@ -32,9 +32,7 @@ class Av123(Parser):
         """
         self.number = number.lower()
         if not self.number.startswith("fc2-ppv-"):
-            self.number = self.number.replace("fc2-", "fc2-ppv-").replace(
-                "fc2ppv-", "fc2-ppv-"
-            )
+            self.number = self.number.replace("fc2-", "fc2-ppv-").replace("fc2ppv-", "fc2-ppv-")
         return f"https://123av.ws/ja/v/{self.number}"
 
     def getTitle(self, htmltree):

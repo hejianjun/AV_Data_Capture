@@ -1,36 +1,34 @@
+import itertools
 import json
+import logging
 import os
+import platform
 import random
+import shutil
+import signal
 import sys
 import time
-import shutil
-import itertools
 import typing
-import signal
-import platform
-from mdc.config import config
-import logging
-
-
 from datetime import datetime
 from pathlib import Path
+
 from opencc import OpenCC
 
-from mdc.core.scraper import get_data_from_json
-from mdc.utils.http import get_html
-from mdc.utils.number_parser import get_number
-from mdc.core.core import core_main, core_main_no_net_op, debug_print
 from mdc.cli.cli import argparse_function
-from mdc.file.movie_list import movie_lists
+from mdc.config import config
+from mdc.core.core import core_main, core_main_no_net_op, debug_print
+from mdc.core.scraper import get_data_from_json
 from mdc.file.file_utils import (
-    moveFailedFolder,
     create_failed_folder,
-    rm_empty_folder,
     mode3_should_execute_by_nfo,
+    moveFailedFolder,
+    rm_empty_folder,
 )
+from mdc.file.movie_list import movie_lists
+from mdc.utils.http import get_html
 from mdc.utils.mapping_organizer import run_mode4
+from mdc.utils.number_parser import get_number
 from mdc.utils.system import WindowsInhibitor
-
 
 # 日志配置
 LOGGER = None
@@ -152,10 +150,7 @@ def setup_logging(logdir):
 
     # 设置日志格式
     file_handler.setFormatter(logging.Formatter("%(message)s"))
-    use_color = bool(
-        getattr(console_handler.stream, "isatty", lambda: False)()
-        and os.getenv("NO_COLOR") is None
-    )
+    use_color = bool(getattr(console_handler.stream, "isatty", lambda: False)() and os.getenv("NO_COLOR") is None)
     console_handler.setFormatter(ColorFormatter("%(message)s", use_color=use_color))
 
     # 添加handler
@@ -195,9 +190,7 @@ def cleanup_logging(logdir):
 
 
 def check_update(local_version: str) -> None:
-    htmlcode = get_html(
-        "https://api.github.com/repos/yoshiko2/Movie_Data_Capture/releases/latest"
-    )
+    htmlcode = get_html("https://api.github.com/repos/yoshiko2/Movie_Data_Capture/releases/latest")
     data = json.loads(htmlcode)
     remote = int(data["tag_name"].replace(".", ""))
     local_version_int = int(local_version.replace(".", ""))
@@ -219,9 +212,7 @@ def sigdebug_handler(*args) -> None:
     print(f"[!]Debug {('oFF', 'On')[int(conf.debug())]}")
 
 
-def create_data_and_move(
-    movie_path: str, zero_op: bool, no_net_op: bool, oCC: typing.Optional[OpenCC]
-) -> None:
+def create_data_and_move(movie_path: str, zero_op: bool, no_net_op: bool, oCC: typing.Optional[OpenCC]) -> None:
     # Normalized number, eg: 111xxx-222.mp4 -> xxx-222.mp4
     debug = config.getInstance().debug()
     n_number = get_number(debug, os.path.basename(movie_path))
@@ -283,9 +274,7 @@ def create_data_and_move_with_custom_number(
     conf = config.getInstance()
     file_name = os.path.basename(file_path)
     try:
-        print(
-            "[!] [{1}] As Number Processing for '{0}'".format(file_path, custom_number)
-        )
+        print("[!] [{1}] As Number Processing for '{0}'".format(file_path, custom_number))
         if custom_number:
             core_main(file_path, custom_number, oCC, specified_source, specified_url)
         else:
@@ -338,12 +327,7 @@ def main(args: tuple) -> typing.Optional[Path]:
     os_inhibitor.inhibit()
 
     platform_total = str(
-        " - "
-        + platform.platform()
-        + " \n[*] - "
-        + platform.machine()
-        + " - Python-"
-        + platform.python_version()
+        " - " + platform.platform() + " \n[*] - " + platform.machine() + " - Python-" + platform.python_version()
     )
 
     print("[*]================= Movie Data Capture =================")
@@ -375,12 +359,8 @@ def main(args: tuple) -> typing.Optional[Path]:
                     "Mapping organize by NFO",
                 ][main_mode - 1],
                 "" if not conf.multi_threading() else ", multi_threading on",
-                ""
-                if conf.nfo_skip_days() == 0
-                else f", nfo_skip_days={conf.nfo_skip_days()}",
-                ""
-                if conf.stop_counter() == 0
-                else f", stop_counter={conf.stop_counter()}",
+                "" if conf.nfo_skip_days() == 0 else f", nfo_skip_days={conf.nfo_skip_days()}",
+                "" if conf.stop_counter() == 0 else f", stop_counter={conf.stop_counter()}",
             )
             if not single_file_path
             else ("-", "Single File", "", "", "")
@@ -456,15 +436,7 @@ def main(args: tuple) -> typing.Optional[Path]:
                 count = count + 1
                 if count_all_int:
                     percentage = str(count / count_all_int * 100)[:4] + "%"
-                    progress_str = (
-                        "- "
-                        + percentage
-                        + " ["
-                        + str(count)
-                        + "/"
-                        + count_all
-                        + "] -"
-                    )
+                    progress_str = "- " + percentage + " [" + str(count) + "/" + count_all + "] -"
                 else:
                     progress_str = "- [" + str(count) + "/" + count_all + "] -"
                 print(

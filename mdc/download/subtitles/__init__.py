@@ -1,8 +1,9 @@
+from pathlib import Path
+
 import requests
 from lxml import html
-from pathlib import Path
-from mdc.config import config
 
+from mdc.config import config
 from mdc.utils.http.ssl_warnings import disable_insecure_request_warning
 
 headers = {
@@ -10,9 +11,7 @@ headers = {
 }
 
 
-def download_subtitles(
-    filepath, path, multi_part, number, part, leak_word, c_word, hack_word
-) -> bool:
+def download_subtitles(filepath, path, multi_part, number, part, leak_word, c_word, hack_word) -> bool:
     try:
         print(f"开始搜索{number}字幕...")
         search_url = f"https://subtitlecat.com/index.php?search={number}"
@@ -54,27 +53,19 @@ def open_download(subtitle_link, path, number, leak_word, c_word, hack_word):
     if config_proxy.enable:
         proxies = config_proxy.proxies()
 
-        subtitle_response = requests.get(
-            subtitle_page_url, headers=headers, proxies=proxies, verify=False
-        )
+        subtitle_response = requests.get(subtitle_page_url, headers=headers, proxies=proxies, verify=False)
     else:
-        subtitle_response = requests.get(
-            subtitle_page_url, headers=headers, verify=False
-        )
+        subtitle_response = requests.get(subtitle_page_url, headers=headers, verify=False)
 
     print(f"访问字幕页面: {subtitle_page_url}, 状态码: {subtitle_response.status_code}")
     if subtitle_response.status_code != 200:
         return False
     tree = html.fromstring(subtitle_response.content)
     ext = "zh-CN.srt"
-    download_links = tree.xpath(
-        '//div[@class="sub-single"]/span/a[contains(@href, "zh-CN.srt")]/@href'
-    )
+    download_links = tree.xpath('//div[@class="sub-single"]/span/a[contains(@href, "zh-CN.srt")]/@href')
     if not download_links:
         print("未找到简体中文字幕下载链接")
-        download_links = tree.xpath(
-            '//div[@class="sub-single"]/span/a[contains(@href, "zh-TW.srt")]/@href'
-        )
+        download_links = tree.xpath('//div[@class="sub-single"]/span/a[contains(@href, "zh-TW.srt")]/@href')
         ext = "zh-TW.srt"
     if not download_links:
         print("未找到繁体中文字幕下载链接")
@@ -84,9 +75,7 @@ def open_download(subtitle_link, path, number, leak_word, c_word, hack_word):
     subtitle_download_url = f"https://subtitlecat.com/{download_link}"
     if config_proxy.enable:
         proxies = config_proxy.proxies()
-        subtitle_response = requests.get(
-            subtitle_download_url, headers=headers, proxies=proxies
-        )
+        subtitle_response = requests.get(subtitle_download_url, headers=headers, proxies=proxies)
     else:
         subtitle_response = requests.get(subtitle_page_url, headers=headers)
     print(f"下载字幕: {subtitle_download_url}, 状态码: {subtitle_response.status_code}")

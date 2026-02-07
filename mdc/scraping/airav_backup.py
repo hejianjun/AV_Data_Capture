@@ -2,8 +2,9 @@
 
 import json
 import re
-from .parser import Parser
+
 from .javbus import Javbus
+from .parser import Parser
 
 
 class Airav(Parser):
@@ -13,12 +14,8 @@ class Airav(Parser):
     expr_number = "/html/head/title/text()"
     expr_studio = '//a[contains(@href,"?video_factory=")]/text()'
     expr_release = '//li[contains(text(),"發片日期")]/text()'
-    expr_outline = (
-        "string(//div[@class='d-flex videoDataBlock']/div[@class='synopsis']/p)"
-    )
-    expr_actor = (
-        '//ul[@class="videoAvstarList"]/li/a[starts-with(@href,"/idol/")]/text()'
-    )
+    expr_outline = "string(//div[@class='d-flex videoDataBlock']/div[@class='synopsis']/p)"
+    expr_actor = '//ul[@class="videoAvstarList"]/li/a[starts-with(@href,"/idol/")]/text()'
     expr_cover = '//img[contains(@src,"/storage/big_pic/")]/@src'
     expr_tags = '//div[@class="tagBtnMargin"]/a/text()'
     expr_extrafanart = '//div[@class="mobileImgThumbnail"]/a/@href'
@@ -33,11 +30,7 @@ class Airav(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = (
-                "https://www.airav.wiki/api/video/barcode/"
-                + self.number.upper()
-                + "?lng=zh-CN"
-            )
+            self.detailurl = "https://www.airav.wiki/api/video/barcode/" + self.number.upper() + "?lng=zh-CN"
         if self.addtion_Javbus:
             engine = Javbus()
             javbusinfo = engine.scrape(self.number, self)
@@ -92,9 +85,7 @@ class Airav(Parser):
             if isinstance(result, str) and len(result):
                 return result
         try:
-            return re.search(
-                r"\d{4}-\d{2}-\d{2}", str(super().getRelease(htmltree))
-            ).group()
+            return re.search(r"\d{4}-\d{2}-\d{2}", str(super().getRelease(htmltree))).group()
         except Exception:
             return ""
 
@@ -104,7 +95,7 @@ class Airav(Parser):
             if isinstance(result, str) and len(result):
                 return result
         release = self.getRelease(htmltree)
-        return str(re.findall("\d{4}", release)).strip(" ['']")
+        return str(re.findall(r"\d{4}", release)).strip(" ['']")
 
     def getOutline(self, htmltree):
         # return self.getTreeAll(htmltree, self.expr_outline).replace('\n','').strip()

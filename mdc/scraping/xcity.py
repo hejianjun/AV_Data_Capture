@@ -3,7 +3,9 @@
 import re
 import secrets
 from urllib.parse import urljoin
+
 from mdc.utils.http.request import get_html_by_form
+
 from .parser import Parser
 
 
@@ -15,16 +17,10 @@ class Xcity(Parser):
     expr_actor = '//ul/li[@class="credit-links"]/a/text()'
     expr_actor_link = '//ul/li[@class="credit-links"]/a'
     expr_actorphoto = '//div[@class="frame"]/div/p/img/@src'
-    expr_studio = (
-        '//*[@id="avodDetails"]/div/div[3]/div[2]/div/ul[1]/li[4]/a/span/text()'
-    )
-    expr_studio2 = (
-        '//strong[contains(text(),"片商")]/../following-sibling::span/a/text()'
-    )
+    expr_studio = '//*[@id="avodDetails"]/div/div[3]/div[2]/div/ul[1]/li[4]/a/span/text()'
+    expr_studio2 = '//strong[contains(text(),"片商")]/../following-sibling::span/a/text()'
     expr_runtime = '//span[@class="koumoku" and text()="収録時間"]/../text()'
-    expr_label = (
-        '//*[@id="avodDetails"]/div/div[3]/div[2]/div/ul[1]/li[5]/a/span/text()'
-    )
+    expr_label = '//*[@id="avodDetails"]/div/div[3]/div[2]/div/ul[1]/li[5]/a/span/text()'
     expr_release = '//*[@id="avodDetails"]/div/div[3]/div[2]/div/ul[1]/li[2]/text()'
     expr_tags = '//span[@class="koumoku" and text()="ジャンル"]/../a[starts-with(@href,"/avod/genre/")]/text()'
     expr_cover = '//*[@id="avodDetails"]/div/div[3]/div[1]/p/a/@href'
@@ -37,8 +33,7 @@ class Xcity(Parser):
     def queryNumberUrl(self, number):
         xcity_number = number.replace("-", "")
         query_result, browser = get_html_by_form(
-            "https://xcity.jp/"
-            + secrets.choice(["sitemap/", "policy/", "law/", "help/", "main/"]),
+            "https://xcity.jp/" + secrets.choice(["sitemap/", "policy/", "law/", "help/", "main/"]),
             fields={"q": xcity_number.lower()},
             cookies=self.cookies,
             proxies=self.proxies,
@@ -51,9 +46,7 @@ class Xcity(Parser):
         return urljoin("https://xcity.jp", prelink)
 
     def getStudio(self, htmltree):
-        return (
-            super().getStudio(htmltree).strip("+").replace("', '", "").replace('"', "")
-        )
+        return super().getStudio(htmltree).strip("+").replace("', '", "").replace('"', "")
 
     def getRuntime(self, htmltree):
         return self.getTreeElement(htmltree, self.expr_runtime, 1).strip()
@@ -61,7 +54,7 @@ class Xcity(Parser):
     def getRelease(self, htmltree):
         try:
             result = self.getTreeElement(htmltree, self.expr_release, 1)
-            return re.findall("\d{4}/\d{2}/\d{2}", result)[0].replace("/", "-")
+            return re.findall(r"\d{4}/\d{2}/\d{2}", result)[0].replace("/", "-")
         except Exception:
             return ""
 

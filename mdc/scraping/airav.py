@@ -10,17 +10,11 @@ class Airav(Parser):
     source = "airav"
 
     expr_title = "//div[@class='video-title my-3']/h1/text()"
-    expr_number = (
-        "//div[@class='info-list my-2']/ul/li[contains(text(),'番號')]/span/text()"
-    )
-    expr_studio = (
-        "//div[@class='info-list my-2']/ul/li[contains(text(),'廠商')]/a/text()"
-    )
+    expr_number = "//div[@class='info-list my-2']/ul/li[contains(text(),'番號')]/span/text()"
+    expr_studio = "//div[@class='info-list my-2']/ul/li[contains(text(),'廠商')]/a/text()"
     expr_release = "//div[@class='video-item']/div[contains(@class,'me-4')]/text()"
     expr_outline = "/html/head/meta[@property='og:description']/@content"
-    expr_actor = (
-        "//div[@class='info-list my-2']/ul/li[contains(text(),'女優')]/a/text()"
-    )
+    expr_actor = "//div[@class='info-list my-2']/ul/li[contains(text(),'女優')]/a/text()"
     expr_cover = "/html/head/meta[@property='og:image']/@content"
     expr_tags = "//div[@class='info-list my-2']/ul/li[contains(text(),'標籤')]/a/text()"
 
@@ -47,23 +41,17 @@ class Airav(Parser):
         queryTree = self.getHtmlTree(queryUrl)
         if queryTree == 404:
             return ""
-        results = self.getTreeAll(
-            queryTree, '//div[contains(@class,"oneVideo") and contains(@class,"col")]'
-        )
+        results = self.getTreeAll(queryTree, '//div[contains(@class,"oneVideo") and contains(@class,"col")]')
 
         target_norm = _norm(number)
         candidates = []
         for node in results:
-            href = self.getTreeElement(
-                node, './/div[contains(@class,"oneVideo-top")]//a/@href'
-            )
+            href = self.getTreeElement(node, './/div[contains(@class,"oneVideo-top")]//a/@href')
             if not href:
                 continue
             title = " ".join(
                 t.strip()
-                for t in node.xpath(
-                    './/div[contains(@class,"oneVideo-body")]//h5//text()'
-                )
+                for t in node.xpath('.//div[contains(@class,"oneVideo-body")]//h5//text()')
                 if isinstance(t, str) and t.strip()
             )
             cand_num = _extract_number(title)
@@ -92,9 +80,7 @@ class Airav(Parser):
         if best_href:
             return "https://airav.io" + best_href
         for node in results:
-            href = self.getTreeElement(
-                node, './/div[contains(@class,"oneVideo-top")]//a/@href'
-            )
+            href = self.getTreeElement(node, './/div[contains(@class,"oneVideo-top")]//a/@href')
             if href:
                 return "https://airav.io" + href
         return ""

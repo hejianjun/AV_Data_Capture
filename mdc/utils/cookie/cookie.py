@@ -1,6 +1,6 @@
 # build-in lib
-import os.path
 import json
+import os.path
 import typing
 from pathlib import Path
 
@@ -44,8 +44,6 @@ def load_cookies(
                 break
         if not cookies_filename:
             return None, None
-        return json.loads(
-            Path(cookies_filename).read_text(encoding="utf-8")
-        ), cookies_filename
+        return json.loads(Path(cookies_filename).read_text(encoding="utf-8")), cookies_filename
     except Exception:
         return None, None

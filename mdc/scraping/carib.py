@@ -2,7 +2,9 @@
 
 import re
 from urllib.parse import urljoin
+
 from lxml import html
+
 from .parser import Parser
 
 
@@ -14,14 +16,10 @@ class Carib(Parser):
     expr_runtime = "//span[@class='spec-content']/span[@itemprop='duration']/text()"
     expr_actor = "//span[@class='spec-content']/a[@itemprop='actor']/span/text()"
     expr_tags = "//span[@class='spec-content']/a[@itemprop='genre']/text()"
-    expr_extrafanart = (
-        "//*[@id='sampleexclude']/div[2]/div/div[@class='grid-item']/div/a/@href"
-    )
+    expr_extrafanart = "//*[@id='sampleexclude']/div[2]/div/div[@class='grid-item']/div/a/@href"
     expr_label = "//span[@class='spec-title'][contains(text(),'シリーズ')]/../span[@class='spec-content']/a/text()"
     expr_series = "//span[@class='spec-title'][contains(text(),'シリーズ')]/../span[@class='spec-content']/a/text()"
-    expr_outline = (
-        "//div[@class='movie-info section']/p[@itemprop='description']/text()"
-    )
+    expr_outline = "//div[@class='movie-info section']/p[@itemprop='description']/text()"
 
     def extraInit(self):
         self.imagecut = 1
@@ -32,9 +30,7 @@ class Carib(Parser):
         if self.specifiedUrl:
             self.detailurl = self.specifiedUrl
         else:
-            self.detailurl = (
-                f"https://www.caribbeancom.com/moviepages/{number}/index.html"
-            )
+            self.detailurl = f"https://www.caribbeancom.com/moviepages/{number}/index.html"
         htmlcode = self.getHtml(self.detailurl)
         if htmlcode == 404 or 'class="movie-info section"' not in htmlcode:
             return 404

@@ -1,13 +1,13 @@
+import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import os
-import sys
+from unittest.mock import patch
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).parents[3]))
 
 from mdc.file.common_utils import windows_long_path
+
 
 class TestCommonUtils(unittest.TestCase):
     def test_windows_long_path_nt_short(self):
@@ -50,5 +50,6 @@ class TestCommonUtils(unittest.TestCase):
             res = windows_long_path(p)
             self.assertEqual(res, p)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -1,13 +1,13 @@
 import os
 import re
-from mdc.config import config
-
 import typing
 
+from mdc.config import config
+
 G_spat = re.compile(
-    "^\w+\.(cc|com|net|me|club|jp|tv|xyz|biz|wiki|info|tw|us|de)@|^22-sht\.me|"
-    "^(fhd|hd|sd|1080p|720p|4K)(-|_)|"
-    "(-|_)(fhd|hd|sd|1080p|720p|4K|x264|x265|uncensored|hack|leaked|leak|uc|u)",
+    r"^\w+\.(cc|com|net|me|club|jp|tv|xyz|biz|wiki|info|tw|us|de)@|^22-sht\.me|"
+    r"^(fhd|hd|sd|1080p|720p|4K)(-|_)|"
+    r"(-|_)(fhd|hd|sd|1080p|720p|4K|x264|x265|uncensored|hack|leaked|leak|uc|u)",
     re.IGNORECASE,
 )
 
@@ -53,27 +53,21 @@ def get_number(debug: bool, file_path: str) -> str:
         file_number = get_number_by_dict(filepath)
         if file_number:
             return file_number
-        elif (
-            "字幕组" in filepath
-            or "SUB" in filepath.upper()
-            or re.match(r"[\u30a0-\u30ff]+", filepath)
-        ):
+        elif "字幕组" in filepath or "SUB" in filepath.upper() or re.match(r"[\u30a0-\u30ff]+", filepath):
             filepath = G_spat.sub("", filepath)
-            filepath = re.sub("\[.*?\]", "", filepath)
+            filepath = re.sub(r"\[.*?\]", "", filepath)
             filepath = filepath.replace(".chs", "").replace(".cht", "")
             file_number = str(re.findall(r"(.+?)\.", filepath)).strip(" [']")
             return file_number
         elif "-" in filepath or "_" in filepath:
             filepath = G_spat.sub("", filepath)
-            filename = str(re.sub("\[\d{4}-\d{1,2}-\d{1,2}\] - ", "", filepath))
+            filename = str(re.sub(r"\[\d{4}-\d{1,2}-\d{1,2}\] - ", "", filepath))
             lower_check = filename.lower()
             if "fc2" in lower_check:
                 filename = lower_check.replace("--", "-").replace("_", "-").upper()
-            filename = re.sub("[-_]cd\d{1,2}", "", filename, flags=re.IGNORECASE)
+            filename = re.sub(r"[-_]cd\d{1,2}", "", filename, flags=re.IGNORECASE)
             if not re.search("-|_", filename):
-                return str(
-                    re.search(r"\w+", filename[: filename.find(".")], re.A).group()
-                )
+                return str(re.search(r"\w+", filename[: filename.find(".")], re.A).group())
             file_number = os.path.splitext(filename)
             filename = re.search(r"[\w\-]{2,}", file_number[0], re.A)
             if filename:
@@ -83,18 +77,12 @@ def get_number(debug: bool, file_path: str) -> str:
 
             new_file_number = file_number
             if re.search("(-|_)c$", file_number, flags=re.IGNORECASE):
-                new_file_number = re.sub(
-                    "(-|_)c$", "", file_number, flags=re.IGNORECASE
-                )
+                new_file_number = re.sub("(-|_)c$", "", file_number, flags=re.IGNORECASE)
             elif re.search("(-|_)u$", file_number, flags=re.IGNORECASE):
-                new_file_number = re.sub(
-                    "(-|_)u$", "", file_number, flags=re.IGNORECASE
-                )
+                new_file_number = re.sub("(-|_)u$", "", file_number, flags=re.IGNORECASE)
             elif re.search("(-|_)uc$", file_number, flags=re.IGNORECASE):
-                new_file_number = re.sub(
-                    "(-|_)uc$", "", file_number, flags=re.IGNORECASE
-                )
-            elif re.search("\d+ch$", file_number, flags=re.I):
+                new_file_number = re.sub("(-|_)uc$", "", file_number, flags=re.IGNORECASE)
+            elif re.search(r"\d+ch$", file_number, flags=re.I):
                 new_file_number = file_number[:-2]
 
             return new_file_number.upper()
@@ -107,11 +95,7 @@ def get_number(debug: bool, file_path: str) -> str:
                     str(
                         re.findall(
                             r"(.+?)\.",
-                            str(
-                                re.search(
-                                    '([^<>/\\\\|:""\*\?]+)\\.\w+$', filepath
-                                ).group()
-                            ),
+                            str(re.search(r'([^<>/\\|:"*?]+)\.\w+$', filepath).group()),
                         )
                     )
                     .strip("['']")
@@ -127,30 +111,17 @@ def get_number(debug: bool, file_path: str) -> str:
 
 # 按javdb数据源的命名规范提取number
 G_TAKE_NUM_RULES = {
-    "tokyo.*hot": lambda x: str(
-        re.search(r"(cz|gedo|k|n|red-|se)\d{2,4}", x, re.I).group()
-    ),
-    "carib": lambda x: str(re.search(r"\d{6}(-|_)\d{3}", x, re.I).group()).replace(
-        "_", "-"
-    ),
-    "1pon|mura|paco": lambda x: str(
-        re.search(r"\d{6}(-|_)\d{3}", x, re.I).group()
-    ).replace("-", "_"),
-    "10mu": lambda x: str(re.search(r"\d{6}(-|_)\d{2}", x, re.I).group()).replace(
-        "-", "_"
-    ),
+    "tokyo.*hot": lambda x: str(re.search(r"(cz|gedo|k|n|red-|se)\d{2,4}", x, re.I).group()),
+    "carib": lambda x: str(re.search(r"\d{6}(-|_)\d{3}", x, re.I).group()).replace("_", "-"),
+    "1pon|mura|paco": lambda x: str(re.search(r"\d{6}(-|_)\d{3}", x, re.I).group()).replace("-", "_"),
+    "10mu": lambda x: str(re.search(r"\d{6}(-|_)\d{2}", x, re.I).group()).replace("-", "_"),
     "x-art": lambda x: str(re.search(r"x-art\.\d{2}\.\d{2}\.\d{2}", x, re.I).group()),
-    "xxx-av": lambda x: "".join(
-        ["xxx-av-", re.findall(r"xxx-av[^\d]*(\d{3,5})[^\d]*", x, re.I)[0]]
-    ),
-    "heydouga": lambda x: "heydouga-"
-    + "-".join(re.findall(r"(\d{4})[\-_](\d{3,4})[^\d]*", x, re.I)[0]),
+    "xxx-av": lambda x: "".join(["xxx-av-", re.findall(r"xxx-av[^\d]*(\d{3,5})[^\d]*", x, re.I)[0]]),
+    "heydouga": lambda x: "heydouga-" + "-".join(re.findall(r"(\d{4})[\-_](\d{3,4})[^\d]*", x, re.I)[0]),
     "heyzo": lambda x: "HEYZO-" + re.findall(r"heyzo[^\d]*(\d{4})", x, re.I)[0],
     "mdbk": lambda x: str(re.search(r"mdbk(-|_)(\d{4})", x, re.I).group()),
     "mdtm": lambda x: str(re.search(r"mdtm(-|_)(\d{4})", x, re.I).group()),
-    "caribpr": lambda x: str(re.search(r"\d{6}(-|_)\d{3}", x, re.I).group()).replace(
-        "_", "-"
-    ),
+    "caribpr": lambda x: str(re.search(r"\d{6}(-|_)\d{3}", x, re.I).group()).replace("_", "-"),
 }
 
 

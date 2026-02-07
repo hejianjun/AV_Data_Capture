@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
-from mdc.config import config
+
 from lxml import etree
+
+from mdc.config import config
+from mdc.download.downloader import download_file_with_filename
 from mdc.file.common_utils import file_not_exist_or_empty
 from mdc.file.file_utils import get_info, moveFailedFolder
-from mdc.download.downloader import download_file_with_filename
 
 
 def small_cover_check(
@@ -26,15 +28,10 @@ def small_cover_check(
         json_headers: 可选请求头字典，形如 {"headers": {...}}
     """
     full_filepath = Path(path) / filename
-    if (
-        config.getInstance().download_only_missing_images()
-        and not file_not_exist_or_empty(str(full_filepath))
-    ):
+    if config.getInstance().download_only_missing_images() and not file_not_exist_or_empty(str(full_filepath)):
         return
     if json_headers is not None:
-        download_file_with_filename(
-            cover_small, filename, path, movie_path, json_headers["headers"]
-        )
+        download_file_with_filename(cover_small, filename, path, movie_path, json_headers["headers"])
     else:
         download_file_with_filename(cover_small, filename, path, movie_path)
     print("[+]Image Downloaded! " + full_filepath.name)
@@ -108,9 +105,7 @@ def print_files(
     if main_mode == 3:
         nfo_path = str(Path(filepath).with_suffix(".nfo"))
     else:
-        nfo_path = os.path.join(
-            path, f"{number}{part}{leak_word}{c_word}{hack_word}.nfo"
-        )
+        nfo_path = os.path.join(path, f"{number}{part}{leak_word}{c_word}{hack_word}.nfo")
     try:
         if not os.path.exists(path):
             try:
@@ -164,9 +159,7 @@ def print_files(
                         pass
                 try:
                     old_actor_list = [
-                        v.strip()
-                        for v in old_nfo.xpath("//actor/name/text()")
-                        if isinstance(v, str) and v.strip()
+                        v.strip() for v in old_nfo.xpath("//actor/name/text()") if isinstance(v, str) and v.strip()
                     ]
                 except Exception:
                     old_actor_list = []
@@ -175,18 +168,10 @@ def print_files(
 
         if main_mode == 3:
             try:
-                new_actor_list: List[str] = [
-                    v.strip()
-                    for v in (actor_list or [])
-                    if isinstance(v, str) and v.strip()
-                ]
+                new_actor_list: List[str] = [v.strip() for v in (actor_list or []) if isinstance(v, str) and v.strip()]
                 anonymous_names = {"佚名", "Anonymous"}
-                new_is_anonymous_only = bool(new_actor_list) and all(
-                    v in anonymous_names for v in new_actor_list
-                )
-                old_has_real_actor = bool(old_actor_list) and any(
-                    v not in anonymous_names for v in old_actor_list
-                )
+                new_is_anonymous_only = bool(new_actor_list) and all(v in anonymous_names for v in new_actor_list)
+                old_has_real_actor = bool(old_actor_list) and any(v not in anonymous_names for v in old_actor_list)
                 if new_is_anonymous_only and old_has_real_actor:
                     actor_list = old_actor_list
                 else:
@@ -248,9 +233,7 @@ def print_files(
                 if not config.getInstance().jellyfin():
                     print("  <title><![CDATA[" + naming_rule + "]]></title>", file=code)
                     print(
-                        "  <originaltitle><![CDATA["
-                        + json_data["original_naming_rule"]
-                        + "]]></originaltitle>",
+                        "  <originaltitle><![CDATA[" + json_data["original_naming_rule"] + "]]></originaltitle>",
                         file=code,
                     )
                     print(
@@ -260,9 +243,7 @@ def print_files(
                 else:
                     print("  <title>" + naming_rule + "</title>", file=code)
                     print(
-                        "  <originaltitle>"
-                        + json_data["original_naming_rule"]
-                        + "</originaltitle>",
+                        "  <originaltitle>" + json_data["original_naming_rule"] + "</originaltitle>",
                         file=code,
                     )
                     print("  <sorttitle>" + naming_rule + "</sorttitle>", file=code)

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from lxml import etree
+
 from mdc.utils.http.request import request_session
+
 from .parser import Parser
 
 
@@ -28,12 +30,8 @@ class Pcolle(Parser):
 
     def search(self, number: str):
         self.number = number.upper().replace("PCOLLE-", "")
-        self.detailurl = (
-            "https://www.pcolle.com/product/detail/?product_id=" + self.number
-        )
-        session = request_session(
-            cookies=self.cookies, proxies=self.proxies, verify=self.verify
-        )
+        self.detailurl = "https://www.pcolle.com/product/detail/?product_id=" + self.number
+        session = request_session(cookies=self.cookies, proxies=self.proxies, verify=self.verify)
         htmlcode = session.get(self.detailurl).text
         htmltree = etree.HTML(htmlcode)
         result = self.dictformat(htmltree)
@@ -53,18 +51,9 @@ class Pcolle(Parser):
             return ""
 
     def getRelease(self, htmltree):
-        return (
-            super()
-            .getRelease(htmltree)
-            .replace("年", "-")
-            .replace("月", "-")
-            .replace("日", "")
-        )
+        return super().getRelease(htmltree).replace("年", "-").replace("月", "-").replace("日", "")
 
     def getCover(self, htmltree):
-        if (
-            ".gif" in super().getCover(htmltree)
-            and len(super().getExtrafanart(htmltree)) != 0
-        ):
+        if ".gif" in super().getCover(htmltree) and len(super().getExtrafanart(htmltree)) != 0:
             return super().getExtrafanart(htmltree)[0]
         return super().getCover(htmltree)

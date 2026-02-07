@@ -1,14 +1,14 @@
 import os
 import shutil
 import time
-from pathlib import Path
-from xml.etree import ElementTree as ET
-from mdc.config import config
-from typing import Iterator, Optional
-
 from datetime import datetime
-from mdc.utils.translation import is_japanese
+from pathlib import Path
+from typing import Iterator, Optional
+from xml.etree import ElementTree as ET
+
+from mdc.config import config
 from mdc.file.common_utils import windows_long_path
+from mdc.utils.translation import is_japanese
 
 
 def escape_path(path, escape_literals: str):  # Remove escape literals
@@ -31,9 +31,7 @@ def moveFailedFolder(filepath):
             flt.write(f"{filepath}\n")
     elif conf.failed_move() and not link_mode:
         failed_name = os.path.join(failed_folder, os.path.basename(filepath))
-        mtxt = os.path.abspath(
-            os.path.join(failed_folder, "where_was_i_before_being_moved.txt")
-        )
+        mtxt = os.path.abspath(os.path.join(failed_folder, "where_was_i_before_being_moved.txt"))
         print("'[-]Move to Failed output folder, see '%s'" % mtxt)
         with open(mtxt, "a", encoding="utf-8") as wwibbmt:
             tmstr = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -70,9 +68,7 @@ def create_folder(json_data):  # 创建文件夹
     location_rule = eval(conf.location_rule(), json_data)
     if "actor" in conf.location_rule() and len(actor) > 100:
         print(conf.location_rule())
-        location_rule = eval(
-            conf.location_rule().replace("actor", "'多人作品'"), json_data
-        )
+        location_rule = eval(conf.location_rule().replace("actor", "'多人作品'"), json_data)
     maxlen = conf.max_title_len()
     if "title" in conf.location_rule() and len(title) > maxlen:
         shorttitle = title[0:maxlen]
@@ -84,11 +80,7 @@ def create_folder(json_data):  # 创建文件夹
         try:
             os.makedirs(path)
         except OSError:
-            path = (
-                success_folder
-                + "/"
-                + location_rule.replace("/[" + number + ")-" + title, "/number")
-            )
+            path = success_folder + "/" + location_rule.replace("/[" + number + ")-" + title, "/number")
             path = escape_path(path, conf.escape_literals())
             try:
                 os.makedirs(path)
@@ -116,16 +108,8 @@ def rm_empty_folder(path: str) -> None:
     deleted = set()
     for current_dir, subdirs, files in os.walk(abspath, topdown=False):
         try:
-            still_has_subdirs = any(
-                True
-                for subdir in subdirs
-                if os.path.join(current_dir, subdir) not in deleted
-            )
-            if (
-                not any(files)
-                and not still_has_subdirs
-                and not os.path.samefile(path, current_dir)
-            ):
+            still_has_subdirs = any(True for subdir in subdirs if os.path.join(current_dir, subdir) not in deleted)
+            if not any(files) and not still_has_subdirs and not os.path.samefile(path, current_dir):
                 os.rmdir(current_dir)
                 deleted.add(current_dir)
                 print("[+]Deleting empty folder", current_dir)
@@ -192,12 +176,8 @@ def read_nfo_title_and_outline(nfo_path: str):
         outline = root.findtext("outline")
         plot = root.findtext("plot")
         year = root.findtext("year")
-        outline_value = (
-            outline if isinstance(outline, str) and outline.strip() else plot
-        )
-        outline_value = (
-            outline_value.strip() if isinstance(outline_value, str) else None
-        )
+        outline_value = outline if isinstance(outline, str) and outline.strip() else plot
+        outline_value = outline_value.strip() if isinstance(outline_value, str) else None
         title = title.strip() if isinstance(title, str) else None
         year = year.strip() if isinstance(year, str) else None
         return title, outline_value, year
@@ -207,7 +187,7 @@ def read_nfo_title_and_outline(nfo_path: str):
 
 def mode3_should_execute_by_nfo(nfo_path: str) -> bool:
     title, outline, year = read_nfo_title_and_outline(nfo_path)
-    if (title is None or "马赛克" in title or  "馬賽克" in title) and outline is None:
+    if (title is None or "马赛克" in title or "馬賽克" in title) and outline is None:
         return True
     if is_japanese(title or ""):
         return True

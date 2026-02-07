@@ -1,18 +1,17 @@
 # build-in lib
-from typing import Optional, Union, Tuple, Any
+from typing import Any, Optional, Tuple, Union
+
+import mechanicalsoup
 
 # third party lib
 import requests
-from requests.adapters import HTTPAdapter
-import mechanicalsoup
-from urllib3.util.retry import Retry
 from cloudscraper import create_scraper
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # project wide
 from mdc.config import config
-
 from mdc.utils.http.ssl_warnings import disable_insecure_request_warning
-
 
 G_USER_AGENT = r"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36"
 
@@ -231,9 +230,7 @@ def get_html(
     raise Exception("Connect Failed")
 
 
-def post_html(
-    url: str, query: dict, headers: Optional[dict] = None
-) -> requests.Response:
+def post_html(url: str, query: dict, headers: Optional[dict] = None) -> requests.Response:
     """
     POST 请求提交数据
 
@@ -262,9 +259,7 @@ def post_html(
                     timeout=config_proxy.timeout,
                 )
             else:
-                result = requests.post(
-                    url, data=query, headers=headers, timeout=config_proxy.timeout
-                )
+                result = requests.post(url, data=query, headers=headers, timeout=config_proxy.timeout)
             return result
         except Exception as e:
             print("[-]Connect retry {}/{}".format(i + 1, config_proxy.retry))
@@ -358,9 +353,7 @@ def get_html_session(
         "https://",
         TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
     )
-    session.mount(
-        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
-    )
+    session.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
     if config_proxy.enable:
         session.verify = config.getInstance().cacert_file()
         session.proxies = config_proxy.proxies()
@@ -421,16 +414,12 @@ def get_html_by_browser(
         "https://",
         TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout),
     )
-    s.mount(
-        "http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout)
-    )
+    s.mount("http://", TimeoutHTTPAdapter(max_retries=retries, timeout=config_proxy.timeout))
     if config_proxy.enable:
         s.verify = config.getInstance().cacert_file()
         s.proxies = config_proxy.proxies()
     try:
-        browser = mechanicalsoup.StatefulBrowser(
-            user_agent=ua or G_USER_AGENT, session=s
-        )
+        browser = mechanicalsoup.StatefulBrowser(user_agent=ua or G_USER_AGENT, session=s)
         if isinstance(url, str) and len(url):
             result = browser.open(url)
         else:
@@ -512,17 +501,11 @@ def get_html_by_form(
     elif config_proxy.enable:
         s.proxies = config_proxy.proxies()
     try:
-        browser = mechanicalsoup.StatefulBrowser(
-            user_agent=ua or G_USER_AGENT, session=s
-        )
+        browser = mechanicalsoup.StatefulBrowser(user_agent=ua or G_USER_AGENT, session=s)
         result = browser.open(url)
         if not result.ok:
             return None
-        (
-            browser.select_form()
-            if form_select is None
-            else browser.select_form(form_select)
-        )
+        (browser.select_form() if form_select is None else browser.select_form(form_select))
         if isinstance(fields, dict):
             for k, v in fields.items():
                 browser[k] = v

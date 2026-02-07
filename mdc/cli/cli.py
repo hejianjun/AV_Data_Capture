@@ -1,8 +1,9 @@
 import argparse
-import typing
 import os
-from mdc.config import config
+import typing
 from pathlib import Path
+
+from mdc.config import config
 
 
 def argparse_function(
@@ -11,9 +12,7 @@ def argparse_function(
     conf = config.getInstance()
     parser = argparse.ArgumentParser(epilog=f"Load Config file '{conf.ini_path}'.")
     parser.add_argument("file", default="", nargs="?", help="Single Movie file path.")
-    parser.add_argument(
-        "-p", "--path", default="", nargs="?", help="Analysis folder path."
-    )
+    parser.add_argument("-p", "--path", default="", nargs="?", help="Analysis folder path.")
     parser.add_argument(
         "-m",
         "--main-mode",
@@ -82,9 +81,7 @@ def argparse_function(
         "-i",
         "--ignore-failed-list",
         action="store_true",
-        help="Ignore failed list '{}'".format(
-            os.path.join(os.path.abspath(conf.failed_folder()), "failed_list.txt")
-        ),
+        help="Ignore failed list '{}'".format(os.path.join(os.path.abspath(conf.failed_folder()), "failed_list.txt")),
     )
     parser.add_argument(
         "-a",
@@ -137,12 +134,8 @@ def argparse_function(
     )
     parser.add_argument("-v", "--version", action="version", version=ver)
     parser.add_argument("-s", "--search", default="", nargs="?", help="Search number")
-    parser.add_argument(
-        "-ss", "--specified-source", default="", nargs="?", help="specified Source."
-    )
-    parser.add_argument(
-        "-su", "--specified-url", default="", nargs="?", help="specified Url."
-    )
+    parser.add_argument("-ss", "--specified-source", default="", nargs="?", help="specified Source.")
+    parser.add_argument("-su", "--specified-url", default="", nargs="?", help="specified Url.")
 
     args = parser.parse_args()
 
@@ -178,9 +171,7 @@ def argparse_function(
     if conf.main_mode() == 3:
         no_net_op = args.no_network_operation
         if no_net_op:
-            conf.set_override(
-                "advenced_sleep:stop_counter=0;advenced_sleep:rerun_delay=0s;face:aways_imagecut=1"
-            )
+            conf.set_override("advenced_sleep:stop_counter=0;advenced_sleep:rerun_delay=0s;face:aways_imagecut=1")
 
     return (
         args.file,

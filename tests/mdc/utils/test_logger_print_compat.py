@@ -1,6 +1,6 @@
 import io
 
-from mdc.utils.logger import info, success, warn, error, debug
+from mdc.utils.logger import debug, error, info, success, warn
 
 
 def test_logger_functions_accept_file_kwarg_and_write_plain_text():

@@ -9,9 +9,7 @@ class Imdb(Parser):
     imagecut = 0
 
     expr_title = '//h1[@data-testid="hero-title-block__title"]/text()'
-    expr_release = (
-        '//a[contains(text(),"Release date")]/following-sibling::div[1]/ul/li/a/text()'
-    )
+    expr_release = '//a[contains(text(),"Release date")]/following-sibling::div[1]/ul/li/a/text()'
     expr_cover = '//head/meta[@property="og:image"]/@content'
     expr_outline = '//head/meta[@property="og:description"]/@content'
     expr_actor = '//h3[contains(text(),"Top cast")]/../../../following-sibling::div[1]/div[2]/div/div/a/text()'
